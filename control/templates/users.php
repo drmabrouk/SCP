@@ -82,17 +82,9 @@ function control_get_time_ago($timestamp) {
         <?php endif; ?>
         <?php if(Control_Auth::has_permission('users_view')): ?>
             <div class="control-dropdown" style="position:relative;">
-                <button class="control-btn" style="background:#fff; color:var(--control-text-dark) !important; border:1px solid var(--control-border);" onclick="jQuery('#user-tools-dropdown').toggle()">
-                    <span class="dashicons dashicons-ellipsis"></span>
+                <button class="control-btn" style="background:#fff; color:var(--control-text-dark) !important; border:1px solid var(--control-border);" onclick="jQuery('#user-data-mgmt-modal').css('display', 'flex')">
+                    <span class="dashicons dashicons-database" style="margin-left:5px;"></span><?php _e('إدارة البيانات', 'control'); ?>
                 </button>
-                <div id="user-tools-dropdown" style="display:none; position:absolute; left:0; top:110%; background:#fff; border:1px solid var(--control-border); border-radius:var(--control-radius-sm); box-shadow:var(--control-shadow); z-index:100; min-width:140px; padding:5px;">
-                    <button class="control-btn control-export-btn" data-type="users" style="width:100%; justify-content:flex-start; background:none; color:var(--control-text-dark) !important; border:none; padding:8px 12px; font-size:0.8rem;">
-                        <span class="dashicons dashicons-download" style="margin-left:8px;"></span><?php _e('تصدير CSV', 'control'); ?>
-                    </button>
-                    <button class="control-btn control-import-trigger" data-type="users" style="width:100%; justify-content:flex-start; background:none; color:var(--control-text-dark) !important; border:none; padding:8px 12px; font-size:0.8rem;">
-                        <span class="dashicons dashicons-upload" style="margin-left:8px;"></span><?php _e('استيراد بيانات', 'control'); ?>
-                    </button>
-                </div>
             </div>
         <?php endif; ?>
     </div>
@@ -237,6 +229,92 @@ function control_get_time_ago($timestamp) {
         </form>
     </div>
 </div>
+
+<!-- Data Management Modal -->
+<div id="user-data-mgmt-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:10002; align-items:center; justify-content:center; backdrop-filter: blur(4px);">
+    <div class="control-card" style="width:100%; max-width:800px; padding:0; border-radius:20px; overflow:hidden; box-shadow:0 25px 50px -12px rgba(0,0,0,0.5);">
+        <div style="background:var(--control-primary); color:#fff; padding:20px 30px; display:flex; justify-content:space-between; align-items:center;">
+            <h3 style="color:#fff; margin:0; font-size:1.1rem;"><?php _e('إدارة بيانات المستخدمين (استيراد / تصدير)', 'control'); ?></h3>
+            <button onclick="jQuery('#user-data-mgmt-modal').hide()" style="background:none; border:none; color:#fff; cursor:pointer;"><span class="dashicons dashicons-no-alt"></span></button>
+        </div>
+
+        <div class="control-tabs" style="display:flex; background:#f8fafc; border-bottom:1px solid #e2e8f0; padding:0 20px;">
+            <button class="mgmt-tab-btn active" data-tab="mgmt-export"><?php _e('تصدير البيانات', 'control'); ?></button>
+            <button class="mgmt-tab-btn" data-tab="mgmt-import"><?php _e('استيراد بيانات جديدة', 'control'); ?></button>
+        </div>
+
+        <div style="padding:30px; max-height:70vh; overflow-y:auto;">
+            <!-- Export Section -->
+            <div id="mgmt-export" class="mgmt-tab-content">
+                <div style="text-align:center; margin-bottom:30px;">
+                    <div style="width:60px; height:60px; background:#eff6ff; color:#3b82f6; border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 15px;">
+                        <span class="dashicons dashicons-download" style="font-size:30px; width:30px; height:30px;"></span>
+                    </div>
+                    <h4><?php _e('تحميل قاعدة بيانات المستخدمين', 'control'); ?></h4>
+                    <p style="color:var(--control-muted); font-size:0.85rem;"><?php _e('قم بتصدير كافة المستخدمين مع بياناتهم الشخصية، الوظيفية، والأكاديمية.', 'control'); ?></p>
+                </div>
+
+                <div class="control-grid" style="grid-template-columns: 1fr 1fr; gap:20px;">
+                    <div style="border:2px solid var(--control-border); padding:20px; border-radius:12px; text-align:center; cursor:pointer; transition:0.2s;" class="export-format-card" data-format="csv">
+                        <div style="font-weight:800; font-size:1.2rem; color:var(--control-text-dark); margin-bottom:5px;">CSV</div>
+                        <div style="font-size:0.75rem; color:var(--control-muted);"><?php _e('متوافق مع Excel و Google Sheets', 'control'); ?></div>
+                    </div>
+                    <div style="border:2px solid var(--control-border); padding:20px; border-radius:12px; text-align:center; cursor:pointer; transition:0.2s;" class="export-format-card" data-format="json">
+                        <div style="font-weight:800; font-size:1.2rem; color:var(--control-text-dark); margin-bottom:5px;">JSON</div>
+                        <div style="font-size:0.75rem; color:var(--control-muted);"><?php _e('متوافق مع الأنظمة التقنية (API Ready)', 'control'); ?></div>
+                    </div>
+                </div>
+
+                <div style="margin-top:30px; text-align:center;">
+                    <button id="execute-export-btn" class="control-btn" style="min-width:200px; height:48px; border:none; font-weight:800;"><?php _e('بدء التصدير الآن', 'control'); ?></button>
+                </div>
+            </div>
+
+            <!-- Import Section -->
+            <div id="mgmt-import" class="mgmt-tab-content" style="display:none;">
+                <div id="import-step-upload">
+                    <div style="border:2px dashed var(--control-border); padding:40px; border-radius:15px; text-align:center; background:#f8fafc;">
+                        <span class="dashicons dashicons-upload" style="font-size:40px; color:var(--control-muted); width:40px; height:40px; margin-bottom:15px;"></span>
+                        <h4><?php _e('اختر ملف البيانات للرفع', 'control'); ?></h4>
+                        <p style="color:var(--control-muted); font-size:0.8rem; margin-bottom:20px;"><?php _e('يدعم الملفات بتنسيق CSV أو JSON فقط.', 'control'); ?></p>
+                        <input type="file" id="import-file-input" accept=".csv,.json" style="display:none;">
+                        <button onclick="jQuery('#import-file-input').click()" class="control-btn" style="background:#fff; color:var(--control-text-dark) !important; border:1px solid var(--control-border);"><?php _e('اختيار الملف', 'control'); ?></button>
+                    </div>
+                </div>
+
+                <div id="import-step-preview" style="display:none;">
+                    <h4 style="margin-bottom:15px;"><?php _e('معاينة البيانات وفحص الصحة', 'control'); ?></h4>
+                    <div style="overflow-x:auto; background:#fff; border:1px solid #e2e8f0; border-radius:10px; margin-bottom:20px;">
+                        <table class="control-table" style="font-size:0.75rem; min-width:600px;">
+                            <thead>
+                                <tr style="background:#f1f5f9;">
+                                    <th><?php _e('الاسم', 'control'); ?></th>
+                                    <th><?php _e('الهاتف', 'control'); ?></th>
+                                    <th><?php _e('الدور', 'control'); ?></th>
+                                    <th><?php _e('الحالة', 'control'); ?></th>
+                                </tr>
+                            </thead>
+                            <tbody id="import-preview-body"></tbody>
+                        </table>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <p id="import-summary" style="font-size:0.85rem; font-weight:700;"></p>
+                        <div style="display:flex; gap:10px;">
+                            <button id="confirm-import-btn" class="control-btn" style="background:#10b981; border:none;"><?php _e('تأكيد الاستيراد النهائي', 'control'); ?></button>
+                            <button onclick="location.reload()" class="control-btn" style="background:var(--control-bg); color:var(--control-text) !important; border:none;"><?php _e('إلغاء', 'control'); ?></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.mgmt-tab-btn { background:none; border:none; padding:15px 25px; cursor:pointer; font-weight:700; color:var(--control-muted); border-bottom:3px solid transparent; transition:0.2s; }
+.mgmt-tab-btn.active { color:var(--control-primary); border-bottom-color:var(--control-accent); }
+.export-format-card.active { border-color:var(--control-accent) !important; background:var(--control-accent-soft); }
+</style>
 
 <!-- User Wizard Modal -->
 <div id="control-user-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0, 0, 0, 0.4); z-index:10001; align-items:center; justify-content:center; backdrop-filter: blur(4px);">
@@ -620,6 +698,116 @@ jQuery(document).ready(function($) {
             } else {
                 alert(res.data || 'حدث خطأ');
                 $btn.prop('disabled', false).text('<?php _e("تأكيد التقييد", "control"); ?>');
+            }
+        });
+    });
+
+    // --- Data Management System ---
+
+    $('.mgmt-tab-btn').on('click', function() {
+        const tab = $(this).data('tab');
+        $('.mgmt-tab-btn').removeClass('active');
+        $(this).addClass('active');
+        $('.mgmt-tab-content').hide();
+        $('#' + tab).show();
+    });
+
+    let exportFormat = 'csv';
+    $('.export-format-card').on('click', function() {
+        $('.export-format-card').removeClass('active');
+        $(this).addClass('active');
+        exportFormat = $(this).data('format');
+    });
+
+    $('#execute-export-btn').on('click', function() {
+        const $btn = $(this);
+        $btn.prop('disabled', true).text('<?php _e("جاري التجهيز...", "control"); ?>');
+
+        $.post(control_ajax.ajax_url, {
+            action: 'control_export_data',
+            type: 'users',
+            format: exportFormat,
+            nonce: control_ajax.nonce
+        }, function(res) {
+            if (res.success) {
+                const type = exportFormat === 'json' ? 'application/json' : 'text/csv';
+                const blob = new Blob([res.data.content], { type: type + ';charset=utf-8;' });
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement("a");
+                link.setAttribute("href", url);
+                link.setAttribute("download", res.data.filename);
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            } else {
+                alert(res.data);
+            }
+            $btn.prop('disabled', false).text('<?php _e("بدء التصدير الآن", "control"); ?>');
+        });
+    });
+
+    let usersToImport = [];
+    $('#import-file-input').on('change', function(e) {
+        const file = e.target.files[0];
+        const reader = new FileReader();
+        const format = file.name.split('.').pop();
+
+        reader.onload = function(event) {
+            const rawData = event.target.result;
+            $.post(control_ajax.ajax_url, {
+                action: 'control_preview_import',
+                data: rawData,
+                format: format,
+                nonce: control_ajax.nonce
+            }, function(res) {
+                if (res.success) {
+                    $('#import-step-upload').hide();
+                    $('#import-step-preview').fadeIn();
+
+                    let html = '';
+                    usersToImport = [];
+                    let duplicates = 0;
+
+                    res.data.forEach(item => {
+                        const statusClass = item.status === 'duplicate' ? 'indicator-danger' : (item.status === 'invalid' ? 'indicator-warning' : 'indicator-success');
+                        html += `<tr>
+                            <td>${item.data.name || 'N/A'}</td>
+                            <td>${item.data.phone || 'N/A'}</td>
+                            <td>${item.data.role || 'coach'}</td>
+                            <td><span class="control-status-indicator ${statusClass}">${item.message || 'Ready'}</span></td>
+                        </tr>`;
+
+                        if (item.status === 'new') usersToImport.push(item.data);
+                        if (item.status === 'duplicate') duplicates++;
+                    });
+
+                    $('#import-preview-body').html(html);
+                    $('#import-summary').text(`<?php _e('جاهز للاستيراد:', 'control'); ?> ${usersToImport.length} | <?php _e('موجود مسبقاً (سيتم تخطيه):', 'control'); ?> ${duplicates}`);
+                } else {
+                    alert(res.data);
+                }
+            });
+        };
+        reader.readAsText(file);
+    });
+
+    $('#confirm-import-btn').on('click', function() {
+        if (usersToImport.length === 0) return alert('<?php _e("لا توجد بيانات صالحة للاستيراد", "control"); ?>');
+
+        const $btn = $(this);
+        $btn.prop('disabled', true).text('<?php _e("جاري الاستيراد...", "control"); ?>');
+
+        $.post(control_ajax.ajax_url, {
+            action: 'control_import_data',
+            users_json: JSON.stringify(usersToImport),
+            nonce: control_ajax.nonce
+        }, function(res) {
+            if (res.success) {
+                alert(res.data);
+                location.reload();
+            } else {
+                alert(res.data);
+                $btn.prop('disabled', false).text('<?php _e("تأكيد الاستيراد النهائي", "control"); ?>');
             }
         });
     });

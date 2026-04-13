@@ -10,7 +10,7 @@ class Control_Ajax {
 		$private_actions = array(
 			'logout', 'add_user', 'save_user', 'delete_user', 'save_settings',
 			'undo_activity', 'toggle_user_restriction', 'export_data', 'import_data',
-			'create_backup', 'restore_backup', 'save_role', 'delete_role'
+			'preview_import', 'create_backup', 'restore_backup', 'save_role', 'delete_role'
 		);
 
 		foreach ( $private_actions as $action ) {
@@ -244,59 +244,121 @@ class Control_Ajax {
 		if ( ! Control_Auth::has_permission('users_view') ) $this->send_error( 'Unauthorized', 403 );
 
 		$type = sanitize_text_field( $_POST['type'] ?? 'users' );
+		$format = sanitize_text_field( $_POST['format'] ?? 'csv' );
 		global $wpdb;
 		$data = array();
-		$filename = "control_{$type}_export_" . date('Y-m-d') . ".csv";
+		$filename = "control_{$type}_export_" . date('Y-m-d') . "." . $format;
 
 		if ( $type === 'users' ) {
 			$data = $wpdb->get_results( "SELECT * FROM {$wpdb->prefix}control_staff", ARRAY_A );
+
+			// Enhance with Country and Date formatting
+			foreach ( $data as &$row ) {
+				$row['country'] = '';
+				if ( preg_match('/^\+(20|971|966|965|974|973|968)/', $row['phone'], $matches) ) {
+					$row['country'] = $matches[1];
+				}
+				unset($row['password']); // Safety first
+			}
 		}
 
 		if ( empty($data) ) $this->send_error( 'No data found' );
 
-		ob_start();
-		$df = fopen("php://output", 'w');
-		fputcsv($df, array_keys(reset($data)));
-		foreach ($data as $row) {
-			fputcsv($df, $row);
+		if ( $format === 'json' ) {
+			$this->send_success( array( 'content' => json_encode($data, JSON_PRETTY_PRINT), 'filename' => $filename ) );
+		} else {
+			ob_start();
+			$df = fopen("php://output", 'w');
+			fputcsv($df, array_keys(reset($data)));
+			foreach ($data as $row) {
+				fputcsv($df, $row);
+			}
+			fclose($df);
+			$csv = ob_get_clean();
+			$this->send_success( array( 'content' => $csv, 'filename' => $filename ) );
 		}
-		fclose($df);
-		$csv = ob_get_clean();
+	}
 
-		$this->send_success( array( 'csv' => $csv, 'filename' => $filename ) );
+	public function preview_import() {
+		check_ajax_referer( 'control_nonce', 'nonce' );
+		if ( ! Control_Auth::has_permission('users_manage') ) $this->send_error( 'Unauthorized', 403 );
+
+		$raw_data = $_POST['data'] ?? '';
+		$format = $_POST['format'] ?? 'csv';
+
+		if ( empty($raw_data) ) $this->send_error( 'No data provided' );
+
+		$rows = array();
+		if ( $format === 'json' ) {
+			$rows = json_decode( $raw_data, true );
+		} else {
+			$lines = explode( "\n", str_replace( "\r", "", $raw_data ) );
+			$header = str_getcsv( array_shift( $lines ) );
+			foreach ( $lines as $line ) {
+				if ( empty($line) ) continue;
+				$rows[] = @array_combine( $header, str_getcsv( $line ) );
+			}
+		}
+
+		if ( ! is_array($rows) || empty($rows) ) $this->send_error( 'Invalid data format' );
+
+		global $wpdb;
+		$results = array();
+		foreach ( $rows as $row ) {
+			$status = 'new';
+			$message = '';
+
+			if ( empty($row['phone']) ) {
+				$status = 'invalid';
+				$message = 'Missing phone';
+			} else {
+				$exists = $wpdb->get_var( $wpdb->prepare( "SELECT id FROM {$wpdb->prefix}control_staff WHERE phone = %s", $row['phone'] ) );
+				if ( $exists ) {
+					$status = 'duplicate';
+					$message = 'Phone already exists';
+				}
+			}
+
+			$results[] = array(
+				'data' => $row,
+				'status' => $status,
+				'message' => $message
+			);
+		}
+
+		$this->send_success( $results );
 	}
 
 	public function import_data() {
 		check_ajax_referer( 'control_nonce', 'nonce' );
 		if ( ! Control_Auth::has_permission('users_manage') ) $this->send_error( 'Unauthorized', 403 );
 
-		$type = sanitize_text_field( $_POST['type'] ?? 'users' );
-		$csv_data = $_POST['csv_data'] ?? '';
+		$users_json = $_POST['users_json'] ?? '';
+		if ( empty($users_json) ) $this->send_error( 'No users to import' );
 
-		if ( empty($csv_data) ) $this->send_error( 'Empty data' );
-
-		$lines = explode( "\n", str_replace( "\r", "", $csv_data ) );
-		$header = str_getcsv( array_shift( $lines ) );
-
+		$users = json_decode($users_json, true);
 		global $wpdb;
 		$count = 0;
 
-		foreach ( $lines as $line ) {
-			if ( empty($line) ) continue;
-			$row = @array_combine( $header, str_getcsv( $line ) );
-			if ( ! $row ) continue;
-
-			if ( $type === 'users' ) {
-				$exists = $wpdb->get_var( $wpdb->prepare( "SELECT id FROM {$wpdb->prefix}control_staff WHERE phone = %s", $row['phone'] ) );
-				if ( ! $exists ) {
-					$wpdb->insert( "{$wpdb->prefix}control_staff", $row );
-					$count++;
+		foreach ( $users as $user ) {
+			$exists = $wpdb->get_var( $wpdb->prepare( "SELECT id FROM {$wpdb->prefix}control_staff WHERE phone = %s", $user['phone'] ) );
+			if ( ! $exists ) {
+				// Handle WP native user creation if email provided
+				if ( ! empty($user['email']) ) {
+					$wp_id = wp_create_user( $user['username'] ?: $user['phone'], wp_generate_password(), $user['email'] );
+					if ( ! is_wp_error($wp_id) ) {
+						$user_obj = new WP_User( $wp_id );
+						$user_obj->set_role( $user['role'] ?: 'coach' );
+					}
 				}
+
+				$wpdb->insert( "{$wpdb->prefix}control_staff", $user );
+				$count++;
 			}
 		}
 
-		Control_Audit::log('import_data', sprintf(__('استيراد %d سجل من نوع %s', 'control'), $count, $type));
-		$this->send_success( sprintf(__('تم استيراد %d سجل بنجاح.', 'control'), $count) );
+		Control_Audit::log('import_data', sprintf(__('استيراد %d مستخدم جديد', 'control'), $count));
+		$this->send_success( sprintf(__('تم استيراد %d مستخدم بنجاح.', 'control'), $count) );
 	}
 
 	public function undo_activity() {
