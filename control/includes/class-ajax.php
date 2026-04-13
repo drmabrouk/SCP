@@ -198,7 +198,21 @@ class Control_Ajax {
 		if ( $user->username === 'admin' || $user->phone === '1234567890' ) $this->send_error( 'Cannot restrict admin' );
 
 		$new_status = $user->is_restricted ? 0 : 1;
-		$wpdb->update( "{$wpdb->prefix}control_staff", array( 'is_restricted' => $new_status ), array( 'id' => $id ) );
+		$data = array( 'is_restricted' => $new_status );
+
+		if ( $new_status ) {
+			$reason = sanitize_text_field( $_POST['reason'] ?? '' );
+			$duration = intval( $_POST['duration'] ?? 30 );
+			$expiry = date( 'Y-m-d H:i:s', strtotime( "+$duration days" ) );
+
+			$data['restriction_reason'] = $reason;
+			$data['restriction_expiry'] = $expiry;
+		} else {
+			$data['restriction_reason'] = null;
+			$data['restriction_expiry'] = null;
+		}
+
+		$wpdb->update( "{$wpdb->prefix}control_staff", $data, array( 'id' => $id ) );
 
 		$action = $new_status ? __('تقييد', 'control') : __('إلغاء تقييد', 'control');
 		Control_Audit::log( 'toggle_restriction', sprintf(__('%s حساب المستخدم: %s', 'control'), $action, $user->name) );

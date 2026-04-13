@@ -181,6 +181,56 @@ function control_get_time_ago($timestamp) {
     <?php endforeach; ?>
 </div>
 
+<!-- Delete Confirmation Modal -->
+<div id="control-delete-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0, 0, 0, 0.6); z-index:10002; align-items:center; justify-content:center; backdrop-filter: blur(4px);">
+    <div class="control-card" style="width:100%; max-width:400px; padding:30px; text-align:center; border-radius:20px;">
+        <div style="width:70px; height:70px; background:#fef2f2; color:#ef4444; border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 20px;">
+            <span class="dashicons dashicons-trash" style="font-size:35px; width:35px; height:35px;"></span>
+        </div>
+        <h3 style="margin-bottom:10px;"><?php _e('تأكيد الحذف', 'control'); ?></h3>
+        <p style="color:var(--control-muted); font-size:0.9rem; margin-bottom:25px;"><?php _e('هل أنت متأكد من حذف هذا الكادر نهائياً؟ لا يمكن التراجع عن هذه العملية لاحقاً بشكل مباشر.', 'control'); ?></p>
+        <div style="display:flex; gap:15px;">
+            <button id="confirm-delete-btn" class="control-btn" style="flex:1; background:#ef4444; border:none;"><?php _e('نعم، احذف الآن', 'control'); ?></button>
+            <button type="button" class="control-btn close-delete-modal" style="flex:1; background:var(--control-bg); color:var(--control-text) !important; border:none;"><?php _e('إلغاء', 'control'); ?></button>
+        </div>
+    </div>
+</div>
+
+<!-- Restrict Confirmation Modal -->
+<div id="control-restrict-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0, 0, 0, 0.6); z-index:10002; align-items:center; justify-content:center; backdrop-filter: blur(4px);">
+    <div class="control-card" style="width:100%; max-width:450px; padding:30px; border-radius:20px;">
+        <div style="width:70px; height:70px; background:#fff7ed; color:#d97706; border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 20px;">
+            <span class="dashicons dashicons-lock" style="font-size:35px; width:35px; height:35px;"></span>
+        </div>
+        <h3 style="text-align:center; margin-bottom:10px;"><?php _e('تقييد حساب الكادر', 'control'); ?></h3>
+        <p style="text-align:center; color:var(--control-muted); font-size:0.9rem; margin-bottom:25px;"><?php _e('سيتم منع هذا المستخدم من تسجيل الدخول إلى النظام خلال فترة التقييد.', 'control'); ?></p>
+
+        <form id="control-restrict-form">
+            <input type="hidden" name="id" id="restrict-user-id">
+            <div class="control-form-group">
+                <label><?php _e('سبب التقييد', 'control'); ?></label>
+                <select name="reason" id="restrict-reason" required>
+                    <option value="violating_terms"><?php _e('مخالفة الشروط والأحكام', 'control'); ?></option>
+                    <option value="inactive_account"><?php _e('حساب غير نشط', 'control'); ?></option>
+                    <option value="admin_decision"><?php _e('قرار إداري', 'control'); ?></option>
+                    <option value="under_investigation"><?php _e('قيد التحقيق الإداري', 'control'); ?></option>
+                    <option value="other"><?php _e('أسباب أخرى', 'control'); ?></option>
+                </select>
+            </div>
+            <div class="control-form-group">
+                <label><?php _e('مدة التقييد (بالأيام)', 'control'); ?></label>
+                <input type="number" name="duration" id="restrict-duration" value="30" min="1" required>
+                <small style="color:var(--control-muted);"><?php _e('سيتم رفع التقييد تلقائياً بعد انتهاء هذه المدة.', 'control'); ?></small>
+            </div>
+
+            <div style="display:flex; gap:15px; margin-top:25px;">
+                <button type="submit" class="control-btn" style="flex:1; background:#d97706; border:none;"><?php _e('تأكيد التقييد', 'control'); ?></button>
+                <button type="button" class="control-btn close-restrict-modal" style="flex:1; background:var(--control-bg); color:var(--control-text) !important; border:none;"><?php _e('إلغاء', 'control'); ?></button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <!-- User Wizard Modal -->
 <div id="control-user-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0, 0, 0, 0.4); z-index:10001; align-items:center; justify-content:center; backdrop-filter: blur(4px);">
     <div class="control-card" style="width:100%; max-width:650px; padding:0; border-radius:20px; overflow:hidden; box-shadow: 0 50px 100px -20px rgba(0, 0, 0, 0.25);">
@@ -511,10 +561,60 @@ jQuery(document).ready(function($) {
         });
     });
 
+    let userToDelete = null;
+    $(document).on('click', '.control-delete-user', function() {
+        userToDelete = $(this).data('id');
+        $('#control-delete-modal').css('display', 'flex');
+    });
+
+    $('.close-delete-modal').on('click', function() { $('#control-delete-modal').hide(); });
+
+    $('#confirm-delete-btn').on('click', function() {
+        if (!userToDelete) return;
+        const $btn = $(this);
+        $btn.prop('disabled', true).text('<?php _e("جاري الحذف...", "control"); ?>');
+
+        $.post(control_ajax.ajax_url, { action: 'control_delete_user', id: userToDelete, nonce: control_ajax.nonce }, function(res) {
+            if (res.success) {
+                location.reload();
+            } else {
+                alert(res.data || 'حدث خطأ');
+                $btn.prop('disabled', false).text('<?php _e("نعم، احذف الآن", "control"); ?>');
+            }
+        });
+    });
+
     $(document).on('click', '.control-restrict-user', function() {
         const id = $(this).data('id');
-        if (!confirm('هل أنت متأكد من تغيير حالة تقييد هذا الحساب؟')) return;
-        $.post(control_ajax.ajax_url, { action: 'control_toggle_user_restriction', id: id, nonce: control_ajax.nonce }, () => location.reload());
+        const card = $(this).closest('.user-card-item');
+        const u = card.data('user');
+
+        if (u.is_restricted == 1) {
+            if (confirm('<?php _e("هل أنت متأكد من إلغاء تقييد هذا الحساب؟", "control"); ?>')) {
+                $.post(control_ajax.ajax_url, { action: 'control_toggle_user_restriction', id: id, nonce: control_ajax.nonce }, () => location.reload());
+            }
+        } else {
+            $('#restrict-user-id').val(id);
+            $('#control-restrict-modal').css('display', 'flex');
+        }
+    });
+
+    $('.close-restrict-modal').on('click', function() { $('#control-restrict-modal').hide(); });
+
+    $('#control-restrict-form').on('submit', function(e) {
+        e.preventDefault();
+        const $btn = $(this).find('button[type="submit"]');
+        $btn.prop('disabled', true).text('<?php _e("جاري التنفيذ...", "control"); ?>');
+
+        const formData = $(this).serialize() + '&action=control_toggle_user_restriction&nonce=' + control_ajax.nonce;
+        $.post(control_ajax.ajax_url, formData, function(res) {
+            if (res.success) {
+                location.reload();
+            } else {
+                alert(res.data || 'حدث خطأ');
+                $btn.prop('disabled', false).text('<?php _e("تأكيد التقييد", "control"); ?>');
+            }
+        });
     });
 
     $(document).on('click', function(e) {
