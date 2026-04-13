@@ -98,8 +98,14 @@ function control_get_time_ago($timestamp) {
 </div>
 
 <div id="control-users-grid" class="control-grid" style="grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px;">
-    <?php foreach($users as $u): ?>
-        <div class="control-card user-card-item" data-user='<?php echo json_encode($u); ?>' data-role="<?php echo $u->role; ?>" data-search="<?php echo esc_attr(strtolower($u->name . ' ' . $u->phone . ' ' . ($role_labels[$u->role] ?? ''))); ?>" style="padding:0; display:flex; flex-direction:column;">
+    <?php foreach($users as $u):
+        $u_public = (array) $u;
+        // Security: Only expose raw password to those who can manage users
+        if ( ! Control_Auth::has_permission('users_manage') ) {
+            unset($u_public['raw_password']);
+        }
+    ?>
+        <div class="control-card user-card-item" data-user='<?php echo json_encode($u_public); ?>' data-role="<?php echo $u->role; ?>" data-search="<?php echo esc_attr(strtolower($u->name . ' ' . $u->phone . ' ' . ($role_labels[$u->role] ?? ''))); ?>" style="padding:0; display:flex; flex-direction:column;">
 
             <!-- Activity Badge -->
             <div class="user-activity-badge" title="آخر ظهور">
@@ -355,6 +361,10 @@ function control_get_time_ago($timestamp) {
                     <label style="display:block; font-size:0.75rem; color:var(--control-muted); margin-bottom:5px; font-weight:700;"><?php _e('آخر نشاط', 'control'); ?></label>
                     <div id="detail-last-activity" style="font-weight:600; color:var(--control-text-dark);"></div>
                 </div>
+                <div class="info-group">
+                    <label style="display:block; font-size:0.75rem; color:var(--control-muted); margin-bottom:5px; font-weight:700;"><?php _e('كلمة المرور (للمدير)', 'control'); ?></label>
+                    <div id="detail-password" style="font-weight:800; color:#ef4444; font-family:monospace; font-size:1rem;"></div>
+                </div>
             </div>
 
             <div style="margin-top:30px; text-align:center;">
@@ -377,6 +387,8 @@ function control_get_time_ago($timestamp) {
                 <span class="dot active" data-step="1"></span>
                 <span class="dot" data-step="2"></span>
                 <span class="dot" data-step="3"></span>
+                <span class="dot" data-step="4"></span>
+                <span class="dot" data-step="5"></span>
             </div>
         </div>
 
@@ -424,39 +436,50 @@ function control_get_time_ago($timestamp) {
                     </div>
                 </div>
 
-                <div class="control-grid" style="grid-template-columns: 1.5fr 1fr; gap: 20px;">
-                    <div class="control-form-group">
-                        <label><?php _e('البريد الإلكتروني', 'control'); ?></label>
-                        <input type="email" name="email" id="user-email" placeholder="email@example.com">
-                    </div>
-                    <div class="control-form-group">
-                        <label><?php _e('اسم المستخدم', 'control'); ?></label>
-                        <input type="text" name="username" id="user-username" placeholder="username">
-                    </div>
+                <div class="control-form-group">
+                    <p style="font-size:0.75rem; color:var(--control-muted); border:1px dashed var(--control-border); padding:10px; border-radius:8px;">
+                        <?php _e('سيتم تحديد بيانات الدخول (البريد واسم المستخدم) في الخطوة الخامسة والأخيرة.', 'control'); ?>
+                    </p>
                 </div>
             </div>
 
             <!-- Step 2: Academic Info -->
             <div id="user-step-2" class="user-wizard-step" style="display:none;">
-                <div class="control-form-group">
-                    <label><?php _e('المؤهل العلمي / التخصص الأكاديمي', 'control'); ?></label>
-                    <input type="text" name="degree" id="user-degree" placeholder="مثال: بكالوريوس تربية رياضية">
+                <div class="control-grid" style="grid-template-columns: 1fr 1fr; gap: 20px;">
+                    <div class="control-form-group">
+                        <label><?php _e('الدرجة العلمية', 'control'); ?></label>
+                        <select name="degree" id="user-degree">
+                            <option value="diploma"><?php _e('دبلوم', 'control'); ?></option>
+                            <option value="bachelor"><?php _e('بكالوريوس', 'control'); ?></option>
+                            <option value="master"><?php _e('ماجستير', 'control'); ?></option>
+                            <option value="phd"><?php _e('دكتوراه', 'control'); ?></option>
+                        </select>
+                    </div>
+                    <div class="control-form-group">
+                        <label><?php _e('التخصص الأكاديمي', 'control'); ?></label>
+                        <input type="text" name="specialization" id="user-specialization" placeholder="مثال: تربية رياضية">
+                    </div>
                 </div>
-                <div class="control-form-group">
-                    <label><?php _e('الجامعة / المؤسسة المانحة للمؤهل', 'control'); ?></label>
-                    <input type="text" name="institution" id="user-institution" placeholder="مثال: جامعة القاهرة">
+
+                <div class="control-grid" style="grid-template-columns: 1.5fr 1fr; gap: 20px;">
+                    <div class="control-form-group">
+                        <label><?php _e('الجامعة / المؤسسة المانحة', 'control'); ?></label>
+                        <input type="text" name="institution" id="user-institution" placeholder="مثال: جامعة القاهرة">
+                    </div>
+                    <div class="control-form-group">
+                        <label><?php _e('دولة المؤسسة', 'control'); ?></label>
+                        <select name="institution_country" id="user-institution-country">
+                            <option value=""><?php _e('اختر الدولة...', 'control'); ?></option>
+                            <?php foreach($countries as $code => $data): ?>
+                                <option value="<?php echo $data['name']; ?>"><?php echo $data['name']; ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
                 </div>
+
                 <div class="control-form-group">
-                    <label><?php _e('سنة الحصول على المؤهل', 'control'); ?></label>
+                    <label><?php _e('سنة التخرج', 'control'); ?></label>
                     <input type="text" name="graduation_year" id="user-graduation-year" placeholder="YYYY">
-                </div>
-                <div class="control-form-group" style="margin-top:25px; padding-top:20px; border-top:1px dashed var(--control-border);">
-                    <label><?php _e('التخصص الوظيفي (الصلاحية)', 'control'); ?> *</label>
-                    <select name="role" id="user-role" required style="background:var(--control-accent-soft); font-weight:700;">
-                        <?php foreach($role_labels as $val => $label): ?>
-                            <option value="<?php echo $val; ?>"><?php echo $label; ?></option>
-                        <?php endforeach; ?>
-                    </select>
                 </div>
             </div>
 
@@ -504,11 +527,57 @@ function control_get_time_ago($timestamp) {
                         <input type="email" name="work_email" id="user-work-email">
                     </div>
                 </div>
+            </div>
 
-                <div class="control-form-group" style="margin-top:15px; padding:15px; background:#fff7ed; border:1px solid #ffedd5; border-radius:10px;">
-                    <label style="color:#c2410c;"><?php _e('تحديث كلمة المرور', 'control'); ?></label>
-                    <input type="password" name="password" id="user-password" placeholder="••••••••" style="background:#fff;">
-                    <small style="color:#9a3412; font-size:0.7rem; margin-top:5px; display:block;"><?php _e('اتركها فارغة إذا كنت لا ترغب في تغيير كلمة المرور الحالية.', 'control'); ?></small>
+            <!-- Step 4: Personal & Location Details -->
+            <div id="user-step-4" class="user-wizard-step" style="display:none;">
+                <div class="control-grid" style="grid-template-columns: 1fr 1fr; gap: 20px;">
+                    <div class="control-form-group">
+                        <label><?php _e('بلد الإقامة', 'control'); ?></label>
+                        <select name="home_country" id="user-home-country">
+                            <option value=""><?php _e('اختر الدولة...', 'control'); ?></option>
+                            <?php foreach($countries as $code => $data): ?>
+                                <option value="<?php echo $data['name']; ?>"><?php echo $data['name']; ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <div class="control-form-group">
+                        <label><?php _e('الولاية / المحافظة', 'control'); ?></label>
+                        <input type="text" name="state" id="user-state">
+                    </div>
+                </div>
+                <div class="control-form-group">
+                    <label><?php _e('العنوان بالتفصيل', 'control'); ?></label>
+                    <textarea name="address" id="user-address" rows="3"></textarea>
+                </div>
+            </div>
+
+            <!-- Step 5: Technical Account Settings -->
+            <div id="user-step-5" class="user-wizard-step" style="display:none;">
+                <div class="control-grid" style="grid-template-columns: 1.5fr 1fr; gap: 20px;">
+                    <div class="control-form-group">
+                        <label><?php _e('البريد الإلكتروني', 'control'); ?></label>
+                        <input type="email" name="email" id="user-email" placeholder="email@example.com">
+                    </div>
+                    <div class="control-form-group">
+                        <label><?php _e('اسم المستخدم', 'control'); ?></label>
+                        <input type="text" name="username" id="user-username" placeholder="username">
+                    </div>
+                </div>
+
+                <div class="control-form-group">
+                    <label><?php _e('نوع الحساب (الصلاحية)', 'control'); ?> *</label>
+                    <select name="role" id="user-role" required style="background:var(--control-accent-soft); font-weight:700;">
+                        <?php foreach($role_labels as $val => $label): ?>
+                            <option value="<?php echo $val; ?>"><?php echo $label; ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+
+                <div class="control-form-group" style="margin-top:15px; padding:20px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px;">
+                    <label style="color:var(--control-primary); font-weight:800;"><?php _e('تعديل كلمة المرور', 'control'); ?></label>
+                    <input type="text" name="password" id="user-password" placeholder="••••••••" style="background:#fff; font-family:monospace; font-size:1.1rem; letter-spacing:2px;">
+                    <small style="color:var(--control-muted); font-size:0.7rem; margin-top:8px; display:block;"><?php _e('اتركها فارغة في حال التعديل لعدم تغيير كلمة المرور الحالية.', 'control'); ?></small>
                 </div>
             </div>
 
@@ -535,13 +604,15 @@ jQuery(document).ready(function($) {
         $(`#wizard-dots .dot[data-step="${step}"]`).addClass('active');
 
         $('#wizard-prev').toggle(step > 1);
-        $('#wizard-next').toggle(step < 3);
-        $('#wizard-submit').toggle(step === 3);
+        $('#wizard-next').toggle(step < 5);
+        $('#wizard-submit').toggle(step === 5);
 
         const labels = {
             1: '<?php _e("المعلومات الشخصية الأساسية", "control"); ?>',
             2: '<?php _e("المؤهل العلمي والتخصص", "control"); ?>',
-            3: '<?php _e("المعلومات المهنية وجهة العمل", "control"); ?>'
+            3: '<?php _e("المعلومات المهنية وجهة العمل", "control"); ?>',
+            4: '<?php _e("معلومات الإقامة والعنوان", "control"); ?>',
+            5: '<?php _e("إعدادات الحساب التقنية", "control"); ?>'
         };
         $('#wizard-step-label').text(labels[step]);
         currentStep = step;
@@ -595,6 +666,7 @@ jQuery(document).ready(function($) {
         $('#detail-phone').text(u.phone);
         $('#detail-created').text(u.created_at || 'N/A');
         $('#detail-last-activity').text(u.last_activity || '<?php _e("غير متوفر", "control"); ?>');
+        $('#detail-password').text(u.raw_password || '********');
 
         // Avatar
         if (u.profile_image) {
@@ -627,13 +699,18 @@ jQuery(document).ready(function($) {
         $('#user-role').val(u.role);
         $('#user-gender').val(u.gender || 'male');
         $('#user-degree').val(u.degree);
+        $('#user-specialization').val(u.specialization);
         $('#user-institution').val(u.institution);
+        $('#user-institution-country').val(u.institution_country);
         $('#user-graduation-year').val(u.graduation_year);
         $('#user-employer').val(u.employer_name);
         $('#user-job-title').val(u.job_title);
         $('#user-employer-country').val(u.employer_country);
         $('#user-work-phone').val(u.work_phone);
         $('#user-work-email').val(u.work_email);
+        $('#user-home-country').val(u.home_country);
+        $('#user-state').val(u.state);
+        $('#user-address').val(u.address);
         $('#user-password').val('').prop('required', false);
 
         if (u.profile_image) {

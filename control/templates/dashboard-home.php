@@ -9,109 +9,83 @@ if ( Control_Auth::is_admin() ) {
     </div>
 
     <!-- Enhanced System Metrics -->
-    <div class="control-metrics-grid" style="margin-bottom:25px; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px;">
-        <div class="control-metric-card" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); color: #fff; border: none;">
-            <div class="control-metric-icon" style="background: rgba(255,255,255,0.1); color: #D4AF37;">
-                <span class="dashicons dashicons-groups"></span>
+    <div class="control-metrics-grid" style="margin-bottom:30px; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 25px;">
+        <div class="control-card" style="border-top: none; background: linear-gradient(45deg, #0f172a, #334155); color: #fff; padding: 25px; display: flex; align-items: center; gap: 20px;">
+            <div style="width: 55px; height: 55px; background: rgba(255,255,255,0.1); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: var(--control-accent);">
+                <span class="dashicons dashicons-groups" style="font-size: 28px; width: 28px; height: 28px;"></span>
             </div>
-            <div class="control-metric-content">
-                <div class="control-metric-title" style="color: rgba(255,255,255,0.7);"><?php _e('إجمالي المستخدمين', 'control'); ?></div>
-                <div class="control-metric-value" style="color: #fff;"><?php echo number_format($total_users); ?></div>
+            <div>
+                <div style="font-size: 0.8rem; color: rgba(255,255,255,0.7); font-weight: 600;"><?php _e('إجمالي المسجلين', 'control'); ?></div>
+                <div style="font-size: 1.6rem; font-weight: 800;"><?php echo number_format($total_users); ?></div>
             </div>
         </div>
 
         <?php
         $roles_count = $wpdb->get_results("SELECT role, COUNT(*) as count FROM {$wpdb->prefix}control_staff GROUP BY role", OBJECT_K);
         $role_labels = Control_Auth::get_roles();
-
-        $primary_role = 'coach'; // Default highlight
-        $primary_count = $roles_count[$primary_role]->count ?? 0;
+        $coach_count = $roles_count['coach']->count ?? 0;
         ?>
-        <div class="control-metric-card">
-            <div class="control-metric-icon" style="background: var(--control-accent-soft); color: var(--control-accent);">
-                <span class="dashicons dashicons-businessman"></span>
+        <div class="control-card" style="border-top: none; padding: 25px; display: flex; align-items: center; gap: 20px; border: 1px solid var(--control-border);">
+            <div style="width: 55px; height: 55px; background: var(--control-accent-soft); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: var(--control-accent);">
+                <span class="dashicons dashicons-businessman" style="font-size: 28px; width: 28px; height: 28px;"></span>
             </div>
-            <div class="control-metric-content">
-                <div class="control-metric-title"><?php echo $role_labels[$primary_role]; ?></div>
-                <div class="control-metric-value"><?php echo number_format($primary_count); ?></div>
+            <div>
+                <div style="font-size: 0.8rem; color: var(--control-muted); font-weight: 600;"><?php _e('المدربين الرياضيين', 'control'); ?></div>
+                <div style="font-size: 1.6rem; font-weight: 800; color: var(--control-text-dark);"><?php echo number_format($coach_count); ?></div>
             </div>
         </div>
 
-        <div class="control-metric-card">
-            <div class="control-metric-icon" style="background: #f0fdf4; color: #10b981;">
-                <span class="dashicons dashicons-yes-alt"></span>
+        <div class="control-card" style="border-top: none; padding: 25px; display: flex; align-items: center; gap: 20px; border: 1px solid var(--control-border);">
+            <div style="width: 55px; height: 55px; background: #ecfdf5; border-radius: 12px; display: flex; align-items: center; justify-content: center; color: #10b981;">
+                <span class="dashicons dashicons-yes-alt" style="font-size: 28px; width: 28px; height: 28px;"></span>
             </div>
-            <div class="control-metric-content">
-                <div class="control-metric-title"><?php _e('الحسابات النشطة', 'control'); ?></div>
-                <div class="control-metric-value"><?php echo $wpdb->get_var("SELECT COUNT(*) FROM {$wpdb->prefix}control_staff WHERE is_restricted = 0"); ?></div>
+            <div>
+                <div style="font-size: 0.8rem; color: var(--control-muted); font-weight: 600;"><?php _e('الحسابات النشطة', 'control'); ?></div>
+                <div style="font-size: 1.6rem; font-weight: 800; color: var(--control-text-dark);"><?php echo $wpdb->get_var("SELECT COUNT(*) FROM {$wpdb->prefix}control_staff WHERE is_restricted = 0"); ?></div>
             </div>
         </div>
     </div>
 
-    <div class="control-grid main-dashboard-grid" style="grid-template-columns: 1.6fr 1fr; gap: 25px;">
+    <div class="control-grid main-dashboard-grid" style="grid-template-columns: 1fr; gap: 25px;">
         <div class="control-dashboard-main-column">
             <!-- System Overview Card -->
             <div class="control-card" style="padding: 30px; border-top: 5px solid var(--control-accent);">
-                <div style="display:flex; align-items:center; gap:20px; margin-bottom:25px;">
-                    <div style="width:60px; height:60px; background:var(--control-bg); border-radius:15px; display:flex; align-items:center; justify-content:center;">
-                        <span class="dashicons dashicons-performance" style="font-size:30px; color:var(--control-accent); width:30px; height:30px;"></span>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:25px;">
+                    <div style="display:flex; align-items:center; gap:20px;">
+                        <div style="width:60px; height:60px; background:var(--control-bg); border-radius:15px; display:flex; align-items:center; justify-content:center;">
+                            <span class="dashicons dashicons-performance" style="font-size:30px; color:var(--control-accent); width:30px; height:30px;"></span>
+                        </div>
+                        <div>
+                            <h3 style="margin:0; font-size:1.2rem;"><?php _e('توزع الكوادر البشرية', 'control'); ?></h3>
+                            <p style="margin:5px 0 0 0; color:var(--control-muted); font-size:0.85rem;"><?php _e('إحصائية شاملة لعدد المسجلين حسب كل دور وظيفي.', 'control'); ?></p>
+                        </div>
                     </div>
-                    <div>
-                        <h3 style="margin:0; font-size:1.2rem;"><?php _e('نظرة عامة على أداء النظام', 'control'); ?></h3>
-                        <p style="margin:5px 0 0 0; color:var(--control-muted); font-size:0.85rem;"><?php _e('ملخص سريع لحالة الكوادر والعمليات الإدارية الجارية.', 'control'); ?></p>
-                    </div>
+                    <a href="<?php echo add_query_arg('control_view', 'users'); ?>" class="control-btn" style="background:var(--control-primary); border:none;"><?php _e('إدارة الكوادر', 'control'); ?></a>
                 </div>
 
-                <div class="control-grid" style="grid-template-columns: repeat(3, 1fr); gap: 15px;">
+                <div class="control-grid" style="grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 20px;">
                     <?php foreach($role_labels as $role_key => $label):
-                        if ($role_key == $primary_role) continue;
                         $count = $roles_count[$role_key]->count ?? 0;
                         ?>
-                        <div style="background:var(--control-bg); padding:15px; border-radius:12px; text-align:center; border:1px solid var(--control-border);">
-                            <div style="font-size:0.75rem; color:var(--control-muted); margin-bottom:5px;"><?php echo $label; ?></div>
-                            <div style="font-size:1.1rem; font-weight:800; color:var(--control-text-dark);"><?php echo number_format($count); ?></div>
+                        <div style="background:var(--control-bg); padding:20px; border-radius:16px; text-align:center; border:1px solid var(--control-border);">
+                            <div style="font-size:0.75rem; color:var(--control-muted); margin-bottom:8px; font-weight:600;"><?php echo $label; ?></div>
+                            <div style="font-size:1.3rem; font-weight:800; color:var(--control-text-dark);"><?php echo number_format($count); ?></div>
                         </div>
                     <?php endforeach; ?>
                 </div>
-
-                <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid var(--control-border); display:flex; justify-content:space-between; align-items:center;">
-                    <span style="font-size:0.85rem; color:var(--control-muted);"><?php _e('يمكنك إدارة كافة هذه الكوادر من خلال وحدة إدارة المستخدمين.', 'control'); ?></span>
-                    <a href="<?php echo add_query_arg('control_view', 'users'); ?>" class="control-btn" style="background:var(--control-primary); border:none;"><?php _e('إدارة الكوادر', 'control'); ?></a>
-                </div>
             </div>
 
-            <!-- Quick Links / Modular Section -->
-            <div class="control-grid" style="grid-template-columns: 1fr 1fr; gap: 20px;">
-                <div class="control-card" style="padding: 20px;">
-                    <h4 style="margin:0 0 15px 0; font-size:0.9rem; font-weight:800;"><?php _e('روابط سريعة', 'control'); ?></h4>
-                    <div style="display:flex; flex-direction:column; gap:10px;">
-                        <a href="<?php echo add_query_arg('control_view', 'settings'); ?>" style="display:flex; align-items:center; gap:10px; text-decoration:none; color:var(--control-text); font-size:0.85rem; padding:10px; background:var(--control-bg); border-radius:8px;">
-                            <span class="dashicons dashicons-admin-generic"></span> <?php _e('إعدادات النظام', 'control'); ?>
-                        </a>
-                        <a href="<?php echo add_query_arg('control_view', 'settings'); ?>#tab-backup" style="display:flex; align-items:center; gap:10px; text-decoration:none; color:var(--control-text); font-size:0.85rem; padding:10px; background:var(--control-bg); border-radius:8px;">
-                            <span class="dashicons dashicons-cloud-save"></span> <?php _e('النسخ الاحتياطي', 'control'); ?>
-                        </a>
-                    </div>
-                </div>
-                <div class="control-card" style="padding: 20px;">
-                    <h4 style="margin:0 0 15px 0; font-size:0.9rem; font-weight:800;"><?php _e('إحصائيات التقارير', 'control'); ?></h4>
-                    <div style="text-align:center; padding:10px 0;">
-                        <span class="dashicons dashicons-chart-bar" style="font-size:40px; color:var(--control-border); width:40px; height:40px; margin-bottom:10px;"></span>
-                        <p style="font-size:0.75rem; color:var(--control-muted); margin:0;"><?php _e('سيتم تفعيل الرسوم البيانية في التحديث القادم.', 'control'); ?></p>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="control-dashboard-side-column">
             <div class="control-card" style="padding: 0; overflow: hidden;">
-                <div style="padding: 20px 25px; background: #f8fafc; border-bottom: 1px solid var(--control-border); display:flex; justify-content: space-between; align-items: center;">
-                    <h3 style="margin:0; font-size:0.95rem;"><?php _e('آخر النشاطات', 'control'); ?></h3>
-                    <a href="<?php echo add_query_arg('control_view', 'settings'); ?>#tab-audit" style="font-size:0.7rem; color:var(--control-accent); font-weight:700; text-decoration:none;"><?php _e('عرض الكل', 'control'); ?></a>
+                <div style="padding: 20px 30px; background: #f8fafc; border-bottom: 1px solid var(--control-border); display:flex; justify-content: space-between; align-items: center;">
+                    <div style="display:flex; align-items:center; gap:12px;">
+                        <span class="dashicons dashicons-list-view" style="color:var(--control-accent);"></span>
+                        <h3 style="margin:0; font-size:1rem;"><?php _e('آخر 5 نشاطات في النظام', 'control'); ?></h3>
+                    </div>
+                    <a href="<?php echo add_query_arg('control_view', 'settings'); ?>#tab-audit" style="font-size:0.75rem; color:var(--control-accent); font-weight:800; text-decoration:none;"><?php _e('سجل النشاطات الكامل', 'control'); ?></a>
                 </div>
-                <div style="max-height: 500px; overflow-y: auto; padding: 10px 20px;">
+                <div style="padding: 10px 30px 30px 30px;">
                     <?php
-                    $recent_logs = $wpdb->get_results("SELECT * FROM {$wpdb->prefix}control_activity_logs ORDER BY action_date DESC LIMIT 8");
+                    $recent_logs = $wpdb->get_results("SELECT * FROM {$wpdb->prefix}control_activity_logs ORDER BY action_date DESC LIMIT 5");
                     if (empty($recent_logs)): ?>
                         <div style="text-align:center; padding:40px 20px;">
                             <span class="dashicons dashicons-info" style="font-size:30px; color:var(--control-border); width:30px; height:30px;"></span>

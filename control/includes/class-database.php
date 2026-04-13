@@ -35,8 +35,15 @@ class Control_Database {
 
 			/* Academic Info */
 			degree varchar(255),
+			specialization varchar(255),
 			institution varchar(255),
+			institution_country varchar(100),
 			graduation_year varchar(10),
+
+			/* Personal & Location Info */
+			home_country varchar(100),
+			state varchar(100),
+			address text,
 
 			/* Employment Info */
 			employer_name varchar(255),

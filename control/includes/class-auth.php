@@ -143,7 +143,12 @@ class Control_Auth {
 
 		if ( $user && password_verify( $password, $user->password ) ) {
 			if ( $user->is_restricted ) {
-				return new WP_Error( 'restricted', __( 'هذا الحساب مقيد حالياً. يرجى التواصل مع الإدارة.', 'control' ) );
+				// Check if restriction has expired
+				if ( ! empty($user->restriction_expiry) && strtotime($user->restriction_expiry) < current_time('timestamp') ) {
+					$wpdb->update( $table, array( 'is_restricted' => 0, 'restriction_reason' => null, 'restriction_expiry' => null ), array( 'id' => $user->id ) );
+				} else {
+					return new WP_Error( 'restricted', __( 'هذا الحساب مقيد حالياً. يرجى التواصل مع الإدارة.', 'control' ) );
+				}
 			}
 			$wpdb->update( $table, array( 'last_activity' => current_time( 'mysql' ) ), array( 'id' => $user->id ) );
 			return self::set_user_session( $user );
