@@ -94,12 +94,24 @@ class Control_Ajax {
 		if ( $exists ) wp_send_json_error( 'Phone already registered' );
 
 		$data = array(
-			'username' => $phone,
+			'username' => sanitize_text_field( $_POST['username'] ?: $phone ),
 			'phone'    => $phone,
 			'password' => password_hash( $_POST['password'], PASSWORD_DEFAULT ),
 			'name'     => sanitize_text_field( $_POST['name'] ),
 			'email'    => sanitize_email( $_POST['email'] ),
 			'role'     => sanitize_text_field( $_POST['role'] ),
+
+			'profile_image' => sanitize_text_field( $_POST['profile_image'] ?? '' ),
+			'gender'        => sanitize_text_field( $_POST['gender'] ?? '' ),
+			'degree'        => sanitize_text_field( $_POST['degree'] ?? '' ),
+			'institution'   => sanitize_text_field( $_POST['institution'] ?? '' ),
+			'graduation_year' => sanitize_text_field( $_POST['graduation_year'] ?? '' ),
+			'employer_name' => sanitize_text_field( $_POST['employer_name'] ?? '' ),
+			'employer_country' => sanitize_text_field( $_POST['employer_country'] ?? '' ),
+			'work_phone'    => sanitize_text_field( $_POST['work_phone'] ?? '' ),
+			'work_email'    => sanitize_email( $_POST['work_email'] ?? '' ),
+			'org_logo'      => sanitize_text_field( $_POST['org_logo'] ?? '' ),
+			'job_title'     => sanitize_text_field( $_POST['job_title'] ?? '' ),
 		);
 
 		$wpdb->insert( $table, $data );
@@ -116,11 +128,23 @@ class Control_Ajax {
 		$phone = sanitize_text_field( $_POST['phone'] );
 
 		$data = array(
-			'username' => $phone,
+			'username' => sanitize_text_field( $_POST['username'] ),
 			'phone'    => $phone,
 			'name'     => sanitize_text_field( $_POST['name'] ),
 			'email'    => sanitize_email( $_POST['email'] ),
 			'role'     => sanitize_text_field( $_POST['role'] ),
+
+			'profile_image' => sanitize_text_field( $_POST['profile_image'] ?? '' ),
+			'gender'        => sanitize_text_field( $_POST['gender'] ?? '' ),
+			'degree'        => sanitize_text_field( $_POST['degree'] ?? '' ),
+			'institution'   => sanitize_text_field( $_POST['institution'] ?? '' ),
+			'graduation_year' => sanitize_text_field( $_POST['graduation_year'] ?? '' ),
+			'employer_name' => sanitize_text_field( $_POST['employer_name'] ?? '' ),
+			'employer_country' => sanitize_text_field( $_POST['employer_country'] ?? '' ),
+			'work_phone'    => sanitize_text_field( $_POST['work_phone'] ?? '' ),
+			'work_email'    => sanitize_email( $_POST['work_email'] ?? '' ),
+			'org_logo'      => sanitize_text_field( $_POST['org_logo'] ?? '' ),
+			'job_title'     => sanitize_text_field( $_POST['job_title'] ?? '' ),
 		);
 
 		if ( ! empty( $_POST['password'] ) ) {
@@ -198,7 +222,7 @@ class Control_Ajax {
 		$filename = "control_{$type}_export_" . date('Y-m-d') . ".csv";
 
 		if ( $type === 'users' ) {
-			$data = $wpdb->get_results( "SELECT username, phone, name, email, role, is_restricted FROM {$wpdb->prefix}control_staff", ARRAY_A );
+			$data = $wpdb->get_results( "SELECT * FROM {$wpdb->prefix}control_staff", ARRAY_A );
 		}
 
 		if ( empty($data) ) wp_send_json_error( 'No data found' );
@@ -241,15 +265,7 @@ class Control_Ajax {
 			if ( $type === 'users' ) {
 				$exists = $wpdb->get_var( $wpdb->prepare( "SELECT id FROM {$wpdb->prefix}control_staff WHERE phone = %s", $row['phone'] ) );
 				if ( ! $exists ) {
-					$wpdb->insert( "{$wpdb->prefix}control_staff", array(
-						'username' => $row['username'],
-						'phone'    => $row['phone'],
-						'name'     => $row['name'],
-						'email'    => $row['email'],
-						'role'     => $row['role'],
-						'is_restricted' => $row['is_restricted'],
-						'password' => password_hash('12345678', PASSWORD_DEFAULT)
-					) );
+					$wpdb->insert( "{$wpdb->prefix}control_staff", $row );
 					$count++;
 				}
 			}
