@@ -1,17 +1,7 @@
 <?php
 global $wpdb;
 $roles = $wpdb->get_results( "SELECT * FROM {$wpdb->prefix}control_roles" );
-
-$available_permissions = array(
-    'dashboard'     => array( 'label' => 'عرض لوحة التحكم', 'category' => 'النظام' ),
-    'users_view'    => array( 'label' => 'عرض قائمة الكوادر', 'category' => 'الكوادر' ),
-    'users_manage'  => array( 'label' => 'إضافة وتعديل الكوادر', 'category' => 'الكوادر' ),
-    'users_delete'  => array( 'label' => 'حذف الكوادر', 'category' => 'الكوادر' ),
-    'roles_manage'  => array( 'label' => 'إدارة الصلاحيات والأدوار', 'category' => 'النظام' ),
-    'settings_manage' => array( 'label' => 'إدارة إعدادات النظام', 'category' => 'النظام' ),
-    'audit_view'    => array( 'label' => 'عرض سجل النشاطات', 'category' => 'النظام' ),
-    'backup_manage' => array( 'label' => 'إدارة النسخ الاحتياطي', 'category' => 'النظام' ),
-);
+$available_permissions = Control_Auth::get_permissions_registry();
 ?>
 
 <div class="control-header-flex" style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
@@ -101,8 +91,18 @@ $available_permissions = array(
                 <?php endforeach; ?>
             </div>
 
-            <div style="display:flex; gap:15px; margin-top:30px; border-top:1px solid var(--control-border); padding-top:20px;">
-                <button type="submit" class="control-btn" style="flex:2; background:var(--control-primary); border:none; font-weight:800;"><?php _e('حفظ التغييرات', 'control'); ?></button>
+            <div id="role-confirmation-step" style="display:none; background:var(--control-bg); border:1px solid var(--control-border); padding:20px; border-radius:12px; margin-top:20px;">
+                <h5 style="margin:0 0 10px 0; color:#ef4444;"><?php _e('تأكيد التعديلات', 'control'); ?></h5>
+                <p style="font-size:0.8rem; margin-bottom:15px;"><?php _e('أنت على وشك تحديث صلاحيات هذا الدور. سيتم تطبيق التغييرات فوراً على كافة المستخدمين المرتبطين.', 'control'); ?></p>
+                <div id="permissions-summary" style="font-size:0.75rem; font-weight:700;"></div>
+                <div style="display:flex; gap:10px; margin-top:20px;">
+                    <button type="submit" class="control-btn" style="flex:1; background:#10b981; border:none;"><?php _e('تأكيد وحفظ نهائي', 'control'); ?></button>
+                    <button type="button" id="back-to-edit" class="control-btn" style="flex:1; background:#fff; color:var(--control-text-dark) !important; border:1px solid var(--control-border);"><?php _e('عودة للتعديل', 'control'); ?></button>
+                </div>
+            </div>
+
+            <div id="role-initial-actions" style="display:flex; gap:15px; margin-top:30px; border-top:1px solid var(--control-border); padding-top:20px;">
+                <button type="button" id="prepare-save-btn" class="control-btn" style="flex:2; background:var(--control-primary); border:none; font-weight:800;"><?php _e('مراجعة وحفظ', 'control'); ?></button>
                 <button type="button" class="control-btn close-role-modal" style="flex:1; background:var(--control-bg); color:var(--control-text) !important; border:none;"><?php _e('إلغاء', 'control'); ?></button>
             </div>
         </form>
@@ -139,7 +139,32 @@ jQuery(document).ready(function($) {
         modal.css('display', 'flex');
     });
 
-    $('.close-role-modal').on('click', function() { modal.hide(); });
+    $('.close-role-modal').on('click', function() {
+        modal.hide();
+        $('#role-confirmation-step').hide();
+        $('#role-initial-actions').show();
+        $('.role-wizard-step').show();
+    });
+
+    $('#prepare-save-btn').on('click', function() {
+        let summary = [];
+        $('#role-form .perm-checkbox:checked').each(function() {
+            summary.push($(this).parent().text().trim());
+        });
+
+        if (summary.length === 0) summary.push('<?php _e("لا توجد صلاحيات مختارة", "control"); ?>');
+
+        $('#permissions-summary').html('<?php _e("الصلاحيات المختارة:", "control"); ?> ' + summary.join('، '));
+        $('#role-initial-actions').hide();
+        $('.control-form-group, h4, .max-height-300').hide(); // Hide editing parts
+        $('#role-confirmation-step').fadeIn();
+    });
+
+    $('#back-to-edit').on('click', function() {
+        $('#role-confirmation-step').hide();
+        $('#role-initial-actions').show();
+        $('.control-form-group, h4, .max-height-300').fadeIn();
+    });
 
     $('#role-form').on('submit', function(e) {
         e.preventDefault();
