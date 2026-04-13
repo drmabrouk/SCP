@@ -28,7 +28,7 @@ body, .control-dashboard {
     background: var(--control-bg);
     margin: 0;
     padding: 0;
-    font-size: 14px; /* Reduced from 16px for higher density */
+    font-size: 14px;
     color: var(--control-text);
     overflow-x: hidden;
     width: 100%;
@@ -36,7 +36,7 @@ body, .control-dashboard {
 
 /* Sidebar Styles */
 .control-sidebar {
-    width: 220px; /* Narrowed */
+    width: 220px;
     background: var(--control-sidebar-bg) !important;
     color: var(--control-sidebar-text);
     position: fixed !important;
@@ -59,6 +59,12 @@ body, .control-dashboard {
     justify-content: center;
 }
 
+.control-sidebar-logo img {
+    max-width: 100%;
+    max-height: 50px;
+    object-fit: contain;
+}
+
 .control-sidebar-nav a {
     display: flex;
     align-items: center;
@@ -78,18 +84,19 @@ body, .control-dashboard {
 
 .control-main-content {
     margin-right: 220px;
-    padding: 20px; /* Reduced from 30px */
+    padding: 20px;
     min-height: 100vh;
 }
 
 /* Card Standardization */
 .control-card {
     background: var(--control-card-bg);
-    padding: 15px; /* Reduced from 25px */
+    padding: 15px;
     border-radius: 8px;
     border: 1px solid var(--control-border);
     box-shadow: var(--control-shadow);
     margin-bottom: 15px;
+    transition: transform 0.2s, box-shadow 0.2s;
 }
 
 .control-card h3 {
@@ -104,11 +111,19 @@ body, .control-dashboard {
     margin-bottom: 12px;
 }
 
+.control-form-group label {
+    display: block;
+    font-size: 0.75rem;
+    color: var(--control-muted);
+    margin-bottom: 5px;
+    font-weight: 600;
+}
+
 .control-form-group input,
 .control-form-group select,
 .control-form-group textarea {
     width: 100%;
-    padding: 8px 12px; /* Reduced */
+    padding: 8px 12px;
     border: 1px solid var(--control-border);
     border-radius: 6px;
     font-size: 0.85rem;
@@ -116,9 +131,12 @@ body, .control-dashboard {
     transition: border-color 0.2s;
 }
 
-.control-form-group input:focus {
+.control-form-group input:focus,
+.control-form-group select:focus,
+.control-form-group textarea:focus {
     border-color: var(--control-accent);
     outline: none;
+    box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.1);
 }
 
 /* Buttons */
@@ -126,7 +144,7 @@ body, .control-dashboard {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    padding: 8px 16px; /* Reduced */
+    padding: 8px 16px;
     min-height: 38px;
     background: var(--control-primary);
     color: #fff !important;
@@ -136,6 +154,7 @@ body, .control-dashboard {
     font-weight: 600;
     transition: 0.2s;
     font-size: 0.85rem;
+    text-decoration: none !important;
 }
 
 .control-btn-accent {
@@ -144,15 +163,24 @@ body, .control-dashboard {
     border: none;
 }
 
+.control-btn:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
+}
+
+.control-btn:active {
+    transform: translateY(0);
+}
+
 /* Unified Dashboard Components */
 .control-grid {
     display: grid;
-    gap: 15px; /* Reduced */
+    gap: 15px;
 }
 
 .control-metrics-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr); /* Default to 3 cols */
+    grid-template-columns: repeat(3, 1fr);
     gap: 15px;
     margin-bottom: 20px;
 }
@@ -171,6 +199,7 @@ body, .control-dashboard {
     text-transform: uppercase;
     letter-spacing: 0.025em;
     background: #f8fafc;
+    padding: 12px 15px;
 }
 
 .control-table td {
@@ -239,6 +268,12 @@ body, .control-dashboard {
     background: #fff;
     border-top: 1px solid #e2e8f0;
     text-align: center;
+}
+
+/* User Card Specifics */
+.user-card-item:hover {
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    border-color: var(--control-accent);
 }
 
 @media (max-width: 1024px) {

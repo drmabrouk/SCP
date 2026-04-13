@@ -24,6 +24,24 @@ class Control_Database {
 			role varchar(50) DEFAULT 'employee',
 			is_restricted tinyint(1) DEFAULT 0,
 			created_at datetime DEFAULT CURRENT_TIMESTAMP,
+
+			/* Personal Info */
+			profile_image varchar(255),
+			gender varchar(20),
+
+			/* Academic Info */
+			degree varchar(255),
+			institution varchar(255),
+			graduation_year varchar(10),
+
+			/* Employment Info */
+			employer_name varchar(255),
+			employer_country varchar(100),
+			work_phone varchar(50),
+			work_email varchar(255),
+			org_logo varchar(255),
+			job_title varchar(255),
+
 			PRIMARY KEY  (id),
 			UNIQUE KEY phone (phone)
 		) $charset_collate;
