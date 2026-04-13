@@ -23,6 +23,8 @@ class Control_Database {
 			email varchar(255),
 			role varchar(50) DEFAULT 'employee',
 			is_restricted tinyint(1) DEFAULT 0,
+			restriction_reason varchar(255),
+			restriction_expiry datetime,
 			created_at datetime DEFAULT CURRENT_TIMESTAMP,
 			last_activity datetime DEFAULT CURRENT_TIMESTAMP,
 
