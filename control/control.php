@@ -1,7 +1,7 @@
 <?php
 /**
  * Plugin Name: Control
- * Description: Dedicated system for managing residential apartments, hotel apartments and hospitality units.
+ * Description: Professional system for administrative and user management.
  * Version: 1.0.0
  * Author: Control Team
  * Text Domain: control
@@ -46,11 +46,8 @@ class Control_System {
 	private function includes() {
 		// Module classes
 		require_once CONTROL_PATH . 'includes/class-database.php';
-		require_once CONTROL_PATH . 'includes/class-geo.php';
 		require_once CONTROL_PATH . 'includes/class-auth.php';
 		require_once CONTROL_PATH . 'includes/class-users.php';
-		require_once CONTROL_PATH . 'includes/class-properties.php';
-		require_once CONTROL_PATH . 'includes/class-investments.php';
 		require_once CONTROL_PATH . 'includes/class-audit.php';
 		require_once CONTROL_PATH . 'includes/class-pwa.php';
 
@@ -62,8 +59,6 @@ class Control_System {
 	private function init_hooks() {
 		register_activation_hook( __FILE__, array( 'Control_Database', 'create_tables' ) );
 		add_action( 'init', array( 'Control_Auth', 'init' ) );
-		add_filter( 'cron_schedules', array( $this, 'add_monthly_cron_schedule' ) );
-		add_action( 'init', array( $this, 'schedule_monthly_release' ) );
 		add_action( 'init', array( 'Control_PWA', 'init' ) );
 		add_action( 'init', array( $this, 'send_nocache_headers' ) );
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_assets' ) );
@@ -101,25 +96,9 @@ class Control_System {
 		wp_localize_script( 'control-scripts', 'control_ajax', array(
 			'ajax_url' => admin_url( 'admin-ajax.php' ),
 			'nonce'    => wp_create_nonce( 'control_nonce' ),
-			'geo_data' => Control_Geo::get_data(),
 		) );
 	}
 
-	public function add_monthly_cron_schedule( $schedules ) {
-		$schedules['monthly'] = array(
-			'interval' => 2635200, // 30.5 days approx
-			'display'  => __( 'Once Monthly', 'control' )
-		);
-		return $schedules;
-	}
-
-	public function schedule_monthly_release() {
-		if ( ! wp_next_scheduled( 'control_monthly_profit_release' ) ) {
-			// Schedule for the last day of the month
-			wp_schedule_event( strtotime( 'last day of this month 23:59:00' ), 'monthly', 'control_monthly_profit_release' );
-		}
-		add_action( 'control_monthly_profit_release', array( 'Control_Investments', 'release_monthly_profits' ) );
-	}
 }
 
 function Control() {

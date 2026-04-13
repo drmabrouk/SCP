@@ -9,6 +9,89 @@ class Control_Auth {
 		if ( ! session_id() && ! headers_sent() ) {
 			session_start();
 		}
+
+		add_action( 'init', array( __CLASS__, 'sync_roles' ) );
+		add_action( 'admin_init', array( __CLASS__, 'restrict_admin_access' ) );
+		add_filter( 'show_admin_bar', array( __CLASS__, 'handle_admin_bar' ) );
+	}
+
+	/**
+	 * Sync system roles and remove non-explicit roles.
+	 */
+	public static function sync_roles() {
+		$new_roles = array(
+			'admin'       => array(
+				'name' => __( 'System Administrator', 'control' ),
+				'caps' => array( 'read' => true, 'manage_options' => true, 'upload_files' => true )
+			),
+			'coach'       => array(
+				'name' => __( 'Sports Coach', 'control' ),
+				'caps' => array( 'read' => true )
+			),
+			'therapist'   => array(
+				'name' => __( 'Sports Therapist', 'control' ),
+				'caps' => array( 'read' => true )
+			),
+			'nutritionist' => array(
+				'name' => __( 'Sports Nutrition Specialist', 'control' ),
+				'caps' => array( 'read' => true )
+			),
+			'pe_teacher'  => array(
+				'name' => __( 'Physical Education Teacher', 'control' ),
+				'caps' => array( 'read' => true )
+			),
+			'researcher'  => array(
+				'name' => __( 'Sports Researcher', 'control' ),
+				'caps' => array( 'read' => true )
+			),
+		);
+
+		foreach ( $new_roles as $role_id => $role_data ) {
+			if ( ! get_role( $role_id ) ) {
+				add_role( $role_id, $role_data['name'], $role_data['caps'] );
+			}
+		}
+
+		// Core roles to keep
+		$keep_roles = array_keys( $new_roles );
+		$keep_roles[] = 'administrator'; // Standard WP admin
+
+		// Remove all other roles
+		global $wp_roles;
+		if ( isset( $wp_roles->roles ) && is_array( $wp_roles->roles ) ) {
+			foreach ( $wp_roles->roles as $role_id => $data ) {
+				if ( ! in_array( $role_id, $keep_roles ) ) {
+					remove_role( $role_id );
+				}
+			}
+		}
+	}
+
+	/**
+	 * Restrict WP Dashboard access.
+	 */
+	public static function restrict_admin_access() {
+		if ( defined( 'DOING_AJAX' ) && DOING_AJAX ) {
+			return;
+		}
+
+		$current_user = self::current_user();
+
+		// If not System Admin and not Site Admin (administrator), redirect away
+		if ( is_admin() && ! current_user_can( 'manage_options' ) ) {
+			wp_redirect( home_url() );
+			exit;
+		}
+	}
+
+	/**
+	 * Hide admin bar for non-admins.
+	 */
+	public static function handle_admin_bar( $show ) {
+		if ( current_user_can( 'manage_options' ) ) {
+			return true;
+		}
+		return false;
 	}
 
 	public static function login( $phone, $password ) {
@@ -47,10 +130,10 @@ class Control_Auth {
 		$inserted = $wpdb->insert( $table, array(
 			'name'     => $data['first_name'] . ' ' . $data['last_name'],
 			'phone'    => $data['phone'],
-			'username' => $data['phone'], // Username is the phone number
+			'username' => $data['phone'],
 			'email'    => $data['email'],
 			'password' => password_hash( $data['password'], PASSWORD_DEFAULT ),
-			'role'     => 'employee', // Default role for registration
+			'role'     => 'coach', // Default to coach
 		) );
 
 		if ( $inserted ) {
@@ -104,40 +187,6 @@ class Control_Auth {
 		}
 		$user = self::current_user();
 		return $user && $user->role === 'admin';
-	}
-
-	public static function is_manager() {
-		if ( self::is_admin() ) return true;
-		$user = self::current_user();
-		return $user && $user->role === 'manager';
-	}
-
-	public static function is_investor() {
-		if ( self::is_admin() ) return true;
-		$user = self::current_user();
-		return $user && $user->role === 'investor';
-	}
-
-	public static function is_owner() {
-		if ( self::is_admin() ) return true;
-		$user = self::current_user();
-		return $user && $user->role === 'owner';
-	}
-
-	public static function is_tenant() {
-		if ( self::is_admin() ) return true;
-		$user = self::current_user();
-		return $user && $user->role === 'tenant';
-	}
-
-	public static function is_system_admin() {
-		if ( current_user_can( 'manage_options' ) ) return true;
-		$user = self::current_user();
-		return $user && $user->role === 'admin';
-	}
-
-	public static function can_delete_records() {
-		return self::is_manager();
 	}
 
 	public static function get_all_users() {
