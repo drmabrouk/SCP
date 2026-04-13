@@ -1,15 +1,7 @@
 <?php
 $users = Control_Auth::get_all_users();
 $can_manage = Control_Auth::is_admin();
-
-$role_labels = array(
-    'admin'       => 'مدير نظام',
-    'coach'       => 'مدرب رياضي',
-    'therapist'   => 'أخصائي علاج رياضي',
-    'nutritionist' => 'أخصائي تغذية رياضية',
-    'pe_teacher'  => 'معلم تربية بدنية',
-    'researcher'  => 'باحث رياضي'
-);
+$role_labels = Control_Auth::get_roles();
 
 $countries = array(
     '+20' => array('flag' => '🇪🇬', 'name' => 'مصر'),
