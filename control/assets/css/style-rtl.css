@@ -1,21 +1,38 @@
 :root {
-    --control-primary: #000000;
+    /* Colors */
+    --control-primary: #0f172a;
+    --control-primary-soft: #1e293b;
     --control-secondary: #ffffff;
     --control-accent: #D4AF37; /* Gold */
+    --control-accent-soft: rgba(212, 175, 55, 0.1);
     --control-bg: #f8fafc;
     --control-card-bg: #ffffff;
-    --control-sidebar-bg: #000000;
-    --control-sidebar-text: #ffffff;
+    --control-sidebar-bg: #0f172a;
+    --control-sidebar-text: #94a3b8;
     --control-border: #e2e8f0;
-    --control-text: #1e293b;
+    --control-text: #334155;
+    --control-text-dark: #0f172a;
     --control-muted: #64748b;
-    --control-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
-    --control-radius: 10px;
+
+    /* Spacing */
+    --control-space-xs: 5px;
+    --control-space-sm: 10px;
+    --control-space-md: 20px;
+    --control-space-lg: 30px;
+
+    /* Others */
+    --control-shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --control-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    --control-radius: 12px;
+    --control-radius-sm: 8px;
+    --control-transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 * {
     font-family: 'Rubik', sans-serif !important;
     box-sizing: border-box;
+    overflow-wrap: break-word; /* Prevent stretching */
+    word-break: break-word;
 }
 
 .dashicons, .dashicons-before:before {
@@ -37,7 +54,7 @@ body, .control-dashboard {
 
 /* Sidebar Styles */
 .control-sidebar {
-    width: 220px;
+    width: 240px;
     background: var(--control-sidebar-bg) !important;
     color: var(--control-sidebar-text);
     position: fixed !important;
@@ -48,13 +65,14 @@ body, .control-dashboard {
     display: flex;
     flex-direction: column;
     overflow-y: auto;
-    border-left: 1px solid #1a1a1a;
+    border-left: 1px solid rgba(255,255,255,0.05);
+    box-shadow: 10px 0 30px rgba(0,0,0,0.1);
 }
 
 .control-sidebar-logo {
-    padding: 20px;
+    padding: 30px 20px;
     text-align: center;
-    height: 90px;
+    height: 100px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -66,25 +84,37 @@ body, .control-dashboard {
     object-fit: contain;
 }
 
+.control-sidebar-nav {
+    padding: 10px;
+}
+
 .control-sidebar-nav a {
     display: flex;
     align-items: center;
     gap: 12px;
-    padding: 12px 20px;
-    color: #94a3b8;
+    padding: 12px 15px;
+    color: var(--control-sidebar-text);
     text-decoration: none !important;
-    transition: all 0.2s;
+    transition: var(--control-transition);
     font-weight: 500;
     font-size: 0.85rem;
+    border-radius: var(--control-radius-sm);
+    margin-bottom: 5px;
 }
 
 .control-sidebar-nav a:hover, .control-sidebar-nav a.active {
-    background: #111;
+    background: rgba(255,255,255,0.05);
     color: var(--control-accent);
 }
 
+.control-sidebar-nav a.active {
+    background: var(--control-accent);
+    color: var(--control-primary-soft);
+    font-weight: 700;
+}
+
 .control-main-content {
-    margin-right: 220px;
+    margin-right: 240px;
     padding: 25px;
     min-height: 100vh;
 }
@@ -95,9 +125,15 @@ body, .control-dashboard {
     padding: 20px;
     border-radius: var(--control-radius);
     border: 1px solid var(--control-border);
-    box-shadow: var(--control-shadow);
+    box-shadow: var(--control-shadow-sm);
     margin-bottom: 20px;
-    transition: transform 0.2s, box-shadow 0.2s;
+    transition: var(--control-transition);
+    max-width: 100%;
+    position: relative;
+}
+
+.control-card:hover {
+    box-shadow: var(--control-shadow);
 }
 
 .control-card h3 {
@@ -110,6 +146,7 @@ body, .control-dashboard {
 /* Form Styles */
 .control-form-group {
     margin-bottom: 15px;
+    width: 100%;
 }
 
 .control-form-group label {
@@ -126,10 +163,11 @@ body, .control-dashboard {
     width: 100%;
     padding: 10px 15px;
     border: 1px solid var(--control-border);
-    border-radius: 8px;
+    border-radius: var(--control-radius-sm);
     font-size: 0.9rem;
     background: #fff;
-    transition: border-color 0.2s, box-shadow 0.2s;
+    transition: var(--control-transition);
+    color: var(--control-text-dark);
 }
 
 .control-form-group input:focus,
@@ -137,7 +175,7 @@ body, .control-dashboard {
 .control-form-group textarea:focus {
     border-color: var(--control-accent);
     outline: none;
-    box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.1);
+    box-shadow: 0 0 0 3px var(--control-accent-soft);
 }
 
 /* Buttons */
@@ -149,13 +187,14 @@ body, .control-dashboard {
     min-height: 42px;
     background: var(--control-primary);
     color: #fff !important;
-    border: 1px solid #111;
-    border-radius: 8px;
+    border: 1px solid var(--control-primary);
+    border-radius: var(--control-radius-sm);
     cursor: pointer;
     font-weight: 600;
-    transition: 0.2s;
+    transition: var(--control-transition);
     font-size: 0.85rem;
     text-decoration: none !important;
+    white-space: nowrap;
 }
 
 .control-btn-accent {
@@ -173,7 +212,7 @@ body, .control-dashboard {
     transform: translateY(0);
 }
 
-/* Auth Redesign */
+/* Auth Design */
 .control-auth-wrapper {
     display: flex;
     min-height: 100vh;
@@ -184,28 +223,17 @@ body, .control-dashboard {
 }
 
 .control-auth-card {
-    background: #000000 !important;
-    border: 1px solid #1a1a1a !important;
+    background: #000 !important;
+    border: 1px solid rgba(255,255,255,0.1) !important;
     color: #ffffff !important;
     width: 100%;
     max-width: 450px;
-    padding: 50px;
+    padding: 40px;
     border-radius: 20px;
     box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
 }
 
-.control-auth-card input, .control-auth-card select {
-    background: #0a0a0a !important;
-    border: 1px solid #222 !important;
-    color: #ffffff !important;
-    height: 50px;
-}
-
-.control-auth-card input:focus {
-    border-color: var(--control-accent) !important;
-}
-
-/* Tab Navigation */
+/* Tabs */
 .control-tab-btn {
     background: none;
     border: none;
@@ -213,8 +241,8 @@ body, .control-dashboard {
     cursor: pointer;
     font-weight: 700;
     color: var(--control-muted);
-    border-radius: 8px;
-    transition: 0.2s;
+    border-radius: var(--control-radius-sm);
+    transition: var(--control-transition);
 }
 
 .control-tab-btn.active {
@@ -222,32 +250,12 @@ body, .control-dashboard {
     color: #fff;
 }
 
-.control-tab-btn:hover:not(.active) {
-    background: #f1f5f9;
+/* Grid & Layout */
+.control-grid {
+    display: grid;
+    gap: 20px;
 }
 
-/* Tables */
-.control-table {
-    width: 100%;
-    border-collapse: collapse;
-}
-
-.control-table th {
-    text-align: right;
-    font-weight: 700;
-    color: var(--control-muted);
-    font-size: 0.8rem;
-    text-transform: uppercase;
-    background: #f8fafc;
-    padding: 15px 20px;
-}
-
-.control-table td {
-    padding: 12px 20px;
-    color: var(--control-text);
-}
-
-/* Metric Cards */
 .control-metrics-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -255,43 +263,30 @@ body, .control-dashboard {
     margin-bottom: 25px;
 }
 
-.control-metric-card {
-    background: #fff;
-    padding: 20px;
-    border-radius: var(--control-radius);
-    border: 1px solid var(--control-border);
-    display: flex;
-    align-items: center;
-    gap: 15px;
-}
-
-.control-metric-value {
-    font-size: 1.3rem;
-    font-weight: 800;
-}
-
+/* Status Indicators */
 .control-status-indicator {
     display: inline-flex;
     align-items: center;
     gap: 5px;
     font-weight: 700;
-    padding: 3px 10px;
-    border-radius: 5px;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 0.75rem;
 }
 
-.indicator-success { background: #ecfdf5; color: #065f46; }
-.indicator-danger { background: #fef2f2; color: #991b1b; }
-.indicator-warning { background: #fffbeb; color: #92400e; }
+.indicator-success { background: #f0fdf4; color: #15803d; }
+.indicator-danger { background: #fef2f2; color: #b91c1c; }
+.indicator-warning { background: #fffbeb; color: #b45309; }
 .indicator-accent { background: #eff6ff; color: #1e40af; }
 
 /* Responsive Adjustments */
 @media (max-width: 1024px) {
     .control-sidebar { display: none !important; }
-    .control-main-content { margin-right: 0 !important; padding: 20px; }
+    .control-main-content { margin-right: 0 !important; padding: 15px; }
     .control-metrics-grid { grid-template-columns: 1fr 1fr; }
 }
 
 @media (max-width: 480px) {
     .control-metrics-grid { grid-template-columns: 1fr; }
-    .control-auth-card { padding: 30px; }
+    .control-auth-card { padding: 25px; }
 }
