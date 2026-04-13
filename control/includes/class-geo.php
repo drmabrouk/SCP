@@ -3,7 +3,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-class Sukna_Geo {
+class Control_Geo {
 	public static function get_data() {
 		return array(
 			'EG' => array(

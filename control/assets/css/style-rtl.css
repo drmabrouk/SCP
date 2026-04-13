@@ -1,15 +1,15 @@
 :root {
-    --sukna-primary: #000000;
-    --sukna-secondary: #ffffff;
-    --sukna-accent: #D4AF37; /* Gold */
-    --sukna-bg: #f1f5f9;
-    --sukna-card-bg: #ffffff;
-    --sukna-sidebar-bg: #000000;
-    --sukna-sidebar-text: #ffffff;
-    --sukna-border: #e2e8f0;
-    --sukna-text: #0f172a;
-    --sukna-muted: #64748b;
-    --sukna-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    --control-primary: #000000;
+    --control-secondary: #ffffff;
+    --control-accent: #D4AF37; /* Gold */
+    --control-bg: #f1f5f9;
+    --control-card-bg: #ffffff;
+    --control-sidebar-bg: #000000;
+    --control-sidebar-text: #ffffff;
+    --control-border: #e2e8f0;
+    --control-text: #0f172a;
+    --control-muted: #64748b;
+    --control-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
 }
 
 * {
@@ -21,24 +21,24 @@
     font-family: dashicons !important;
 }
 
-body, .sukna-dashboard {
+body, .control-dashboard {
     direction: rtl;
     text-align: right;
     min-height: 100vh;
-    background: var(--sukna-bg);
+    background: var(--control-bg);
     margin: 0;
     padding: 0;
     font-size: 16px; /* Base for readability */
-    color: var(--sukna-text);
+    color: var(--control-text);
     overflow-x: hidden;
     width: 100%;
 }
 
 /* Sidebar Styles */
-.sukna-sidebar {
+.control-sidebar {
     width: 240px;
-    background: var(--sukna-sidebar-bg) !important;
-    color: var(--sukna-sidebar-text);
+    background: var(--control-sidebar-bg) !important;
+    color: var(--control-sidebar-text);
     position: fixed !important;
     top: 0 !important;
     right: 0 !important;
@@ -50,7 +50,7 @@ body, .sukna-dashboard {
     border-left: 1px solid #1a1a1a;
 }
 
-.sukna-sidebar-logo {
+.control-sidebar-logo {
     padding: 25px 15px;
     text-align: center;
     height: 100px;
@@ -60,7 +60,7 @@ body, .sukna-dashboard {
     overflow: hidden;
 }
 
-.sukna-sidebar-logo img {
+.control-sidebar-logo img {
     max-width: 100%;
     max-height: 60px;
     width: auto;
@@ -68,7 +68,7 @@ body, .sukna-dashboard {
     display: block;
 }
 
-.sukna-sidebar-nav a {
+.control-sidebar-nav a {
     display: flex;
     align-items: center;
     gap: 12px;
@@ -80,58 +80,58 @@ body, .sukna-dashboard {
     font-size: 0.85rem;
 }
 
-.sukna-sidebar-nav a:hover, .sukna-sidebar-nav a.active {
+.control-sidebar-nav a:hover, .control-sidebar-nav a.active {
     background: #1a1a1a;
-    color: var(--sukna-accent);
+    color: var(--control-accent);
 }
 
-.sukna-main-content {
+.control-main-content {
     margin-right: 240px;
     padding: 30px;
     min-height: 100vh;
 }
 
 /* Card Standardization */
-.sukna-card {
-    background: var(--sukna-card-bg);
+.control-card {
+    background: var(--control-card-bg);
     padding: 25px;
     border-radius: 12px;
-    border: 1px solid var(--sukna-border);
-    box-shadow: var(--sukna-shadow);
+    border: 1px solid var(--control-border);
+    box-shadow: var(--control-shadow);
     margin-bottom: 20px;
 }
 
-.sukna-card h3 {
+.control-card h3 {
     margin: 0 0 15px 0;
     font-size: 1.1rem;
     font-weight: 700;
-    color: var(--sukna-primary);
+    color: var(--control-primary);
 }
 
 /* Form Styles - Placeholder focus */
-.sukna-form-group {
+.control-form-group {
     margin-bottom: 15px;
 }
 
-.sukna-form-group input,
-.sukna-form-group select,
-.sukna-form-group textarea {
+.control-form-group input,
+.control-form-group select,
+.control-form-group textarea {
     width: 100%;
     padding: 12px 15px;
-    border: 1px solid var(--sukna-border);
+    border: 1px solid var(--control-border);
     border-radius: 8px;
     font-size: 0.9rem;
     background: #fff;
     transition: border-color 0.2s;
 }
 
-.sukna-form-group input:focus {
-    border-color: var(--sukna-accent);
+.control-form-group input:focus {
+    border-color: var(--control-accent);
     outline: none;
 }
 
 /* Auth Redesign - Solid Black */
-.sukna-auth-wrapper {
+.control-auth-wrapper {
     display: flex;
     min-height: 100vh;
     align-items: center;
@@ -140,7 +140,7 @@ body, .sukna-dashboard {
     padding: 20px;
 }
 
-.sukna-auth-card {
+.control-auth-card {
     background: #000000 !important;
     border: 1px solid #1a1a1a !important;
     color: #ffffff !important;
@@ -151,7 +151,7 @@ body, .sukna-dashboard {
     box-shadow: 0 10px 40px rgba(0,0,0,0.8);
 }
 
-.sukna-auth-card input, .sukna-auth-card select {
+.control-auth-card input, .control-auth-card select {
     background: #0a0a0a !important;
     border: 1px solid #222 !important;
     color: #ffffff !important;
@@ -187,14 +187,14 @@ body, .sukna-dashboard {
 }
 
 /* Buttons */
-.sukna-btn {
+.control-btn {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     padding: 12px 24px;
     min-height: 48px; /* Touch friendly */
     min-width: 48px;
-    background: var(--sukna-primary);
+    background: var(--control-primary);
     color: #fff !important;
     border: 1px solid #222;
     border-radius: 8px;
@@ -204,28 +204,28 @@ body, .sukna-dashboard {
     font-size: 0.9rem;
 }
 
-.sukna-btn-accent {
-    background: var(--sukna-accent);
+.control-btn-accent {
+    background: var(--control-accent);
     color: #000 !important;
     border: none;
 }
 
-.sukna-btn:active {
+.control-btn:active {
     transform: scale(0.98);
 }
 
-.sukna-btn:hover {
+.control-btn:hover {
     opacity: 0.9;
     transform: translateY(-1px);
 }
 
 /* Unified Dashboard Components */
-.sukna-grid {
+.control-grid {
     display: grid;
     gap: 20px;
 }
 
-.sukna-metrics-grid {
+.control-metrics-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     gap: 20px;
@@ -233,22 +233,22 @@ body, .sukna-dashboard {
 }
 
 /* Responsive Table Wrapper */
-.sukna-table-container {
+.control-table-container {
     width: 100%;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
     margin-bottom: 20px;
 }
 
-.sukna-table {
+.control-table {
     min-width: 600px;
 }
 
-.sukna-metric-card {
+.control-metric-card {
     background: #fff;
     padding: 20px;
     border-radius: 12px;
-    border: 1px solid var(--sukna-border);
+    border: 1px solid var(--control-border);
     display: flex;
     align-items: center;
     gap: 15px;
@@ -256,12 +256,12 @@ body, .sukna-dashboard {
     transition: transform 0.2s;
 }
 
-.sukna-metric-card:hover {
+.control-metric-card:hover {
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(0,0,0,0.05);
 }
 
-.sukna-metric-icon {
+.control-metric-icon {
     width: 45px;
     height: 45px;
     border-radius: 10px;
@@ -271,20 +271,20 @@ body, .sukna-dashboard {
     font-size: 1.2rem;
 }
 
-.sukna-metric-title {
+.control-metric-title {
     font-size: 0.75rem;
-    color: var(--sukna-muted);
+    color: var(--control-muted);
     font-weight: 600;
     margin-bottom: 4px;
 }
 
-.sukna-metric-value {
+.control-metric-value {
     font-size: 1.2rem;
     font-weight: 800;
-    color: var(--sukna-primary);
+    color: var(--control-primary);
 }
 
-.sukna-status-indicator {
+.control-status-indicator {
     display: inline-flex;
     align-items: center;
     gap: 5px;
@@ -319,7 +319,7 @@ body, .sukna-dashboard {
 }
 
 /* Footer Styling */
-.sukna-footer {
+.control-footer {
     padding: 20px 40px;
     color: #64748b;
     font-size: 0.85rem;
@@ -329,45 +329,45 @@ body, .sukna-dashboard {
 }
 
 /* Gold Icons */
-.sukna-edit-property .dashicons,
-.sukna-delete-property .dashicons,
-.sukna-edit-user .dashicons,
-.sukna-delete-user .dashicons {
+.control-edit-property .dashicons,
+.control-delete-property .dashicons,
+.control-edit-user .dashicons,
+.control-delete-user .dashicons {
     color: #D4AF37 !important;
 }
 
 @media (max-width: 1024px) {
-    .sukna-mobile-header { display: flex !important; }
+    .control-mobile-header { display: flex !important; }
 
     .mobile-header-logo img {
         max-height: 32px;
         width: auto;
     }
 
-    .sukna-pill-logout {
+    .control-pill-logout {
         box-shadow: 0 4px 10px rgba(239, 68, 68, 0.3);
         transition: 0.2s;
         min-height: 36px;
     }
-    .sukna-pill-logout:active { transform: scale(0.95); opacity: 0.8; }
+    .control-pill-logout:active { transform: scale(0.95); opacity: 0.8; }
 
-    .sukna-sidebar {
+    .control-sidebar {
         display: none !important;
     }
-    .sukna-main-content {
+    .control-main-content {
         margin-right: 0 !important;
         padding: 15px 15px 90px 15px !important;
         width: 100%;
         overflow-x: hidden;
     }
 
-    .sukna-footer { text-align: center; padding: 20px; }
+    .control-footer { text-align: center; padding: 20px; }
 
-    .sukna-grid { grid-template-columns: 1fr !important; gap: 15px; width: 100%; }
-    .sukna-metrics-grid { grid-template-columns: 1fr 1fr; gap: 12px; }
-    .sukna-analytics-grid { grid-template-columns: 1fr 1fr !important; gap: 10px; }
+    .control-grid { grid-template-columns: 1fr !important; gap: 15px; width: 100%; }
+    .control-metrics-grid { grid-template-columns: 1fr 1fr; gap: 12px; }
+    .control-analytics-grid { grid-template-columns: 1fr 1fr !important; gap: 10px; }
 
-    #sukna-rooms-grid {
+    #control-rooms-grid {
         grid-template-columns: repeat(auto-fill, minmax(70px, 1fr)) !important;
         display: grid !important;
     }
@@ -377,15 +377,15 @@ body, .sukna-dashboard {
         flex-direction: column !important;
     }
 
-    .sukna-card { padding: 15px; width: 100%; margin-left: 0; margin-right: 0; }
-    .sukna-card h2, .sukna-card h3 { font-size: 1.1rem !important; }
-    .sukna-metric-card { padding: 15px; }
-    .sukna-metric-icon { width: 40px; height: 40px; font-size: 1.1rem; }
-    .sukna-metric-value { font-size: 1.2rem; }
-    .sukna-header-flex h2 { font-size: 1.3rem !important; margin-bottom: 15px !important; }
+    .control-card { padding: 15px; width: 100%; margin-left: 0; margin-right: 0; }
+    .control-card h2, .control-card h3 { font-size: 1.1rem !important; }
+    .control-metric-card { padding: 15px; }
+    .control-metric-icon { width: 40px; height: 40px; font-size: 1.1rem; }
+    .control-metric-value { font-size: 1.2rem; }
+    .control-header-flex h2 { font-size: 1.3rem !important; margin-bottom: 15px !important; }
 
     /* Forms on mobile */
-    .sukna-form-group input, .sukna-form-group select, .sukna-form-group textarea {
+    .control-form-group input, .control-form-group select, .control-form-group textarea {
         font-size: 16px !important; /* Prevent iOS zoom */
         padding: 14px;
     }
@@ -403,7 +403,7 @@ body, .sukna-dashboard {
     }
 
     /* Sticky Bottom Mobile Bar */
-    .sukna-mobile-bottom-bar {
+    .control-mobile-bottom-bar {
         display: flex !important;
         position: fixed !important;
         bottom: 0 !important;
@@ -455,18 +455,18 @@ body, .sukna-dashboard {
 }
 
 @media (max-width: 480px) {
-    .sukna-auth-card { padding: 30px 20px; width: 95%; }
+    .control-auth-card { padding: 30px 20px; width: 95%; }
 
-    .sukna-metrics-grid { grid-template-columns: 1fr; }
-    .sukna-analytics-grid { grid-template-columns: 1fr !important; }
+    .control-metrics-grid { grid-template-columns: 1fr; }
+    .control-analytics-grid { grid-template-columns: 1fr !important; }
 
     /* Ensure modals take full width on tiny screens */
-    .sukna-card { padding: 15px; }
-    #sukna-property-modal .sukna-card,
-    #sukna-user-modal .sukna-card,
-    #sukna-room-modal .sukna-card,
-    #sukna-expense-modal .sukna-card,
-    #sukna-investor-modal .sukna-card {
+    .control-card { padding: 15px; }
+    #control-property-modal .control-card,
+    #control-user-modal .control-card,
+    #control-room-modal .control-card,
+    #control-expense-modal .control-card,
+    #control-investor-modal .control-card {
         width: 98% !important;
         padding: 15px !important;
         margin: 5px !important;
@@ -474,7 +474,7 @@ body, .sukna-dashboard {
         overflow-y: auto;
     }
 
-    .sukna-btn { width: 100%; margin-bottom: 10px; }
-    .sukna-header-flex { flex-direction: column; align-items: stretch; }
-    .sukna-header-flex .sukna-btn { margin-top: 10px; }
+    .control-btn { width: 100%; margin-bottom: 10px; }
+    .control-header-flex { flex-direction: column; align-items: stretch; }
+    .control-header-flex .control-btn { margin-top: 10px; }
 }

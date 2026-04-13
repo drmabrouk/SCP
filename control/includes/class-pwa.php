@@ -3,7 +3,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-class Sukna_PWA {
+class Control_PWA {
 
 	public static function init() {
 		add_action( 'wp_head', array( __CLASS__, 'add_pwa_meta' ) );
@@ -11,17 +11,17 @@ class Sukna_PWA {
 	}
 
 	public static function add_pwa_meta() {
-		echo '<link rel="manifest" href="' . home_url( '/?sukna_pwa=manifest' ) . '">' . PHP_EOL;
+		echo '<link rel="manifest" href="' . home_url( '/?control_pwa=manifest' ) . '">' . PHP_EOL;
 		echo '<meta name="mobile-web-app-capable" content="yes">' . PHP_EOL;
 		echo '<meta name="apple-mobile-web-app-capable" content="yes">' . PHP_EOL;
 		echo '<meta name="apple-mobile-web-app-title" content="' . esc_attr( get_bloginfo('name') ) . '">' . PHP_EOL;
 
 		global $wpdb;
-		$theme_color = $wpdb->get_var( "SELECT setting_value FROM {$wpdb->prefix}sukna_settings WHERE setting_key = 'pwa_theme_color'" ) ?: '#000000';
+		$theme_color = $wpdb->get_var( "SELECT setting_value FROM {$wpdb->prefix}control_settings WHERE setting_key = 'pwa_theme_color'" ) ?: '#000000';
 		echo '<meta name="theme-color" content="' . esc_attr( $theme_color ) . '">' . PHP_EOL;
 		echo '<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">' . PHP_EOL;
 
-		$icon = $wpdb->get_var( "SELECT setting_value FROM {$wpdb->prefix}sukna_settings WHERE setting_key = 'pwa_icon_url'" );
+		$icon = $wpdb->get_var( "SELECT setting_value FROM {$wpdb->prefix}control_settings WHERE setting_key = 'pwa_icon_url'" );
 		if ( $icon ) {
 			echo '<link rel="apple-touch-icon" href="' . esc_url( $icon ) . '">' . PHP_EOL;
 		}
@@ -29,10 +29,10 @@ class Sukna_PWA {
 		echo '<script>
 			if ("serviceWorker" in navigator) {
 				window.addEventListener("load", function() {
-					navigator.serviceWorker.register("' . home_url( '/?sukna_pwa=sw' ) . '").then(function(registration) {
-						console.log("Sukna ServiceWorker registration successful");
+					navigator.serviceWorker.register("' . home_url( '/?control_pwa=sw' ) . '").then(function(registration) {
+						console.log("Control ServiceWorker registration successful");
 					}, function(err) {
-						console.log("Sukna ServiceWorker registration failed: ", err);
+						console.log("Control ServiceWorker registration failed: ", err);
 					});
 				});
 			}
@@ -40,11 +40,11 @@ class Sukna_PWA {
 	}
 
 	public static function handle_pwa_requests() {
-		if ( ! isset( $_GET['sukna_pwa'] ) ) {
+		if ( ! isset( $_GET['control_pwa'] ) ) {
 			return;
 		}
 
-		$request = $_GET['sukna_pwa'];
+		$request = $_GET['control_pwa'];
 
 		if ( $request === 'manifest' ) {
 			self::serve_manifest();
@@ -55,11 +55,11 @@ class Sukna_PWA {
 
 	private static function serve_manifest() {
 		global $wpdb;
-		$settings = $wpdb->get_results( "SELECT * FROM {$wpdb->prefix}sukna_settings", OBJECT_K );
+		$settings = $wpdb->get_results( "SELECT * FROM {$wpdb->prefix}control_settings", OBJECT_K );
 
 		$manifest = array(
-			'name'             => $settings['pwa_app_name']->setting_value ?? 'Sukna',
-			'short_name'        => $settings['pwa_short_name']->setting_value ?? 'Sukna',
+			'name'             => $settings['pwa_app_name']->setting_value ?? 'Control',
+			'short_name'        => $settings['pwa_short_name']->setting_value ?? 'Control',
 			'start_url'         => home_url( '/' ),
 			'display'           => 'standalone',
 			'background_color'  => $settings['pwa_bg_color']->setting_value ?? '#ffffff',
@@ -92,11 +92,11 @@ class Sukna_PWA {
 	private static function serve_service_worker() {
 		header( 'Content-Type: application/javascript' );
 		?>
-		const CACHE_NAME = 'sukna-cache-v3';
+		const CACHE_NAME = 'control-cache-v3';
 		const urlsToCache = [
 			'/',
-			'<?php echo SUKNA_URL . 'assets/css/style-rtl.css'; ?>',
-			'<?php echo SUKNA_URL . 'assets/js/scripts.js'; ?>',
+			'<?php echo CONTROL_URL . 'assets/css/style-rtl.css'; ?>',
+			'<?php echo CONTROL_URL . 'assets/js/scripts.js'; ?>',
 			'https://fonts.googleapis.com/css2?family=Rubik:wght@400;600;700;800&display=swap'
 		];
 

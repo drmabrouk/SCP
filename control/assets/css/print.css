@@ -6,16 +6,16 @@
     }
 
     /* Sticker Specific Page Settings (Only when printing sticker) */
-    body.sukna-printing-sticker {
+    body.control-printing-sticker {
         margin: 0;
     }
 
-    body.sukna-printing-sticker @page {
+    body.control-printing-sticker @page {
         size: 50mm 30mm;
         margin: 0;
     }
 
-    .sukna-sidebar, .sukna-header-flex.no-print, .sukna-btn, .sukna-nav, .sukna-export-actions, .sukna-sidebar-nav, .sukna-search-filters, #sukna-unlock-overlay {
+    .control-sidebar, .control-header-flex.no-print, .control-btn, .control-nav, .control-export-actions, .control-sidebar-nav, .control-search-filters, #control-unlock-overlay {
         display: none !important;
     }
 
@@ -28,7 +28,7 @@
         direction: rtl;
     }
 
-    .sukna-dashboard {
+    .control-dashboard {
         box-shadow: none !important;
         border: none !important;
         margin: 0 !important;
@@ -37,7 +37,7 @@
         display: block !important;
     }
 
-    .sukna-main-content {
+    .control-main-content {
         padding: 0 !important;
     }
 
@@ -58,7 +58,7 @@
         display: none; /* Hidden by default in standard print */
     }
 
-    body.sukna-printing-sticker #barcode-print-section {
+    body.control-printing-sticker #barcode-print-section {
         display: block !important;
         width: 50mm;
         height: 30mm;
@@ -99,11 +99,11 @@
 
 /* Hide everything else when printing */
 @media print {
-    .sukna-content-inner > *:not(#barcode-print-section):not(.invoice-container) {
+    .control-content-inner > *:not(#barcode-print-section):not(.invoice-container) {
         display: none !important;
     }
 
-    body.sukna-printing-sticker .invoice-container {
+    body.control-printing-sticker .invoice-container {
         display: none !important;
     }
 }

@@ -1,14 +1,14 @@
 jQuery(document).ready(function($) {
     // --- CSV Import / Export System ---
 
-    $(document).on('click', '.sukna-export-btn', function() {
+    $(document).on('click', '.control-export-btn', function() {
         const type = $(this).data('type');
         const $btn = $(this);
         const originalContent = $btn.html();
 
         $btn.prop('disabled', true).html('<span class="dashicons dashicons-update spin"></span>');
 
-        $.post(sukna_ajax.ajax_url, { action: 'sukna_export_data', type: type, nonce: sukna_ajax.nonce }, function(res) {
+        $.post(control_ajax.ajax_url, { action: 'control_export_data', type: type, nonce: control_ajax.nonce }, function(res) {
             if (res.success) {
                 const blob = new Blob([res.data.csv], { type: 'text/csv;charset=utf-8;' });
                 const link = document.createElement("a");
@@ -27,12 +27,12 @@ jQuery(document).ready(function($) {
         });
     });
 
-    $(document).on('click', '.sukna-download-invoice', function() {
+    $(document).on('click', '.control-download-invoice', function() {
         const invId = $(this).data('id');
         const $btn = $(this);
         $btn.prop('disabled', true);
 
-        $.post(sukna_ajax.ajax_url, { action: 'sukna_get_invoice_html', investment_id: invId, nonce: sukna_ajax.nonce }, function(res) {
+        $.post(control_ajax.ajax_url, { action: 'control_get_invoice_html', investment_id: invId, nonce: control_ajax.nonce }, function(res) {
             if (res.success) {
                 const element = document.createElement('div');
                 element.innerHTML = res.data;
@@ -40,7 +40,7 @@ jQuery(document).ready(function($) {
 
                 const opt = {
                     margin: 10,
-                    filename: `Sukna_Invoice_#${invId}.pdf`,
+                    filename: `Control_Invoice_#${invId}.pdf`,
                     image: { type: 'jpeg', quality: 0.98 },
                     html2canvas: { scale: 2 },
                     jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
@@ -57,7 +57,7 @@ jQuery(document).ready(function($) {
         });
     });
 
-    $(document).on('click', '.sukna-import-trigger', function() {
+    $(document).on('click', '.control-import-trigger', function() {
         const type = $(this).data('type');
         const input = document.createElement('input');
         input.type = 'file';
@@ -68,7 +68,7 @@ jQuery(document).ready(function($) {
             reader.onload = event => {
                 const csvData = event.target.result;
                 if (confirm('هل أنت متأكد من استيراد هذه البيانات؟ سيتم تجاوز السجلات المكررة.')) {
-                    $.post(sukna_ajax.ajax_url, { action: 'sukna_import_data', type: type, csv_data: csvData, nonce: sukna_ajax.nonce }, function(res) {
+                    $.post(control_ajax.ajax_url, { action: 'control_import_data', type: type, csv_data: csvData, nonce: control_ajax.nonce }, function(res) {
                         if (res.success) {
                             alert(res.data);
                             location.reload();
@@ -86,14 +86,14 @@ jQuery(document).ready(function($) {
     // --- Auth Toggling & Multi-step Registration ---
 
     $('#switch-to-register').on('click', function() {
-        $('#sukna-login-container').fadeOut(200, function() {
-            $('#sukna-register-container').fadeIn(200);
+        $('#control-login-container').fadeOut(200, function() {
+            $('#control-register-container').fadeIn(200);
         });
     });
 
     $('#switch-to-login').on('click', function() {
-        $('#sukna-register-container').fadeOut(200, function() {
-            $('#sukna-login-container').fadeIn(200);
+        $('#control-register-container').fadeOut(200, function() {
+            $('#control-login-container').fadeIn(200);
         });
     });
 
@@ -143,7 +143,7 @@ jQuery(document).ready(function($) {
 
     // --- Authentication Actions ---
 
-    $('#sukna-login-form').on('submit', function(e) {
+    $('#control-login-form').on('submit', function(e) {
         e.preventDefault();
         const $btn = $(this).find('button[type="submit"]');
         const phoneFull = $('#login-country-code').val() + $('#login-phone-body').val();
@@ -152,7 +152,7 @@ jQuery(document).ready(function($) {
         $btn.prop('disabled', true).text('جاري الدخول...');
         $('#login-error').hide();
 
-        $.post(sukna_ajax.ajax_url, $(this).serialize() + '&action=sukna_login&nonce=' + sukna_ajax.nonce, function(res) {
+        $.post(control_ajax.ajax_url, $(this).serialize() + '&action=control_login&nonce=' + control_ajax.nonce, function(res) {
             if (res.success) {
                 window.location.reload();
             } else {
@@ -162,7 +162,7 @@ jQuery(document).ready(function($) {
         });
     });
 
-    $('#sukna-register-form').on('submit', function(e) {
+    $('#control-register-form').on('submit', function(e) {
         e.preventDefault();
         const $btn = $('#reg-submit');
         const phoneFull = $('#reg-country-code').val() + $('#reg-phone-body').val();
@@ -177,10 +177,10 @@ jQuery(document).ready(function($) {
 
         const formData = $(this).serializeArray();
         formData.push({ name: 'phone', value: phoneFull });
-        formData.push({ name: 'action', value: 'sukna_register' });
-        formData.push({ name: 'nonce', value: sukna_ajax.nonce });
+        formData.push({ name: 'action', value: 'control_register' });
+        formData.push({ name: 'nonce', value: control_ajax.nonce });
 
-        $.post(sukna_ajax.ajax_url, formData, function(res) {
+        $.post(control_ajax.ajax_url, formData, function(res) {
             if (res.success) {
                 window.location.reload();
             } else {
@@ -192,10 +192,10 @@ jQuery(document).ready(function($) {
 
     // --- User Management ---
 
-    $('#sukna-user-form').on('submit', function(e) {
+    $('#control-user-form').on('submit', function(e) {
         e.preventDefault();
-        const action = $('#user-id').val() ? 'sukna_save_user' : 'sukna_add_user';
-        $.post(sukna_ajax.ajax_url, $(this).serialize() + '&action=' + action + '&nonce=' + sukna_ajax.nonce, function(res) {
+        const action = $('#user-id').val() ? 'control_save_user' : 'control_add_user';
+        $.post(control_ajax.ajax_url, $(this).serialize() + '&action=' + action + '&nonce=' + control_ajax.nonce, function(res) {
             if (res.success) {
                 alert('تم حفظ بيانات المستخدم بنجاح');
                 location.reload();
@@ -204,12 +204,12 @@ jQuery(document).ready(function($) {
         });
     });
 
-    $(document).on('click', '.sukna-delete-user', function(e) {
+    $(document).on('click', '.control-delete-user', function(e) {
         if (!confirm('حذف؟')) return;
-        $.post(sukna_ajax.ajax_url, { action: 'sukna_delete_user', id: $(this).data('id'), nonce: sukna_ajax.nonce }, () => location.reload());
+        $.post(control_ajax.ajax_url, { action: 'control_delete_user', id: $(this).data('id'), nonce: control_ajax.nonce }, () => location.reload());
     });
 
-    // --- Property Management Wizard ---
+    // --- Control System Wizard ---
     let propCurrentStep = 1;
 
     function showPropStep(step) {
@@ -300,14 +300,14 @@ jQuery(document).ready(function($) {
         $('#prop-summary-final').append(`<div class="wizard-custom-summary">${summaryHtml}</div>`);
     }
 
-    $('#sukna-add-property-btn').on('click', function() {
-        $('#sukna-property-form')[0].reset();
+    $('#control-add-property-btn').on('click', function() {
+        $('#control-property-form')[0].reset();
         $('#prop-id').val('');
         $('#setup-items-container').empty();
         $('#prop-modal-title').text('إضافة عقار جديد');
         propCurrentStep = 1;
         showPropStep(1);
-        $('#sukna-property-modal').css('display', 'flex');
+        $('#control-property-modal').css('display', 'flex');
     });
 
     $('#add-setup-item-btn').on('click', function() {
@@ -327,7 +327,7 @@ jQuery(document).ready(function($) {
         $(this).closest('.setup-item-row').remove();
     });
 
-    const geoData = sukna_ajax.geo_data;
+    const geoData = control_ajax.geo_data;
 
     function populateStates(countryCode, stateSelector, selectedState = '') {
         const states = geoData[countryCode] ? geoData[countryCode].states : {};
@@ -346,7 +346,7 @@ jQuery(document).ready(function($) {
         populateStates($(this).val(), '#prop-state');
     });
 
-    $(document).on('click', '.sukna-edit-property', function() {
+    $(document).on('click', '.control-edit-property', function() {
         const p = $(this).data('property');
         $('#prop-id').val(p.id);
         $('#prop-name').val(p.name);
@@ -374,7 +374,7 @@ jQuery(document).ready(function($) {
         $('#prop-owner-id').val(p.owner_id);
 
         $('#setup-items-container').empty();
-        $.post(sukna_ajax.ajax_url, { action: 'sukna_get_setup_items', id: p.id, nonce: sukna_ajax.nonce }, function(res) {
+        $.post(control_ajax.ajax_url, { action: 'control_get_setup_items', id: p.id, nonce: control_ajax.nonce }, function(res) {
             if (res.success) {
                 res.data.forEach(item => {
                     addSetupItemRow(item.item_name, item.item_cost);
@@ -385,17 +385,17 @@ jQuery(document).ready(function($) {
         $('#prop-modal-title').text('تعديل عقار');
         propCurrentStep = 1;
         showPropStep(1);
-        $('#sukna-property-modal').css('display', 'flex');
+        $('#control-property-modal').css('display', 'flex');
     });
 
-    $('.close-prop-modal').on('click', function() { $('#sukna-property-modal').hide(); });
+    $('.close-prop-modal').on('click', function() { $('#control-property-modal').hide(); });
 
-    $('#sukna-property-form').on('submit', function(e) {
+    $('#control-property-form').on('submit', function(e) {
         e.preventDefault();
         const $btn = $(this).find('button[type="submit"]');
         $btn.prop('disabled', true).text('جاري الحفظ...');
 
-        $.post(sukna_ajax.ajax_url, $(this).serialize() + '&action=sukna_save_property&nonce=' + sukna_ajax.nonce, function(res) {
+        $.post(control_ajax.ajax_url, $(this).serialize() + '&action=control_save_property&nonce=' + control_ajax.nonce, function(res) {
             if (res.success) {
                 alert('تم حفظ بيانات العقار بنجاح');
                 location.reload();
@@ -406,29 +406,29 @@ jQuery(document).ready(function($) {
         });
     });
 
-    $(document).on('click', '.sukna-delete-property', function() {
+    $(document).on('click', '.control-delete-property', function() {
         if (!confirm('حذف العقار وجميع غرفه؟')) return;
-        $.post(sukna_ajax.ajax_url, { action: 'sukna_delete_property', id: $(this).data('id'), nonce: sukna_ajax.nonce }, () => location.reload());
+        $.post(control_ajax.ajax_url, { action: 'control_delete_property', id: $(this).data('id'), nonce: control_ajax.nonce }, () => location.reload());
     });
 
     // --- Room Management ---
 
-    $(document).on('click', '.sukna-manage-rooms', function() {
+    $(document).on('click', '.control-manage-rooms', function() {
         const propId = $(this).data('id');
         $('#room-property-id').val(propId);
-        $('#sukna-room-quick-add')[0].reset();
-        $('#sukna-contract-form').hide();
+        $('#control-room-quick-add')[0].reset();
+        $('#control-contract-form').hide();
         loadRooms(propId);
-        $('#sukna-room-modal').css('display', 'flex');
+        $('#control-room-modal').css('display', 'flex');
     });
 
-    $('#sukna-room-quick-add').on('submit', function(e) {
+    $('#control-room-quick-add').on('submit', function(e) {
         e.preventDefault();
         const propId = $('#room-property-id').val();
-        $.post(sukna_ajax.ajax_url, $(this).serialize() + '&action=sukna_save_room&nonce=' + sukna_ajax.nonce, function(res) {
+        $.post(control_ajax.ajax_url, $(this).serialize() + '&action=control_save_room&nonce=' + control_ajax.nonce, function(res) {
             if (res.success) {
                 alert('تمت إضافة الوحدة بنجاح');
-                $('#sukna-room-quick-add')[0].reset();
+                $('#control-room-quick-add')[0].reset();
                 loadRooms(propId);
             } else {
                 alert('خطأ: ' + (res.data || 'فشل الحفظ'));
@@ -437,12 +437,12 @@ jQuery(document).ready(function($) {
     });
 
     function loadRooms(propId) {
-        $.post(sukna_ajax.ajax_url, { action: 'sukna_get_rooms', property_id: propId, nonce: sukna_ajax.nonce }, function(res) {
+        $.post(control_ajax.ajax_url, { action: 'control_get_rooms', property_id: propId, nonce: control_ajax.nonce }, function(res) {
             if (res.success) {
                 let html = '';
                 res.data.forEach(r => {
                     const isRented = r.status === 'rented';
-                    html += `<div class="sukna-room-block ${isRented ? 'is-rented' : 'is-available'}"
+                    html += `<div class="control-room-block ${isRented ? 'is-rented' : 'is-available'}"
                                   data-room='${JSON.stringify(r)}'
                                   style="width:100%; aspect-ratio:1/1; border:2px solid ${isRented ? '#ef4444' : '#059669'};
                                          background:${isRented ? '#ef4444' : 'transparent'}; cursor:pointer;
@@ -453,14 +453,14 @@ jQuery(document).ready(function($) {
                                 <small style="color:${isRented ? 'rgba(255,255,255,0.7)' : '#94a3b8'}; font-size:0.5rem; position:absolute; bottom:5px;">${isRented ? 'مؤجر' : 'متاح'}</small>
                              </div>`;
                 });
-                $('#sukna-rooms-grid').html(html || '<p>لا توجد وحدات</p>');
+                $('#control-rooms-grid').html(html || '<p>لا توجد وحدات</p>');
             }
         });
     }
 
-    $(document).on('click', '.sukna-room-block', function() {
+    $(document).on('click', '.control-room-block', function() {
         const r = $(this).data('room');
-        $('.sukna-room-block').css('transform', 'scale(1)');
+        $('.control-room-block').css('transform', 'scale(1)');
         $(this).css('transform', 'scale(1.05)');
 
         $('#detail-room-number').text(r.room_number);
@@ -490,22 +490,22 @@ jQuery(document).ready(function($) {
             $('#detail-installments-section').hide();
         }
 
-        $('#sukna-room-details').fadeIn();
-        $('#sukna-contract-form').hide();
+        $('#control-room-details').fadeIn();
+        $('#control-contract-form').hide();
     });
 
     function loadRoomInstallments(roomId) {
-        $.post(sukna_ajax.ajax_url, { action: 'sukna_get_installments', room_id: roomId, nonce: sukna_ajax.nonce }, function(res) {
+        $.post(control_ajax.ajax_url, { action: 'control_get_installments', room_id: roomId, nonce: control_ajax.nonce }, function(res) {
             if (res.success && res.data.length) {
                 let html = '<h5 style="margin:15px 0 10px 0; font-size:0.75rem; color:#000;">دفعات العقد الحالي:</h5>';
-                html += '<table class="sukna-table" style="font-size:0.7rem;"><thead><tr><th>التاريخ</th><th>المبلغ</th><th>الحالة</th><th>-</th></tr></thead><tbody>';
+                html += '<table class="control-table" style="font-size:0.7rem;"><thead><tr><th>التاريخ</th><th>المبلغ</th><th>الحالة</th><th>-</th></tr></thead><tbody>';
                 res.data.forEach(p => {
                     const isPaid = p.status === 'paid';
                     html += `<tr>
                         <td>${p.due_date}</td>
                         <td>${parseFloat(p.amount).toLocaleString()}</td>
-                        <td><span class="sukna-status-indicator ${isPaid ? 'indicator-success' : 'indicator-warning'}">${isPaid ? 'محصل' : 'معلق'}</span></td>
-                        <td>${!isPaid ? `<button class="sukna-btn sukna-record-payment" data-id="${p.id}" style="padding:2px 8px; font-size:0.6rem; background:#059669; border:none;">تحصيل</button>` : '-'}</td>
+                        <td><span class="control-status-indicator ${isPaid ? 'indicator-success' : 'indicator-warning'}">${isPaid ? 'محصل' : 'معلق'}</span></td>
+                        <td>${!isPaid ? `<button class="control-btn control-record-payment" data-id="${p.id}" style="padding:2px 8px; font-size:0.6rem; background:#059669; border:none;">تحصيل</button>` : '-'}</td>
                     </tr>`;
                 });
                 html += '</tbody></table>';
@@ -516,12 +516,12 @@ jQuery(document).ready(function($) {
         });
     }
 
-    $(document).on('click', '.sukna-record-payment', function() {
+    $(document).on('click', '.control-record-payment', function() {
         const id = $(this).data('id');
         const $btn = $(this);
         if (!confirm('تأكيد تحصيل هذه الدفعة؟')) return;
         $btn.prop('disabled', true);
-        $.post(sukna_ajax.ajax_url, { action: 'sukna_record_payment', id: id, nonce: sukna_ajax.nonce }, function(res) {
+        $.post(control_ajax.ajax_url, { action: 'control_record_payment', id: id, nonce: control_ajax.nonce }, function(res) {
             if (res.success) {
                 alert('تم التحصيل بنجاح');
                 location.reload(); // Reload to update all real-time stats
@@ -531,34 +531,34 @@ jQuery(document).ready(function($) {
 
     $(document).on('click', '#detail-contract-btn, #detail-renew-btn', function() {
         $('#contract-room-id').val($(this).data('id'));
-        $('#sukna-contract-form').slideDown();
-        $('#sukna-room-details').fadeOut();
+        $('#control-contract-form').slideDown();
+        $('#control-room-details').fadeOut();
     });
 
     $(document).on('click', '#detail-terminate-btn', function() {
         const id = $(this).data('id');
         if (!confirm('هل أنت متأكد من إنهاء التعاقد وإخلاء الوحدة (Check-out)؟')) return;
-        $.post(sukna_ajax.ajax_url, { action: 'sukna_terminate_contract', room_id: id, nonce: sukna_ajax.nonce }, function(res) {
+        $.post(control_ajax.ajax_url, { action: 'control_terminate_contract', room_id: id, nonce: control_ajax.nonce }, function(res) {
             if (res.success) {
                 alert('تم إنهاء التعاقد بنجاح.');
                 loadRooms($('#room-property-id').val());
-                $('#sukna-room-details').fadeOut();
+                $('#control-room-details').fadeOut();
             }
         });
     });
 
     $(document).on('click', '#detail-delete-btn', function() {
         if (!confirm('حذف الوحدة؟')) return;
-        $.post(sukna_ajax.ajax_url, { action: 'sukna_delete_room', id: $(this).data('id'), nonce: sukna_ajax.nonce }, () => {
-            $('#sukna-room-details').fadeOut();
+        $.post(control_ajax.ajax_url, { action: 'control_delete_room', id: $(this).data('id'), nonce: control_ajax.nonce }, () => {
+            $('#control-room-details').fadeOut();
             loadRooms($('#room-property-id').val());
         });
     });
 
-    $('#sukna-reset-rooms-btn').on('click', function() {
+    $('#control-reset-rooms-btn').on('click', function() {
         if (!confirm('سيتم مسح كافة المستأجرين وإعادة كافة الوحدات كشاغرة لهذا العقار. هل أنت متأكد؟')) return;
         const propId = $('#room-property-id').val();
-        $.post(sukna_ajax.ajax_url, { action: 'sukna_reset_property_rooms', id: propId, nonce: sukna_ajax.nonce }, function(res) {
+        $.post(control_ajax.ajax_url, { action: 'control_reset_property_rooms', id: propId, nonce: control_ajax.nonce }, function(res) {
             if (res.success) {
                 alert('تمت عملية إعادة التعيين بنجاح لبداية دورة إيجارية جديدة.');
                 loadRooms(propId);
@@ -566,12 +566,12 @@ jQuery(document).ready(function($) {
         });
     });
 
-    $(document).on('click', '.sukna-create-contract-btn', function() {
+    $(document).on('click', '.control-create-contract-btn', function() {
         $('#contract-room-id').val($(this).data('id'));
-        $('#sukna-contract-form').slideDown();
+        $('#control-contract-form').slideDown();
     });
 
-    $('#sukna-contract-form').on('submit', function(e) {
+    $('#control-contract-form').on('submit', function(e) {
         e.preventDefault();
         // Basic validation: must have either a registered tenant or a guest name
         if (!$('#contract-tenant-id').val() && !$('#contract-guest-name').val()) {
@@ -579,37 +579,37 @@ jQuery(document).ready(function($) {
             return;
         }
 
-        $.post(sukna_ajax.ajax_url, $(this).serialize() + '&action=sukna_save_contract&nonce=' + sukna_ajax.nonce, function(res) {
+        $.post(control_ajax.ajax_url, $(this).serialize() + '&action=control_save_contract&nonce=' + control_ajax.nonce, function(res) {
             if (res.success) {
                 alert('تم تفعيل العقد بنجاح');
-                $('#sukna-contract-form').slideUp();
+                $('#control-contract-form').slideUp();
                 loadRooms($('#room-property-id').val());
             }
         });
     });
 
-    $(document).on('click', '.sukna-delete-room', function() {
+    $(document).on('click', '.control-delete-room', function() {
         if (!confirm('حذف الغرفة؟')) return;
-        $.post(sukna_ajax.ajax_url, { action: 'sukna_delete_room', id: $(this).data('id'), nonce: sukna_ajax.nonce }, () => loadRooms($('#room-property-id').val()));
+        $.post(control_ajax.ajax_url, { action: 'control_delete_room', id: $(this).data('id'), nonce: control_ajax.nonce }, () => loadRooms($('#room-property-id').val()));
     });
 
-    $('.close-room-modal').on('click', function() { $('#sukna-room-modal').hide(); });
+    $('.close-room-modal').on('click', function() { $('#control-room-modal').hide(); });
 
     // --- Expense Management ---
 
-    $(document).on('click', '.sukna-record-expense-btn', function() {
+    $(document).on('click', '.control-record-expense-btn', function() {
         $('#expense-property-id').val($(this).data('id'));
-        $('#sukna-expense-modal').css('display', 'flex');
+        $('#control-expense-modal').css('display', 'flex');
     });
 
-    $('.close-expense-modal').on('click', function() { $('#sukna-expense-modal').hide(); });
+    $('.close-expense-modal').on('click', function() { $('#control-expense-modal').hide(); });
 
-    $('#sukna-expense-form').on('submit', function(e) {
+    $('#control-expense-form').on('submit', function(e) {
         e.preventDefault();
-        $.post(sukna_ajax.ajax_url, $(this).serialize() + '&action=sukna_record_expense&nonce=' + sukna_ajax.nonce, function(res) {
+        $.post(control_ajax.ajax_url, $(this).serialize() + '&action=control_record_expense&nonce=' + control_ajax.nonce, function(res) {
             if (res.success) {
                 alert('تم تسجيل المصروفات');
-                $('#sukna-expense-form')[0].reset();
+                $('#control-expense-form')[0].reset();
                 location.reload();
             }
         });
@@ -617,65 +617,65 @@ jQuery(document).ready(function($) {
 
     // --- Revenue Distribution ---
 
-    $(document).on('click', '.sukna-distribute-revenue-btn', function() {
+    $(document).on('click', '.control-distribute-revenue-btn', function() {
         const id = $(this).data('id');
         const net = $(this).data('net');
         if (!confirm(`هل أنت متأكد من توزيع مبلغ ${net} AED على كافة الشركاء؟`)) return;
-        $.post(sukna_ajax.ajax_url, { action: 'sukna_distribute_revenue', id: id, net_profit: net, nonce: sukna_ajax.nonce }, function(res) {
+        $.post(control_ajax.ajax_url, { action: 'control_distribute_revenue', id: id, net_profit: net, nonce: control_ajax.nonce }, function(res) {
             if (res.success) alert('تم توزيع الأرباح بنجاح');
         });
     });
 
     // --- Investor Management ---
 
-    $(document).on('click', '.sukna-manage-investors', function() {
+    $(document).on('click', '.control-manage-investors', function() {
         const propId = $(this).data('id');
         const isFunded = $(this).closest('.property-dashboard-unit').data('funded') == '1';
 
         $('#invest-property-id').val(propId);
         if (isFunded) {
-            $('#sukna-investment-form').hide();
+            $('#control-investment-form').hide();
             $('#investment-lock-msg').show();
         } else {
-            $('#sukna-investment-form').show();
+            $('#control-investment-form').show();
             $('#investment-lock-msg').hide();
         }
 
         loadInvestments(propId);
-        $('#sukna-investor-modal').css('display', 'flex');
+        $('#control-investor-modal').css('display', 'flex');
     });
 
     function loadInvestments(propId) {
-        $.post(sukna_ajax.ajax_url, { action: 'sukna_get_investments', property_id: propId, nonce: sukna_ajax.nonce }, function(res) {
+        $.post(control_ajax.ajax_url, { action: 'control_get_investments', property_id: propId, nonce: control_ajax.nonce }, function(res) {
             if (res.success) {
-                let html = '<table class="sukna-table"><thead><tr><th>المستثمر</th><th>المبلغ</th><th>الحصص</th><th>إجراءات</th></tr></thead><tbody>';
+                let html = '<table class="control-table"><thead><tr><th>المستثمر</th><th>المبلغ</th><th>الحصص</th><th>إجراءات</th></tr></thead><tbody>';
                 res.data.forEach(i => {
                     html += `<tr>
                         <td><strong>${i.investor_name}</strong><br><small style="color:#64748b;">${i.investor_role === 'owner' ? 'المالك / المشغل' : 'مستثمر شريك'}</small></td>
                         <td>${parseFloat(i.amount).toLocaleString()} AED</td>
                         <td style="text-align:center;">${i.installments_paid}</td>
                         <td>
-                            <button class="sukna-btn sukna-download-invoice" data-id="${i.id}" style="padding:4px 8px; font-size:0.7rem; background:#fff; color:#000 !important; border:1px solid #ddd;">
+                            <button class="control-btn control-download-invoice" data-id="${i.id}" style="padding:4px 8px; font-size:0.7rem; background:#fff; color:#000 !important; border:1px solid #ddd;">
                                 <span class="dashicons dashicons-media-text" style="font-size:14px;"></span>
                             </button>
                         </td>
                     </tr>`;
                 });
                 html += '</tbody></table>';
-                $('#sukna-investments-list').html(res.data.length ? html : '<p style="text-align:center;">لا يوجد مستثمرون حالياً</p>');
+                $('#control-investments-list').html(res.data.length ? html : '<p style="text-align:center;">لا يوجد مستثمرون حالياً</p>');
             }
         });
     }
 
-    $('.close-investor-modal').on('click', function() { $('#sukna-investor-modal').hide(); });
+    $('.close-investor-modal').on('click', function() { $('#control-investor-modal').hide(); });
 
-    $('#sukna-investment-form').on('submit', function(e) {
+    $('#control-investment-form').on('submit', function(e) {
         e.preventDefault();
         const propId = $('#invest-property-id').val();
-        $.post(sukna_ajax.ajax_url, $(this).serialize() + '&action=sukna_save_investment&nonce=' + sukna_ajax.nonce, function(res) {
+        $.post(control_ajax.ajax_url, $(this).serialize() + '&action=control_save_investment&nonce=' + control_ajax.nonce, function(res) {
             if (res.success) {
                 alert('تمت إضافة الاستثمار بنجاح');
-                $('#sukna-investment-form')[0].reset();
+                $('#control-investment-form')[0].reset();
                 loadInvestments(propId);
             }
         });
@@ -683,7 +683,7 @@ jQuery(document).ready(function($) {
 
     // --- PDF Report Export ---
 
-    $(document).on('click', '.sukna-export-pdf-btn', function() {
+    $(document).on('click', '.control-export-pdf-btn', function() {
         const id = $(this).data('id');
         const name = $(this).data('name');
         const $btn = $(this);
@@ -691,7 +691,7 @@ jQuery(document).ready(function($) {
 
         $btn.prop('disabled', true).html('<span class="dashicons dashicons-update spin"></span> جاري التجهيز...');
 
-        $.post(sukna_ajax.ajax_url, { action: 'sukna_get_report_html', id: id, nonce: sukna_ajax.nonce }, function(res) {
+        $.post(control_ajax.ajax_url, { action: 'control_get_report_html', id: id, nonce: control_ajax.nonce }, function(res) {
             if (res.success) {
                 const element = document.createElement('div');
                 element.innerHTML = res.data;
@@ -699,7 +699,7 @@ jQuery(document).ready(function($) {
 
                 const opt = {
                     margin: 0,
-                    filename: `Sukna_Report_${name}.pdf`,
+                    filename: `Control_Report_${name}.pdf`,
                     image: { type: 'jpeg', quality: 0.98 },
                     html2canvas: { scale: 2, useCORS: true },
                     jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
@@ -718,14 +718,14 @@ jQuery(document).ready(function($) {
 
     // --- Other Shared Utilities ---
 
-    const syncLoader = $('#sukna-sync-loader');
+    const syncLoader = $('#control-sync-loader');
     function showSync(text = 'جارٍ تحميل البيانات...') { syncLoader.find('.loader-text').text(text); syncLoader.fadeIn(200); }
     function hideSync() { syncLoader.find('.loader-text').text('تم التحديث بنجاح'); setTimeout(() => syncLoader.fadeOut(400), 1000); }
 
     $(document).ajaxStart(function() { showSync(); });
     $(document).ajaxStop(function() { hideSync(); });
 
-    $('#sukna-refresh-btn, #sukna-mobile-refresh-btn').on('click', function() {
+    $('#control-refresh-btn, #control-mobile-refresh-btn').on('click', function() {
         showSync('جاري مسح التخزين المؤقت وتحديث البيانات...');
         localStorage.clear();
         sessionStorage.clear();
@@ -733,11 +733,11 @@ jQuery(document).ready(function($) {
     });
 
 
-    $('#sukna-logout-btn, #sukna-mobile-logout-btn').on('click', function() {
-        $.post(sukna_ajax.ajax_url, { action: 'sukna_logout', nonce: sukna_ajax.nonce }, () => location.reload());
+    $('#control-logout-btn, #control-mobile-logout-btn').on('click', function() {
+        $.post(control_ajax.ajax_url, { action: 'control_logout', nonce: control_ajax.nonce }, () => location.reload());
     });
 
-    $(document).on('click', '.sukna-upload-btn', function(e) {
+    $(document).on('click', '.control-upload-btn', function(e) {
         e.preventDefault();
         const btn = $(this);
         const frame = wp.media({ title: 'اختر صورة', multiple: false }).open();
@@ -756,26 +756,26 @@ jQuery(document).ready(function($) {
 
     window.addEventListener('beforeinstallprompt', (e) => {
         e.preventDefault();
-        window.suknaInstallPrompt = e;
-        $('#sukna-install-banner').fadeIn(300);
+        window.controlInstallPrompt = e;
+        $('#control-install-banner').fadeIn(300);
     });
 
     // Tab switching for settings
-    $('.sukna-tab-btn').on('click', function() {
+    $('.control-tab-btn').on('click', function() {
         const tab = $(this).data('tab');
-        $('.sukna-tab-btn').removeClass('active');
+        $('.control-tab-btn').removeClass('active');
         $(this).addClass('active');
-        $('.sukna-tab-content').hide();
+        $('.control-tab-content').hide();
         $('#' + tab).fadeIn(200);
     });
 
     // Mobile Header Logout (Red Pill)
-    $('#sukna-header-logout').on('click', function() {
-        $.post(sukna_ajax.ajax_url, { action: 'sukna_logout', nonce: sukna_ajax.nonce }, () => location.reload());
+    $('#control-header-logout').on('click', function() {
+        $.post(control_ajax.ajax_url, { action: 'control_logout', nonce: control_ajax.nonce }, () => location.reload());
     });
 
     // Expandable Panels
-    $(document).on('click', '.sukna-collapse-trigger', function() {
-        $(this).next('.sukna-collapse-content').slideToggle(200);
+    $(document).on('click', '.control-collapse-trigger', function() {
+        $(this).next('.control-collapse-content').slideToggle(200);
     });
 });
