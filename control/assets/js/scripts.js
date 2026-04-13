@@ -251,6 +251,20 @@ jQuery(document).ready(function($) {
         $('#control-install-banner').fadeIn(300);
     });
 
+    // --- Audit & UI Extras ---
+
+    $(document).on('click', '#control-export-audit-pdf', function() {
+        const element = document.getElementById('control-audit-logs-body').closest('table');
+        const opt = {
+            margin:       10,
+            filename:     'control_audit_log.pdf',
+            image:        { type: 'jpeg', quality: 0.98 },
+            html2canvas:  { scale: 2 },
+            jsPDF:        { unit: 'mm', format: 'a4', orientation: 'landscape' }
+        };
+        html2pdf().set(opt).from(element).save();
+    });
+
     // Mobile Header Logout (Red Pill)
     $('#control-header-logout').on('click', function() {
         $.post(control_ajax.ajax_url, { action: 'control_logout', nonce: control_ajax.nonce }, () => location.reload());

@@ -222,4 +222,20 @@ class Control_Auth {
 		$table = $wpdb->prefix . 'control_staff';
 		return $wpdb->get_results( "SELECT * FROM $table ORDER BY id DESC" );
 	}
+
+	/**
+	 * Centralized Permissions Registry
+	 */
+	public static function get_permissions_registry() {
+		return array(
+			'dashboard'     => array( 'label' => __( 'عرض لوحة التحكم', 'control' ), 'category' => __( 'النظام', 'control' ) ),
+			'users_view'    => array( 'label' => __( 'عرض قائمة الكوادر', 'control' ), 'category' => __( 'الكوادر', 'control' ) ),
+			'users_manage'  => array( 'label' => __( 'إضافة وتعديل الكوادر', 'control' ), 'category' => __( 'الكوادر', 'control' ) ),
+			'users_delete'  => array( 'label' => __( 'حذف الكوادر', 'control' ), 'category' => __( 'الكوادر', 'control' ) ),
+			'roles_manage'  => array( 'label' => __( 'إدارة الصلاحيات والأدوار', 'control' ), 'category' => __( 'النظام', 'control' ) ),
+			'settings_manage' => array( 'label' => __( 'إدارة إعدادات النظام', 'control' ), 'category' => __( 'النظام', 'control' ) ),
+			'audit_view'    => array( 'label' => __( 'عرض سجل النشاطات', 'control' ), 'category' => __( 'النظام', 'control' ) ),
+			'backup_manage' => array( 'label' => __( 'إدارة النسخ الاحتياطي', 'control' ), 'category' => __( 'النظام', 'control' ) ),
+		);
+	}
 }

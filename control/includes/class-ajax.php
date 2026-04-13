@@ -433,18 +433,43 @@ class Control_Ajax {
 		$id = intval( $_POST['id'] ?? 0 );
 		$role_key = sanitize_key( $_POST['role_key'] );
 		$role_name = sanitize_text_field( $_POST['role_name'] );
-		$permissions = $_POST['permissions'] ?? array();
+		$submitted_permissions = $_POST['permissions'] ?? array();
+
+		if ( empty($role_key) || empty($role_name) ) {
+			$this->send_error( 'Role key and name are required' );
+		}
+
+		// Validate permissions against Registry
+		$registry = Control_Auth::get_permissions_registry();
+		$validated_permissions = array();
+		foreach ( $submitted_permissions as $perm_key => $value ) {
+			if ( isset($registry[$perm_key]) ) {
+				$validated_permissions[$perm_key] = true;
+			}
+		}
+
+		// Check for system role key protection
+		if ( $id ) {
+			$current_role = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$wpdb->prefix}control_roles WHERE id = %d", $id ) );
+			if ( $current_role && $current_role->is_system && $current_role->role_key !== $role_key ) {
+				$this->send_error( 'Cannot change system role key' );
+			}
+		}
 
 		$data = array(
 			'role_key' => $role_key,
 			'role_name' => $role_name,
-			'permissions' => json_encode( $permissions )
+			'permissions' => json_encode( $validated_permissions )
 		);
 
 		if ( $id ) {
 			$wpdb->update( $wpdb->prefix . 'control_roles', $data, array( 'id' => $id ) );
 			Control_Audit::log('edit_role', "Updated role: $role_name");
 		} else {
+			// Check key uniqueness
+			$exists = $wpdb->get_var( $wpdb->prepare( "SELECT id FROM {$wpdb->prefix}control_roles WHERE role_key = %s", $role_key ) );
+			if ( $exists ) $this->send_error( 'Role key already exists' );
+
 			$wpdb->insert( $wpdb->prefix . 'control_roles', $data );
 			Control_Audit::log('add_role', "Added role: $role_name");
 		}
