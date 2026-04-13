@@ -13,6 +13,26 @@ class Control_Auth {
 		add_action( 'init', array( __CLASS__, 'sync_roles' ) );
 		add_action( 'admin_init', array( __CLASS__, 'restrict_admin_access' ) );
 		add_filter( 'show_admin_bar', array( __CLASS__, 'handle_admin_bar' ) );
+
+		// Update activity for logged in users
+		add_action( 'init', array( __CLASS__, 'update_last_activity' ) );
+	}
+
+	/**
+	 * Update user's last activity timestamp.
+	 */
+	public static function update_last_activity() {
+		if ( self::is_logged_in() ) {
+			$user = self::current_user();
+			if ( $user && is_numeric( $user->id ) ) {
+				global $wpdb;
+				$wpdb->update(
+					$wpdb->prefix . 'control_staff',
+					array( 'last_activity' => current_time( 'mysql' ) ),
+					array( 'id' => $user->id )
+				);
+			}
+		}
 	}
 
 	/**
@@ -75,8 +95,6 @@ class Control_Auth {
 			return;
 		}
 
-		$current_user = self::current_user();
-
 		// If not System Admin and not Site Admin (administrator), redirect away
 		if ( is_admin() && ! current_user_can( 'manage_options' ) ) {
 			wp_redirect( home_url() );
@@ -104,6 +122,7 @@ class Control_Auth {
 			if ( $user->is_restricted ) {
 				return new WP_Error( 'restricted', __( 'هذا الحساب مقيد حالياً. يرجى التواصل مع الإدارة.', 'control' ) );
 			}
+			$wpdb->update( $table, array( 'last_activity' => current_time( 'mysql' ) ), array( 'id' => $user->id ) );
 			return self::set_user_session( $user );
 		}
 		return false;
@@ -130,7 +149,7 @@ class Control_Auth {
 		$inserted = $wpdb->insert( $table, array(
 			'name'     => $data['first_name'] . ' ' . $data['last_name'],
 			'phone'    => $data['phone'],
-			'username' => $data['phone'],
+			'username' => $data['phone'], // Username is the phone number
 			'email'    => $data['email'],
 			'password' => password_hash( $data['password'], PASSWORD_DEFAULT ),
 			'role'     => 'coach', // Default to coach

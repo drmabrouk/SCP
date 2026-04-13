@@ -24,6 +24,7 @@ class Control_Database {
 			role varchar(50) DEFAULT 'employee',
 			is_restricted tinyint(1) DEFAULT 0,
 			created_at datetime DEFAULT CURRENT_TIMESTAMP,
+			last_activity datetime DEFAULT CURRENT_TIMESTAMP,
 
 			/* Personal Info */
 			profile_image varchar(255),

@@ -31,7 +31,7 @@
 * {
     font-family: 'Rubik', sans-serif !important;
     box-sizing: border-box;
-    overflow-wrap: break-word; /* Prevent stretching */
+    overflow-wrap: break-word;
     word-break: break-word;
 }
 
