@@ -53,6 +53,56 @@ jQuery(document).ready(function($) {
         input.click();
     });
 
+    // --- Backup & Restore System ---
+
+    $(document).on('click', '#control-generate-backup', function() {
+        const $btn = $(this);
+        const originalText = $btn.text();
+        $btn.prop('disabled', true).text('جاري توليد النسخة الاحتياطية...');
+
+        $.post(control_ajax.ajax_url, { action: 'control_create_backup', nonce: control_ajax.nonce }, function(res) {
+            if (res.success) {
+                const blob = new Blob([res.data.json], { type: 'application/json' });
+                const link = document.createElement("a");
+                const url = URL.createObjectURL(blob);
+                link.setAttribute("href", url);
+                link.setAttribute("download", res.data.filename);
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                alert('تم إنشاء النسخة الاحتياطية بنجاح.');
+            } else {
+                alert('فشل إنشاء النسخة الاحتياطية: ' + res.data);
+            }
+            $btn.prop('disabled', false).text(originalText);
+        });
+    });
+
+    $(document).on('click', '#control-restore-trigger', function() {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = '.json';
+        input.onchange = e => {
+            const file = e.target.files[0];
+            const reader = new FileReader();
+            reader.onload = event => {
+                const backupData = event.target.result;
+                if (confirm('تحذير هام: سيتم استبدال كافة البيانات الحالية. هل تريد الاستمرار؟')) {
+                    $.post(control_ajax.ajax_url, { action: 'control_restore_backup', backup_data: backupData, nonce: control_ajax.nonce }, function(res) {
+                        if (res.success) {
+                            alert('تمت استعادة النظام بنجاح. سيتم إعادة تحميل الصفحة.');
+                            location.reload();
+                        } else {
+                            alert('خطأ في الاستعادة: ' + res.data);
+                        }
+                    });
+                }
+            };
+            reader.readAsText(file);
+        };
+        input.click();
+    });
+
     // --- Auth Toggling & Multi-step Registration ---
 
     $('#switch-to-register').on('click', function() {
@@ -74,38 +124,39 @@ jQuery(document).ready(function($) {
         $(target).text(flag);
     });
 
-    let currentStep = 1;
-    const totalSteps = 4;
+    let regCurrentStep = 1;
+    const regTotalSteps = 4;
 
     $('#reg-next').on('click', function() {
-        if (validateStep(currentStep)) {
-            $(`#reg-step-${currentStep}`).hide();
-            currentStep++;
-            $(`#reg-step-${currentStep}`).fadeIn(300);
+        if (validateRegStep(regCurrentStep)) {
+            $(`#reg-step-${regCurrentStep}`).hide();
+            regCurrentStep++;
+            $(`#reg-step-${regCurrentStep}`).fadeIn(300);
             updateRegButtons();
         }
     });
 
     $('#reg-prev').on('click', function() {
-        $(`#reg-step-${currentStep}`).hide();
-        currentStep--;
-        $(`#reg-step-${currentStep}`).fadeIn(300);
+        $(`#reg-step-${regCurrentStep}`).hide();
+        regCurrentStep--;
+        $(`#reg-step-${regCurrentStep}`).fadeIn(300);
         updateRegButtons();
     });
 
     function updateRegButtons() {
-        $('#reg-prev').toggle(currentStep > 1);
-        $('#reg-next').toggle(currentStep < totalSteps);
-        $('#reg-submit').toggle(currentStep === totalSteps);
+        $('#reg-prev').toggle(regCurrentStep > 1);
+        $('#reg-next').toggle(regCurrentStep < regTotalSteps);
+        $('#reg-submit').toggle(regCurrentStep === regTotalSteps);
     }
 
-    function validateStep(step) {
+    function validateRegStep(step) {
         let valid = true;
         $(`#reg-step-${step} input[required]`).each(function() {
             if (!$(this).val()) {
-                alert('يرجى ملء الحقول المطلوبة');
+                $(this).css('border-color', '#ef4444');
                 valid = false;
-                return false;
+            } else {
+                $(this).css('border-color', '#333');
             }
         });
         return valid;
@@ -154,29 +205,37 @@ jQuery(document).ready(function($) {
             if (res.success) {
                 window.location.reload();
             } else {
-                $btn.prop('disabled', false).text('إتمام التسجيل');
+                $btn.prop('disabled', false).text('إتمتم التسجيل');
                 $('#reg-error').text(res.data.message || 'حدث خطأ').show();
             }
         });
     });
 
-    // --- User Management ---
+    // --- Settings System ---
 
-    $('#control-user-form').on('submit', function(e) {
-        e.preventDefault();
-        const action = $('#user-id').val() ? 'control_save_user' : 'control_add_user';
-        $.post(control_ajax.ajax_url, $(this).serialize() + '&action=' + action + '&nonce=' + control_ajax.nonce, function(res) {
-            if (res.success) {
-                alert('تم حفظ بيانات المستخدم بنجاح');
-                location.reload();
-            }
-            else alert(res.data || 'حدث خطأ أثناء الحفظ');
-        });
+    $('.control-tab-btn').on('click', function() {
+        const tab = $(this).data('tab');
+        $('.control-tab-btn').removeClass('active');
+        $(this).addClass('active');
+        $('.control-tab-content').hide();
+        $('#' + tab).fadeIn(200);
     });
 
-    $(document).on('click', '.control-delete-user', function(e) {
-        if (!confirm('حذف؟')) return;
-        $.post(control_ajax.ajax_url, { action: 'control_delete_user', id: $(this).data('id'), nonce: control_ajax.nonce }, () => location.reload());
+    $('.control-system-settings-form').on('submit', function(e) {
+        e.preventDefault();
+        const $btn = $(this).find('button[type="submit"]');
+        const originalHtml = $btn.html();
+        $btn.prop('disabled', true).html('<span class="dashicons dashicons-update spin"></span> جاري الحفظ...');
+
+        $.post(control_ajax.ajax_url, $(this).serialize() + '&action=control_save_settings&nonce=' + control_ajax.nonce, function(res) {
+            if (res.success) {
+                alert('تم حفظ الإعدادات بنجاح');
+                location.reload();
+            } else {
+                alert('خطأ أثناء الحفظ');
+                $btn.prop('disabled', false).html(originalHtml);
+            }
+        });
     });
 
     // --- Other Shared Utilities ---
@@ -206,12 +265,13 @@ jQuery(document).ready(function($) {
         const frame = wp.media({ title: 'اختر صورة', multiple: false }).open();
         frame.on('select', function() {
             const attachment = frame.state().get('selection').first().toJSON();
-            const target = btn.parent().find('input[type="text"]');
+            const target = btn.parent().find('input[type="hidden"]');
             if (target.length) {
                 target.val(attachment.url);
-                if (target.attr('id') === 'company-logo-url') {
-                    $('#logo-preview').attr('src', attachment.url);
-                    $('#logo-preview-container').fadeIn();
+                const previewImg = btn.closest('.control-form-group').find('img');
+                if (previewImg.length) {
+                    previewImg.attr('src', attachment.url).show();
+                    btn.closest('.control-form-group').find('.dashicons').hide();
                 }
             }
         });
@@ -221,15 +281,6 @@ jQuery(document).ready(function($) {
         e.preventDefault();
         window.controlInstallPrompt = e;
         $('#control-install-banner').fadeIn(300);
-    });
-
-    // Tab switching for settings
-    $('.control-tab-btn').on('click', function() {
-        const tab = $(this).data('tab');
-        $('.control-tab-btn').removeClass('active');
-        $(this).addClass('active');
-        $('.control-tab-content').hide();
-        $('#' + tab).fadeIn(200);
     });
 
     // Mobile Header Logout (Red Pill)

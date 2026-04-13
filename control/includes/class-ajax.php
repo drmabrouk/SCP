@@ -9,7 +9,8 @@ class Control_Ajax {
 		// Private actions (Logged-in only)
 		$private_actions = array(
 			'logout', 'add_user', 'save_user', 'delete_user', 'save_settings',
-			'undo_activity', 'toggle_user_restriction', 'export_data', 'import_data'
+			'undo_activity', 'toggle_user_restriction', 'export_data', 'import_data',
+			'create_backup', 'restore_backup'
 		);
 
 		foreach ( $private_actions as $action ) {
@@ -259,7 +260,7 @@ class Control_Ajax {
 
 		foreach ( $lines as $line ) {
 			if ( empty($line) ) continue;
-			$row = array_combine( $header, str_getcsv( $line ) );
+			$row = @array_combine( $header, str_getcsv( $line ) );
 			if ( ! $row ) continue;
 
 			if ( $type === 'users' ) {
@@ -295,6 +296,55 @@ class Control_Ajax {
 		}
 
 		wp_send_json_error( 'Cannot undo this action' );
+	}
+
+	public function create_backup() {
+		check_ajax_referer( 'control_nonce', 'nonce' );
+		if ( ! Control_Auth::is_admin() ) wp_send_json_error( 'Unauthorized' );
+
+		global $wpdb;
+		$tables = array( 'control_staff', 'control_settings', 'control_activity_logs' );
+		$backup = array();
+
+		foreach ( $tables as $table ) {
+			$full_table_name = $wpdb->prefix . $table;
+			$backup[$table] = $wpdb->get_results( "SELECT * FROM $full_table_name", ARRAY_A );
+		}
+
+		$backup_data = json_encode( $backup );
+		$filename = "control_system_backup_" . date('Y-m-d_H-i') . ".json";
+
+		wp_send_json_success( array(
+			'json'     => $backup_data,
+			'filename' => $filename
+		) );
+	}
+
+	public function restore_backup() {
+		check_ajax_referer( 'control_nonce', 'nonce' );
+		if ( ! Control_Auth::is_admin() ) wp_send_json_error( 'Unauthorized' );
+
+		$backup_json = $_POST['backup_data'] ?? '';
+		if ( empty($backup_json) ) wp_send_json_error( 'No backup data provided' );
+
+		$backup = json_decode( $backup_json, true );
+		if ( ! is_array($backup) ) wp_send_json_error( 'Invalid backup format' );
+
+		global $wpdb;
+		foreach ( $backup as $table => $rows ) {
+			$full_table_name = $wpdb->prefix . $table;
+
+			// Clear current data
+			$wpdb->query( "DELETE FROM $full_table_name" );
+
+			// Restore
+			foreach ( $rows as $row ) {
+				$wpdb->insert( $full_table_name, $row );
+			}
+		}
+
+		Control_Audit::log('restore_backup', 'System restored from a backup file');
+		wp_send_json_success( 'System restored successfully' );
 	}
 }
 
