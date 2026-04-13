@@ -20,6 +20,53 @@ $countries = array(
     '+973' => array('flag' => '🇧🇭', 'name' => 'البحرين'),
     '+968' => array('flag' => '🇴🇲', 'name' => 'عمان'),
 );
+
+function control_get_time_ago($timestamp) {
+    if (!$timestamp) return 'غير نشط';
+
+    $time = is_numeric($timestamp) ? $timestamp : strtotime($timestamp);
+    $diff = time() - $time;
+
+    if ($diff < 60) return 'الآن';
+
+    $units = array(
+        31536000 => 'سنة',
+        2592000  => 'شهر',
+        604800   => 'أسبوع',
+        86400    => 'يوم',
+        3600     => 'ساعة',
+        60       => 'دقيقة'
+    );
+
+    foreach ($units as $unit => $label) {
+        if ($diff < $unit) continue;
+        $count = floor($diff / $unit);
+
+        // Simple Arabic pluralization for common cases
+        if ($label == 'ساعة') {
+            if ($count == 1) return 'منذ ساعة';
+            if ($count == 2) return 'منذ ساعتين';
+            if ($count <= 10) return 'منذ ' . $count . ' ساعات';
+            return 'منذ ' . $count . ' ساعة';
+        }
+        if ($label == 'يوم') {
+            if ($count == 1) return 'منذ يوم';
+            if ($count == 2) return 'منذ يومين';
+            if ($count <= 10) return 'منذ ' . $count . ' أيام';
+            return 'منذ ' . $count . ' يوم';
+        }
+        if ($label == 'دقيقة') {
+            if ($count == 1) return 'منذ دقيقة';
+            if ($count == 2) return 'منذ دقيقتين';
+            if ($count <= 10) return 'منذ ' . $count . ' دقائق';
+            return 'منذ ' . $count . ' دقيقة';
+        }
+
+        return 'منذ ' . $count . ' ' . $label;
+    }
+
+    return 'منذ فترة';
+}
 ?>
 
 <div class="control-header-flex" style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
@@ -64,6 +111,12 @@ $countries = array(
 <div id="control-users-grid" class="control-grid" style="grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px;">
     <?php foreach($users as $u): ?>
         <div class="control-card user-card-item" data-user='<?php echo json_encode($u); ?>' data-role="<?php echo $u->role; ?>" data-search="<?php echo esc_attr(strtolower($u->name . ' ' . $u->phone . ' ' . ($role_labels[$u->role] ?? ''))); ?>" style="padding:0; display:flex; flex-direction:column;">
+
+            <!-- Activity Badge -->
+            <div class="user-activity-badge" title="آخر ظهور">
+                <?php echo control_get_time_ago($u->last_activity); ?>
+            </div>
+
             <div style="padding:20px; flex:1;">
                 <div style="display:flex; gap:15px; align-items:flex-start;">
                     <div style="position:relative;">
@@ -80,12 +133,22 @@ $countries = array(
                     </div>
                     <div style="flex:1; min-width:0;">
                         <div style="font-weight:800; color:var(--control-text-dark); font-size:1.05rem; margin-bottom:4px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"><?php echo esc_html($u->name); ?></div>
-                        <div style="color:var(--control-muted); font-size:0.8rem; margin-bottom:10px; display:flex; align-items:center; gap:5px;">
+
+                        <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                            <span style="color:var(--control-muted); font-size:0.75rem; font-weight:600;">
+                                <?php echo $role_labels[$u->role] ?? $u->role; ?>
+                            </span>
+                            <?php if($u->employer_name): ?>
+                                <span style="width:1px; height:10px; background:var(--control-border);"></span>
+                                <span style="color:var(--control-muted); font-size:0.75rem; font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:120px;">
+                                    <?php echo esc_html($u->employer_name); ?>
+                                </span>
+                            <?php endif; ?>
+                        </div>
+
+                        <div style="color:var(--control-muted); font-size:0.8rem; margin-top:8px; display:flex; align-items:center; gap:5px;">
                             <span class="dashicons dashicons-phone" style="font-size:16px; width:16px; height:16px;"></span> <?php echo esc_html($u->phone); ?>
                         </div>
-                        <span class="control-capsule" style="background:var(--control-accent-soft); color:var(--control-accent); border:1px solid var(--control-accent-soft); font-weight:700; font-size:0.75rem;">
-                            <?php echo $role_labels[$u->role] ?? $u->role; ?>
-                        </span>
                     </div>
                 </div>
             </div>
@@ -100,7 +163,6 @@ $countries = array(
                                 <span class="dashicons dashicons-building" style="font-size:18px; color:var(--control-muted); display:flex; align-items:center; justify-content:center; height:100%;"></span>
                             <?php endif; ?>
                         </div>
-                        <div style="font-size:0.75rem; color:var(--control-muted); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-weight:600;"><?php echo esc_html($u->job_title ?: $u->employer_name); ?></div>
                     <?php endif; ?>
                 </div>
                 <div style="display:flex; gap:8px; flex-shrink:0;">
@@ -474,5 +536,23 @@ jQuery(document).ready(function($) {
 #wizard-dots .dot.active {
     background: var(--control-accent);
     transform: scale(1.3);
+}
+
+.user-activity-badge {
+    position: absolute;
+    top: 15px;
+    left: 15px;
+    background: #fef9c3; /* Pastel Yellow */
+    color: #854d0e;
+    padding: 3px 8px;
+    border-radius: 6px;
+    font-size: 0.65rem;
+    font-weight: 700;
+    z-index: 5;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+}
+
+.user-card-item:hover .user-activity-badge {
+    background: #fef3c7;
 }
 </style>
