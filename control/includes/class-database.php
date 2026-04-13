@@ -86,6 +86,7 @@ class Control_Database {
 
 		// Seed initial data
 		self::seed_data();
+		Control_Auth::sync_roles();
 	}
 
 	private static function seed_data() {
