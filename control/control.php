@@ -48,6 +48,7 @@ class Control_System {
 		require_once CONTROL_PATH . 'includes/class-database.php';
 		require_once CONTROL_PATH . 'includes/class-auth.php';
 		require_once CONTROL_PATH . 'includes/class-users.php';
+		require_once CONTROL_PATH . 'includes/class-notifications.php';
 		require_once CONTROL_PATH . 'includes/class-audit.php';
 		require_once CONTROL_PATH . 'includes/class-pwa.php';
 
@@ -59,6 +60,7 @@ class Control_System {
 	private function init_hooks() {
 		register_activation_hook( __FILE__, array( 'Control_Database', 'create_tables' ) );
 		add_action( 'init', array( 'Control_Auth', 'init' ) );
+		add_action( 'init', array( 'Control_Notifications', 'init' ) );
 		add_action( 'init', array( 'Control_PWA', 'init' ) );
 		add_action( 'init', array( $this, 'send_nocache_headers' ) );
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_assets' ) );

@@ -13,6 +13,7 @@ $settings = $wpdb->get_results( "SELECT * FROM {$wpdb->prefix}control_settings",
         <button class="control-tab-btn active" data-tab="tab-identity"><?php _e('هوية النظام', 'control'); ?></button>
         <button class="control-tab-btn" data-tab="tab-design"><?php _e('تخصيص التصميم', 'control'); ?></button>
         <button class="control-tab-btn" data-tab="tab-pwa"><?php _e('تطبيق الجوال', 'control'); ?></button>
+        <button class="control-tab-btn" data-tab="tab-notifications"><?php _e('التنبيهات والبريد', 'control'); ?></button>
         <button class="control-tab-btn" data-tab="tab-backup"><?php _e('النسخ الاحتياطي', 'control'); ?></button>
         <button class="control-tab-btn" data-tab="tab-audit"><?php _e('سجل النشاطات', 'control'); ?></button>
     </div>
@@ -232,7 +233,105 @@ $settings = $wpdb->get_results( "SELECT * FROM {$wpdb->prefix}control_settings",
             </div>
         </div>
 
-        <!-- Section 3: Backup & Restore -->
+        <!-- Section 4: Notifications & Email -->
+        <div id="tab-notifications" class="control-tab-content" style="display:none;">
+            <div class="control-card" style="border-top: 4px solid #f59e0b; padding: 25px;">
+                <div style="margin-bottom:25px; border-bottom:1px solid var(--control-bg); padding-bottom:15px;">
+                    <h3 style="margin:0; font-size:1.1rem; color:var(--control-text-dark);"><?php _e('إدارة التنبيهات والبريد الإلكتروني', 'control'); ?></h3>
+                    <div style="color:var(--control-muted); font-size:0.8rem; margin-top:5px;"><?php _e('تخصيص نظام الإشعارات التلقائية وإعدادات خادم الإرسال SMTP.', 'control'); ?></div>
+                </div>
+
+                <form id="control-notifications-form" class="control-system-settings-form">
+                    <div class="control-grid" style="grid-template-columns: 1fr 1fr; gap:25px;">
+                        <!-- SMTP Settings -->
+                        <div style="background:var(--control-bg); padding:20px; border-radius:12px; border:1px solid var(--control-border);">
+                            <h4 style="margin:0 0 15px 0; font-size:0.9rem; color:var(--control-primary);"><?php _e('إعدادات خادم الإرسال (SMTP)', 'control'); ?></h4>
+                            <div class="control-form-group">
+                                <label><?php _e('خادم SMTP', 'control'); ?></label>
+                                <input type="text" name="smtp_host" value="<?php echo esc_attr($settings['smtp_host']->setting_value ?? ''); ?>" placeholder="smtp.example.com">
+                            </div>
+                            <div class="control-grid" style="grid-template-columns: 1fr 1fr; gap:10px;">
+                                <div class="control-form-group">
+                                    <label><?php _e('المنفذ (Port)', 'control'); ?></label>
+                                    <input type="text" name="smtp_port" value="<?php echo esc_attr($settings['smtp_port']->setting_value ?? '587'); ?>">
+                                </div>
+                                <div class="control-form-group">
+                                    <label><?php _e('التشفير', 'control'); ?></label>
+                                    <select name="smtp_encryption">
+                                        <option value="tls" <?php selected($settings['smtp_encryption']->setting_value ?? 'tls', 'tls'); ?>>TLS</option>
+                                        <option value="ssl" <?php selected($settings['smtp_encryption']->setting_value ?? 'tls', 'ssl'); ?>>SSL</option>
+                                        <option value="none" <?php selected($settings['smtp_encryption']->setting_value ?? 'tls', 'none'); ?>><?php _e('بدون', 'control'); ?></option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="control-form-group">
+                                <label><?php _e('اسم المستخدم', 'control'); ?></label>
+                                <input type="text" name="smtp_user" value="<?php echo esc_attr($settings['smtp_user']->setting_value ?? ''); ?>">
+                            </div>
+                            <div class="control-form-group">
+                                <label><?php _e('كلمة المرور', 'control'); ?></label>
+                                <input type="password" name="smtp_pass" value="<?php echo esc_attr($settings['smtp_pass']->setting_value ?? ''); ?>">
+                            </div>
+                        </div>
+
+                        <!-- Sender Identity -->
+                        <div style="background:var(--control-bg); padding:20px; border-radius:12px; border:1px solid var(--control-border);">
+                            <h4 style="margin:0 0 15px 0; font-size:0.9rem; color:var(--control-primary);"><?php _e('هوية المرسل', 'control'); ?></h4>
+                            <div class="control-form-group">
+                                <label><?php _e('اسم المرسل الظاهر', 'control'); ?></label>
+                                <input type="text" name="sender_name" value="<?php echo esc_attr($settings['sender_name']->setting_value ?? 'Control System'); ?>">
+                            </div>
+                            <div class="control-form-group">
+                                <label><?php _e('بريد الإرسال الرسمي', 'control'); ?></label>
+                                <input type="email" name="sender_email" value="<?php echo esc_attr($settings['sender_email']->setting_value ?? get_option('admin_email')); ?>">
+                            </div>
+                            <div style="margin-top:20px; padding:15px; background:#fff; border:1px dashed #fbbf24; border-radius:8px;">
+                                <p style="font-size:0.75rem; color:#92400e; margin:0;">
+                                    <?php _e('سيتم استخدام هذه البيانات كمرسل رسمي لكافة المراسلات الصادرة من النظام لضمان الاحترافية.', 'control'); ?>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="margin-top:25px; background:var(--control-bg); padding:20px; border-radius:12px; border:1px solid var(--control-border);">
+                        <h4 style="margin:0 0 20px 0; font-size:0.9rem; color:var(--control-primary); border-bottom:1px solid var(--control-border); padding-bottom:10px;"><?php _e('تخصيص قوالب البريد الإلكتروني', 'control'); ?></h4>
+
+                        <?php
+                        $templates_data = $wpdb->get_results("SELECT * FROM {$wpdb->prefix}control_email_templates", OBJECT_K);
+                        $tpl_labels = array(
+                            'welcome_email' => array('label' => __('رسالة الترحيب (بعد التسجيل)', 'control'), 'icon' => 'dashicons-welcome-learn-more'),
+                            'engagement_reminder' => array('label' => __('تذكير التفاعل (عند الانقطاع)', 'control'), 'icon' => 'dashicons-clock')
+                        );
+
+                        foreach($tpl_labels as $key => $info):
+                            $tpl = $templates_data[$key] ?? (object) array('subject' => '', 'content' => '');
+                        ?>
+                            <div class="tpl-edit-section" style="margin-bottom:30px; padding-bottom:20px; border-bottom:1px solid var(--control-border);">
+                                <div style="display:flex; align-items:center; gap:10px; margin-bottom:15px;">
+                                    <span class="dashicons <?php echo $info['icon']; ?>" style="color:var(--control-accent);"></span>
+                                    <h5 style="margin:0; font-weight:700;"><?php echo $info['label']; ?></h5>
+                                </div>
+                                <div class="control-form-group">
+                                    <label><?php _e('عنوان الرسالة (Subject)', 'control'); ?></label>
+                                    <input type="text" name="tpl_subject_<?php echo $key; ?>" value="<?php echo esc_attr($tpl->subject); ?>">
+                                </div>
+                                <div class="control-form-group">
+                                    <label><?php _e('محتوى الرسالة (HTML)', 'control'); ?></label>
+                                    <textarea name="tpl_content_<?php echo $key; ?>" rows="6" style="font-family:monospace; font-size:0.85rem;"><?php echo esc_textarea($tpl->content); ?></textarea>
+                                    <small style="color:var(--control-muted);"><?php _e('الوسوم المتاحة:', 'control'); ?> <code>{user_name}</code>, <code>{system_name}</code>, <code>{site_url}</code></small>
+                                </div>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+
+                    <div style="margin-top:30px; border-top:1px solid var(--control-bg); padding-top:20px;">
+                        <button type="submit" class="control-btn control-btn-accent" style="height:48px; border-radius:8px; font-weight:800; min-width:220px;"><?php _e('حفظ إعدادات التنبيهات', 'control'); ?></button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Section 5: Backup & Restore -->
         <div id="tab-backup" class="control-tab-content" style="display:none;">
             <div class="control-card" style="border-top: 4px solid #10b981; padding: 25px;">
                 <div style="margin-bottom:25px; border-bottom:1px solid var(--control-bg); padding-bottom:15px;">

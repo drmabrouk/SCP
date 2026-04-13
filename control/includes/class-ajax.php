@@ -87,6 +87,11 @@ class Control_Ajax {
 			$this->send_error( $result->get_error_message() );
 		}
 
+		// Send Welcome Email
+		if ( ! empty($data['email']) ) {
+			Control_Notifications::send( 'welcome_email', $data['email'], array( '{user_name}' => $data['first_name'] . ' ' . $data['last_name'] ) );
+		}
+
 		Control_Audit::log('registration', "New user registered: {$data['phone']}");
 		$this->send_success();
 	}
@@ -137,6 +142,12 @@ class Control_Ajax {
 
 		$wpdb->insert( $table, $data );
 		Control_Audit::log('add_user', "User $phone added by admin");
+
+		// Send Welcome Email
+		if ( ! empty($data['email']) ) {
+			Control_Notifications::send( 'welcome_email', $data['email'], array( '{user_name}' => $data['name'] ) );
+		}
+
 		$this->send_success();
 	}
 
@@ -239,9 +250,23 @@ class Control_Ajax {
 
 		global $wpdb;
 		$table = $wpdb->prefix . 'control_settings';
+		$tpl_table = $wpdb->prefix . 'control_email_templates';
 
 		foreach ( $_POST as $key => $value ) {
 			if ( strpos( $key, 'control_' ) === false && $key !== 'action' && $key !== 'nonce' ) {
+
+				// Handle email template fields
+				if ( strpos( $key, 'tpl_subject_' ) === 0 ) {
+					$tpl_key = str_replace( 'tpl_subject_', '', $key );
+					$wpdb->update( $tpl_table, array( 'subject' => sanitize_text_field( $value ) ), array( 'template_key' => $tpl_key ) );
+					continue;
+				}
+				if ( strpos( $key, 'tpl_content_' ) === 0 ) {
+					$tpl_key = str_replace( 'tpl_content_', '', $key );
+					$wpdb->update( $tpl_table, array( 'content' => $value ), array( 'template_key' => $tpl_key ) ); // Allow HTML in templates
+					continue;
+				}
+
 				$wpdb->replace( $table, array(
 					'setting_key'   => sanitize_key( $key ),
 					'setting_value' => sanitize_text_field( $value )
