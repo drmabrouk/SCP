@@ -25,6 +25,20 @@ class Control_Ajax {
 		}
 	}
 
+	/**
+	 * Standardize success response.
+	 */
+	private function send_success( $data = null ) {
+		wp_send_json_success( $data );
+	}
+
+	/**
+	 * Standardize error response.
+	 */
+	private function send_error( $message = 'An error occurred', $code = 400 ) {
+		wp_send_json_error( array( 'message' => $message, 'code' => $code ) );
+	}
+
 	public function login() {
 		check_ajax_referer( 'control_nonce', 'nonce' );
 
@@ -34,13 +48,13 @@ class Control_Ajax {
 		$result = Control_Auth::login( $phone, $password );
 
 		if ( is_wp_error( $result ) ) {
-			wp_send_json_error( array( 'message' => $result->get_error_message() ) );
+			$this->send_error( $result->get_error_message() );
 		} elseif ( $result ) {
 			Control_Audit::log('login', "User with phone $phone logged in");
-			wp_send_json_success();
+			$this->send_success();
 		} else {
 			Control_Audit::log('failed_login', "Failed login attempt for phone $phone");
-			wp_send_json_error( array( 'message' => __( 'بيانات الدخول غير صحيحة.', 'control' ) ) );
+			$this->send_error( __( 'بيانات الدخول غير صحيحة.', 'control' ) );
 		}
 	}
 
@@ -56,43 +70,43 @@ class Control_Ajax {
 		);
 
 		if ( empty($data['first_name']) || empty($data['last_name']) || empty($data['phone']) || empty($data['password']) ) {
-			wp_send_json_error( array( 'message' => __( 'يرجى ملء جميع الحقول المطلوبة.', 'control' ) ) );
+			$this->send_error( __( 'يرجى ملء جميع الحقول المطلوبة.', 'control' ) );
 		}
 
 		if ( ! preg_match('/^\+(20|971|966|965|974|973|968)[0-9]{7,12}$/', $data['phone']) ) {
-			wp_send_json_error( array( 'message' => __( 'تنسيق رقم الهاتف غير صالح لهذه الدولة.', 'control' ) ) );
+			$this->send_error( __( 'تنسيق رقم الهاتف غير صالح لهذه الدولة.', 'control' ) );
 		}
 
 		if ( strlen($data['password']) < 8 ) {
-			wp_send_json_error( array( 'message' => __( 'كلمة المرور يجب أن لا تقل عن 8 أحرف.', 'control' ) ) );
+			$this->send_error( __( 'كلمة المرور يجب أن لا تقل عن 8 أحرف.', 'control' ) );
 		}
 
 		$result = Control_Auth::register_user( $data );
 
 		if ( is_wp_error( $result ) ) {
-			wp_send_json_error( array( 'message' => $result->get_error_message() ) );
+			$this->send_error( $result->get_error_message() );
 		}
 
 		Control_Audit::log('registration', "New user registered: {$data['phone']}");
-		wp_send_json_success();
+		$this->send_success();
 	}
 
 	public function logout() {
 		check_ajax_referer( 'control_nonce', 'nonce' );
 		Control_Auth::logout();
-		wp_send_json_success();
+		$this->send_success();
 	}
 
 	public function add_user() {
 		check_ajax_referer( 'control_nonce', 'nonce' );
-		if ( ! Control_Auth::is_admin() ) wp_send_json_error( 'Unauthorized' );
+		if ( ! Control_Auth::is_admin() ) $this->send_error( 'Unauthorized', 403 );
 
 		global $wpdb;
 		$table = $wpdb->prefix . 'control_staff';
 		$phone = sanitize_text_field( $_POST['phone'] );
 
 		$exists = $wpdb->get_var( $wpdb->prepare( "SELECT id FROM $table WHERE phone = %s", $phone ) );
-		if ( $exists ) wp_send_json_error( 'Phone already registered' );
+		if ( $exists ) $this->send_error( 'Phone already registered' );
 
 		$data = array(
 			'username' => sanitize_text_field( $_POST['username'] ?: $phone ),
@@ -101,7 +115,6 @@ class Control_Ajax {
 			'name'     => sanitize_text_field( $_POST['name'] ),
 			'email'    => sanitize_email( $_POST['email'] ),
 			'role'     => sanitize_text_field( $_POST['role'] ),
-
 			'profile_image' => sanitize_text_field( $_POST['profile_image'] ?? '' ),
 			'gender'        => sanitize_text_field( $_POST['gender'] ?? '' ),
 			'degree'        => sanitize_text_field( $_POST['degree'] ?? '' ),
@@ -117,12 +130,12 @@ class Control_Ajax {
 
 		$wpdb->insert( $table, $data );
 		Control_Audit::log('add_user', "User $phone added by admin");
-		wp_send_json_success();
+		$this->send_success();
 	}
 
 	public function save_user() {
 		check_ajax_referer( 'control_nonce', 'nonce' );
-		if ( ! Control_Auth::is_admin() ) wp_send_json_error( 'Unauthorized' );
+		if ( ! Control_Auth::is_admin() ) $this->send_error( 'Unauthorized', 403 );
 
 		global $wpdb;
 		$id = intval( $_POST['id'] );
@@ -134,7 +147,6 @@ class Control_Ajax {
 			'name'     => sanitize_text_field( $_POST['name'] ),
 			'email'    => sanitize_email( $_POST['email'] ),
 			'role'     => sanitize_text_field( $_POST['role'] ),
-
 			'profile_image' => sanitize_text_field( $_POST['profile_image'] ?? '' ),
 			'gender'        => sanitize_text_field( $_POST['gender'] ?? '' ),
 			'degree'        => sanitize_text_field( $_POST['degree'] ?? '' ),
@@ -154,36 +166,36 @@ class Control_Ajax {
 
 		$wpdb->update( $wpdb->prefix . 'control_staff', $data, array( 'id' => $id ) );
 		Control_Audit::log('edit_user', "User $phone updated by admin");
-		wp_send_json_success();
+		$this->send_success();
 	}
 
 	public function delete_user() {
 		check_ajax_referer( 'control_nonce', 'nonce' );
-		if ( ! Control_Auth::is_admin() ) wp_send_json_error( 'Unauthorized' );
+		if ( ! Control_Auth::is_admin() ) $this->send_error( 'Unauthorized', 403 );
 
 		$id = intval( $_POST['id'] );
 		global $wpdb;
 		$user = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$wpdb->prefix}control_staff WHERE id = %d", $id ) );
-		if ( $user && ($user->username === 'admin' || $user->phone === '1234567890')) wp_send_json_error( 'Cannot delete admin' );
+		if ( $user && ($user->username === 'admin' || $user->phone === '1234567890')) $this->send_error( 'Cannot delete admin' );
 
 		if ( $user ) {
 			Control_Audit::log( 'delete_user', sprintf(__('حذف المستخدم: %s', 'control'), $user->name), $user );
 			$wpdb->delete( $wpdb->prefix . 'control_staff', array( 'id' => $id ) );
-			wp_send_json_success();
+			$this->send_success();
 		} else {
-			wp_send_json_error( 'User not found' );
+			$this->send_error( 'User not found', 404 );
 		}
 	}
 
 	public function toggle_user_restriction() {
 		check_ajax_referer( 'control_nonce', 'nonce' );
-		if ( ! Control_Auth::is_admin() ) wp_send_json_error( 'Unauthorized' );
+		if ( ! Control_Auth::is_admin() ) $this->send_error( 'Unauthorized', 403 );
 
 		global $wpdb;
 		$id = intval( $_POST['id'] );
 		$user = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$wpdb->prefix}control_staff WHERE id = %d", $id ) );
-		if ( ! $user ) wp_send_json_error( 'User not found' );
-		if ( $user->username === 'admin' || $user->phone === '1234567890' ) wp_send_json_error( 'Cannot restrict admin' );
+		if ( ! $user ) $this->send_error( 'User not found', 404 );
+		if ( $user->username === 'admin' || $user->phone === '1234567890' ) $this->send_error( 'Cannot restrict admin' );
 
 		$new_status = $user->is_restricted ? 0 : 1;
 		$wpdb->update( "{$wpdb->prefix}control_staff", array( 'is_restricted' => $new_status ), array( 'id' => $id ) );
@@ -191,12 +203,12 @@ class Control_Ajax {
 		$action = $new_status ? __('تقييد', 'control') : __('إلغاء تقييد', 'control');
 		Control_Audit::log( 'toggle_restriction', sprintf(__('%s حساب المستخدم: %s', 'control'), $action, $user->name) );
 
-		wp_send_json_success();
+		$this->send_success();
 	}
 
 	public function save_settings() {
 		check_ajax_referer( 'control_nonce', 'nonce' );
-		if ( ! Control_Auth::is_admin() ) wp_send_json_error( 'Unauthorized' );
+		if ( ! Control_Auth::is_admin() ) $this->send_error( 'Unauthorized', 403 );
 
 		global $wpdb;
 		$table = $wpdb->prefix . 'control_settings';
@@ -210,12 +222,12 @@ class Control_Ajax {
 			}
 		}
 
-		wp_send_json_success();
+		$this->send_success();
 	}
 
 	public function export_data() {
 		check_ajax_referer( 'control_nonce', 'nonce' );
-		if ( ! Control_Auth::is_admin() ) wp_send_json_error( 'Unauthorized' );
+		if ( ! Control_Auth::is_admin() ) $this->send_error( 'Unauthorized', 403 );
 
 		$type = sanitize_text_field( $_POST['type'] ?? 'users' );
 		global $wpdb;
@@ -226,7 +238,7 @@ class Control_Ajax {
 			$data = $wpdb->get_results( "SELECT * FROM {$wpdb->prefix}control_staff", ARRAY_A );
 		}
 
-		if ( empty($data) ) wp_send_json_error( 'No data found' );
+		if ( empty($data) ) $this->send_error( 'No data found' );
 
 		ob_start();
 		$df = fopen("php://output", 'w');
@@ -237,20 +249,17 @@ class Control_Ajax {
 		fclose($df);
 		$csv = ob_get_clean();
 
-		wp_send_json_success( array(
-			'csv' => $csv,
-			'filename' => $filename
-		) );
+		$this->send_success( array( 'csv' => $csv, 'filename' => $filename ) );
 	}
 
 	public function import_data() {
 		check_ajax_referer( 'control_nonce', 'nonce' );
-		if ( ! Control_Auth::is_admin() ) wp_send_json_error( 'Unauthorized' );
+		if ( ! Control_Auth::is_admin() ) $this->send_error( 'Unauthorized', 403 );
 
 		$type = sanitize_text_field( $_POST['type'] ?? 'users' );
 		$csv_data = $_POST['csv_data'] ?? '';
 
-		if ( empty($csv_data) ) wp_send_json_error( 'Empty data' );
+		if ( empty($csv_data) ) $this->send_error( 'Empty data' );
 
 		$lines = explode( "\n", str_replace( "\r", "", $csv_data ) );
 		$header = str_getcsv( array_shift( $lines ) );
@@ -273,18 +282,18 @@ class Control_Ajax {
 		}
 
 		Control_Audit::log('import_data', sprintf(__('استيراد %d سجل من نوع %s', 'control'), $count, $type));
-		wp_send_json_success( sprintf(__('تم استيراد %d سجل بنجاح.', 'control'), $count) );
+		$this->send_success( sprintf(__('تم استيراد %d سجل بنجاح.', 'control'), $count) );
 	}
 
 	public function undo_activity() {
 		check_ajax_referer( 'control_nonce', 'nonce' );
-		if ( ! Control_Auth::is_admin() ) wp_send_json_error( 'Unauthorized' );
+		if ( ! Control_Auth::is_admin() ) $this->send_error( 'Unauthorized', 403 );
 
 		global $wpdb;
 		$log_id = intval( $_POST['log_id'] );
 		$log = $wpdb->get_row($wpdb->prepare("SELECT * FROM {$wpdb->prefix}control_activity_logs WHERE id = %d", $log_id));
 
-		if ( ! $log || ! $log->meta_data ) wp_send_json_error( 'No undo data' );
+		if ( ! $log || ! $log->meta_data ) $this->send_error( 'No undo data' );
 
 		$data = json_decode( $log->meta_data, true );
 		unset($data['id']);
@@ -292,15 +301,15 @@ class Control_Ajax {
 		if ( $log->action_type === 'delete_user' ) {
 			$wpdb->insert( "{$wpdb->prefix}control_staff", $data );
 			$wpdb->delete( "{$wpdb->prefix}control_activity_logs", array( 'id' => $log_id ) );
-			wp_send_json_success();
+			$this->send_success();
 		}
 
-		wp_send_json_error( 'Cannot undo this action' );
+		$this->send_error( 'Cannot undo this action' );
 	}
 
 	public function create_backup() {
 		check_ajax_referer( 'control_nonce', 'nonce' );
-		if ( ! Control_Auth::is_admin() ) wp_send_json_error( 'Unauthorized' );
+		if ( ! Control_Auth::is_admin() ) $this->send_error( 'Unauthorized', 403 );
 
 		global $wpdb;
 		$tables = array( 'control_staff', 'control_settings', 'control_activity_logs' );
@@ -314,37 +323,30 @@ class Control_Ajax {
 		$backup_data = json_encode( $backup );
 		$filename = "control_system_backup_" . date('Y-m-d_H-i') . ".json";
 
-		wp_send_json_success( array(
-			'json'     => $backup_data,
-			'filename' => $filename
-		) );
+		$this->send_success( array( 'json' => $backup_data, 'filename' => $filename ) );
 	}
 
 	public function restore_backup() {
 		check_ajax_referer( 'control_nonce', 'nonce' );
-		if ( ! Control_Auth::is_admin() ) wp_send_json_error( 'Unauthorized' );
+		if ( ! Control_Auth::is_admin() ) $this->send_error( 'Unauthorized', 403 );
 
 		$backup_json = $_POST['backup_data'] ?? '';
-		if ( empty($backup_json) ) wp_send_json_error( 'No backup data provided' );
+		if ( empty($backup_json) ) $this->send_error( 'No backup data provided' );
 
 		$backup = json_decode( $backup_json, true );
-		if ( ! is_array($backup) ) wp_send_json_error( 'Invalid backup format' );
+		if ( ! is_array($backup) ) $this->send_error( 'Invalid backup format' );
 
 		global $wpdb;
 		foreach ( $backup as $table => $rows ) {
 			$full_table_name = $wpdb->prefix . $table;
-
-			// Clear current data
 			$wpdb->query( "DELETE FROM $full_table_name" );
-
-			// Restore
 			foreach ( $rows as $row ) {
 				$wpdb->insert( $full_table_name, $row );
 			}
 		}
 
 		Control_Audit::log('restore_backup', 'System restored from a backup file');
-		wp_send_json_success( 'System restored successfully' );
+		$this->send_success( 'System restored successfully' );
 	}
 }
 
