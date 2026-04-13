@@ -163,6 +163,9 @@ function control_get_time_ago($timestamp) {
                     <?php endif; ?>
                 </div>
                 <div style="display:flex; gap:8px; flex-shrink:0;">
+                    <?php if(Control_Auth::has_permission('users_view')): ?>
+                        <button class="control-btn control-view-user" title="<?php _e('تفاصيل الحساب', 'control'); ?>" style="padding:0; width:34px; height:34px; background:#fff; color:var(--control-muted) !important; border:1px solid var(--control-border);"><span class="dashicons dashicons-visibility"></span></button>
+                    <?php endif; ?>
                     <?php if(Control_Auth::has_permission('users_manage')): ?>
                         <button class="control-btn control-edit-user" title="<?php _e('تعديل', 'control'); ?>" style="padding:0; width:34px; height:34px; background:#fff; color:var(--control-muted) !important; border:1px solid var(--control-border);"><span class="dashicons dashicons-edit"></span></button>
                         <?php if($u->username !== 'admin' && $u->phone !== '1234567890'): ?>
@@ -315,6 +318,59 @@ function control_get_time_ago($timestamp) {
 .mgmt-tab-btn.active { color:var(--control-primary); border-bottom-color:var(--control-accent); }
 .export-format-card.active { border-color:var(--control-accent) !important; background:var(--control-accent-soft); }
 </style>
+
+<!-- User Details Modal -->
+<div id="control-details-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:10002; align-items:center; justify-content:center; backdrop-filter: blur(4px);">
+    <div class="control-card" style="width:100%; max-width:550px; padding:0; border-radius:20px; overflow:hidden; box-shadow:0 25px 50px -12px rgba(0,0,0,0.5);">
+        <div style="background:var(--control-primary); color:#fff; padding:20px 30px; display:flex; justify-content:space-between; align-items:center;">
+            <h3 style="color:#fff; margin:0; font-size:1.1rem;"><?php _e('تفاصيل حساب الكادر', 'control'); ?></h3>
+            <button onclick="jQuery('#control-details-modal').hide()" style="background:none; border:none; color:#fff; cursor:pointer;"><span class="dashicons dashicons-no-alt"></span></button>
+        </div>
+        <div style="padding:30px;">
+            <div style="display:flex; gap:25px; align-items:center; margin-bottom:30px; padding-bottom:20px; border-bottom:1px solid var(--control-border);">
+                <div id="detail-avatar" style="width:80px; height:80px; background:var(--control-bg); border-radius:15px; display:flex; align-items:center; justify-content:center; overflow:hidden; border:1px solid var(--control-border);">
+                    <span class="dashicons dashicons-admin-users" style="font-size:40px; color:var(--control-muted);"></span>
+                    <img src="" style="display:none; width:100%; height:100%; object-fit:cover;">
+                </div>
+                <div>
+                    <h2 id="detail-name" style="margin:0 0 5px 0; font-size:1.3rem; color:var(--control-text-dark);"></h2>
+                    <span id="detail-role-badge" class="control-status-indicator indicator-accent"></span>
+                </div>
+            </div>
+
+            <div class="control-grid" style="grid-template-columns: 1fr 1fr; gap:20px;">
+                <div class="info-group">
+                    <label style="display:block; font-size:0.75rem; color:var(--control-muted); margin-bottom:5px; font-weight:700;"><?php _e('اسم المستخدم', 'control'); ?></label>
+                    <div id="detail-username" style="font-weight:600; color:var(--control-text-dark);"></div>
+                </div>
+                <div class="info-group">
+                    <label style="display:block; font-size:0.75rem; color:var(--control-muted); margin-bottom:5px; font-weight:700;"><?php _e('البريد الإلكتروني', 'control'); ?></label>
+                    <div id="detail-email" style="font-weight:600; color:var(--control-text-dark);"></div>
+                </div>
+                <div class="info-group">
+                    <label style="display:block; font-size:0.75rem; color:var(--control-muted); margin-bottom:5px; font-weight:700;"><?php _e('رقم الهاتف', 'control'); ?></label>
+                    <div id="detail-phone" style="font-weight:600; color:var(--control-text-dark);"></div>
+                </div>
+                <div class="info-group">
+                    <label style="display:block; font-size:0.75rem; color:var(--control-muted); margin-bottom:5px; font-weight:700;"><?php _e('الدولة', 'control'); ?></label>
+                    <div id="detail-country" style="font-weight:600; color:var(--control-text-dark);"></div>
+                </div>
+                <div class="info-group">
+                    <label style="display:block; font-size:0.75rem; color:var(--control-muted); margin-bottom:5px; font-weight:700;"><?php _e('تاريخ الإنشاء', 'control'); ?></label>
+                    <div id="detail-created" style="font-weight:600; color:var(--control-text-dark);"></div>
+                </div>
+                <div class="info-group">
+                    <label style="display:block; font-size:0.75rem; color:var(--control-muted); margin-bottom:5px; font-weight:700;"><?php _e('آخر نشاط', 'control'); ?></label>
+                    <div id="detail-last-activity" style="font-weight:600; color:var(--control-text-dark);"></div>
+                </div>
+            </div>
+
+            <div style="margin-top:30px; text-align:center;">
+                <button onclick="jQuery('#control-details-modal').hide()" class="control-btn" style="min-width:150px; background:var(--control-bg); color:var(--control-text-dark) !important; border:none;"><?php _e('إغلاق النافذة', 'control'); ?></button>
+            </div>
+        </div>
+    </div>
+</div>
 
 <!-- User Wizard Modal -->
 <div id="control-user-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0, 0, 0, 0.4); z-index:10001; align-items:center; justify-content:center; backdrop-filter: blur(4px);">
@@ -533,6 +589,41 @@ jQuery(document).ready(function($) {
         $('#modal-title').text('<?php _e('إضافة كادر جديد', 'control'); ?>');
         showStep(1);
         modal.css('display', 'flex');
+    });
+
+    $(document).on('click', '.control-view-user', function() {
+        const u = $(this).closest('.user-card-item').data('user');
+        const roleLabels = <?php echo json_encode($role_labels); ?>;
+        const countries = <?php echo json_encode($countries); ?>;
+
+        $('#detail-name').text(u.name);
+        $('#detail-role-badge').text(roleLabels[u.role] || u.role);
+        $('#detail-username').text(u.username || 'N/A');
+        $('#detail-email').text(u.email || 'N/A');
+        $('#detail-phone').text(u.phone);
+        $('#detail-created').text(u.created_at || 'N/A');
+        $('#detail-last-activity').text(u.last_activity || '<?php _e("غير متوفر", "control"); ?>');
+
+        // Avatar
+        if (u.profile_image) {
+            $('#detail-avatar img').attr('src', u.profile_image).show();
+            $('#detail-avatar span').hide();
+        } else {
+            $('#detail-avatar img').hide();
+            $('#detail-avatar span').show();
+        }
+
+        // Detect Country
+        let countryName = '<?php _e("غير محدد", "control"); ?>';
+        if (u.phone && u.phone.startsWith('+')) {
+            const codeMatch = u.phone.match(/^\+[0-9]{2,3}/);
+            if (codeMatch && countries[codeMatch[0]]) {
+                countryName = countries[codeMatch[0]].name;
+            }
+        }
+        $('#detail-country').text(countryName);
+
+        $('#control-details-modal').css('display', 'flex');
     });
 
     $(document).on('click', '.control-edit-user', function() {

@@ -10,7 +10,6 @@ class Control_Auth {
 			session_start();
 		}
 
-		add_action( 'init', array( __CLASS__, 'sync_roles' ) );
 		add_action( 'admin_init', array( __CLASS__, 'restrict_admin_access' ) );
 		add_filter( 'show_admin_bar', array( __CLASS__, 'handle_admin_bar' ) );
 

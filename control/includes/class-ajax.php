@@ -388,7 +388,7 @@ class Control_Ajax {
 		if ( ! Control_Auth::has_permission('backup_manage') ) $this->send_error( 'Unauthorized', 403 );
 
 		global $wpdb;
-		$tables = array( 'control_staff', 'control_settings', 'control_activity_logs' );
+		$tables = array( 'control_staff', 'control_settings', 'control_activity_logs', 'control_roles' );
 		$backup = array();
 
 		foreach ( $tables as $table ) {
@@ -413,7 +413,11 @@ class Control_Ajax {
 		if ( ! is_array($backup) ) $this->send_error( 'Invalid backup format' );
 
 		global $wpdb;
+		$allowed_tables = array( 'control_staff', 'control_settings', 'control_activity_logs', 'control_roles' );
+
 		foreach ( $backup as $table => $rows ) {
+			if ( ! in_array( $table, $allowed_tables ) ) continue; // Secure validation
+
 			$full_table_name = $wpdb->prefix . $table;
 			$wpdb->query( "DELETE FROM $full_table_name" );
 			foreach ( $rows as $row ) {
