@@ -108,6 +108,30 @@ class Control_Database {
 				'role_name' => 'Sports Coach',
 				'permissions' => json_encode(array('dashboard' => true, 'users_view' => true)),
 				'is_system' => 1
+			),
+			array(
+				'role_key'  => 'therapist',
+				'role_name' => 'Sports Therapist',
+				'permissions' => json_encode(array('dashboard' => true, 'users_view' => true)),
+				'is_system' => 1
+			),
+			array(
+				'role_key'  => 'nutritionist',
+				'role_name' => 'Sports Nutrition Specialist',
+				'permissions' => json_encode(array('dashboard' => true, 'users_view' => true)),
+				'is_system' => 1
+			),
+			array(
+				'role_key'  => 'pe_teacher',
+				'role_name' => 'PE Teacher',
+				'permissions' => json_encode(array('dashboard' => true, 'users_view' => true)),
+				'is_system' => 1
+			),
+			array(
+				'role_key'  => 'researcher',
+				'role_name' => 'Sports Researcher',
+				'permissions' => json_encode(array('dashboard' => true, 'users_view' => true)),
+				'is_system' => 1
 			)
 		);
 

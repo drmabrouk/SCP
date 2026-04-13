@@ -22,14 +22,7 @@ if ( Control_Auth::is_admin() ) {
 
         <?php
         $roles_count = $wpdb->get_results("SELECT role, COUNT(*) as count FROM {$wpdb->prefix}control_staff GROUP BY role", OBJECT_K);
-        $role_labels = array(
-            'admin'       => 'مديري النظام',
-            'coach'       => 'المدربين',
-            'therapist'   => 'الأخصائيين',
-            'nutritionist' => 'خبراء التغذية',
-            'pe_teacher'  => 'المعلمين',
-            'researcher'  => 'الباحثين'
-        );
+        $role_labels = Control_Auth::get_roles();
 
         $primary_role = 'coach'; // Default highlight
         $primary_count = $roles_count[$primary_role]->count ?? 0;

@@ -18,6 +18,21 @@ class Control_Auth {
 	}
 
 	/**
+	 * Get authoritative system roles from database.
+	 */
+	public static function get_roles() {
+		global $wpdb;
+		$results = $wpdb->get_results( "SELECT role_key, role_name FROM {$wpdb->prefix}control_roles ORDER BY id ASC", OBJECT_K );
+
+		$roles = array();
+		foreach ( $results as $key => $row ) {
+			$roles[$key] = $row->role_name;
+		}
+
+		return $roles;
+	}
+
+	/**
 	 * Update user's last activity timestamp.
 	 */
 	public static function update_last_activity() {

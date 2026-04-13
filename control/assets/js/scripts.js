@@ -152,7 +152,7 @@ jQuery(document).ready(function($) {
             if (res.success) {
                 window.location.reload();
             } else {
-                $btn.prop('disabled', false).text('إتمتم التسجيل');
+                $btn.prop('disabled', false).text('إتمام التسجيل');
                 $('#reg-error').text(res.data.message || 'حدث خطأ').show();
             }
         });
