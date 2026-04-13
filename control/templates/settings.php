@@ -11,6 +11,7 @@ $settings = $wpdb->get_results( "SELECT * FROM {$wpdb->prefix}control_settings",
 
     <div class="control-tabs" style="display:flex; gap:8px; margin-bottom:20px; background:#fff; padding:6px; border-radius:var(--control-radius); border:1px solid var(--control-border); width:fit-content; box-shadow:var(--control-shadow-sm);">
         <button class="control-tab-btn active" data-tab="tab-identity"><?php _e('هوية النظام', 'control'); ?></button>
+        <button class="control-tab-btn" data-tab="tab-design"><?php _e('تخصيص التصميم', 'control'); ?></button>
         <button class="control-tab-btn" data-tab="tab-pwa"><?php _e('تطبيق الجوال', 'control'); ?></button>
         <button class="control-tab-btn" data-tab="tab-backup"><?php _e('النسخ الاحتياطي', 'control'); ?></button>
         <button class="control-tab-btn" data-tab="tab-audit"><?php _e('سجل النشاطات', 'control'); ?></button>
@@ -78,7 +79,104 @@ $settings = $wpdb->get_results( "SELECT * FROM {$wpdb->prefix}control_settings",
             </div>
         </div>
 
-        <!-- Section 2: PWA & Mobile App Settings -->
+        <!-- Section 2: Design Customization -->
+        <div id="tab-design" class="control-tab-content" style="display:none;">
+            <div class="control-card" style="border-top: 4px solid #8b5cf6; padding: 25px;">
+                <div style="margin-bottom:25px; border-bottom:1px solid var(--control-bg); padding-bottom:15px;">
+                    <h3 style="margin:0; font-size:1.1rem; color:var(--control-text-dark);"><?php _e('تخصيص تصميم النظام', 'control'); ?></h3>
+                    <div style="color:var(--control-muted); font-size:0.8rem; margin-top:5px;"><?php _e('تحكم في الألوان، الخطوط، والمظهر العام للنظام.', 'control'); ?></div>
+                </div>
+
+                <form id="control-design-form" class="control-system-settings-form">
+                    <div class="control-grid" style="grid-template-columns: 1fr 1fr; gap:25px;">
+                        <!-- Sidebar & Navigation -->
+                        <div style="background:var(--control-bg); padding:20px; border-radius:12px; border:1px solid var(--control-border);">
+                            <h4 style="margin:0 0 15px 0; font-size:0.9rem;"><?php _e('شريط التنقل الجانبي', 'control'); ?></h4>
+                            <div class="control-form-group">
+                                <label><?php _e('لون خلفية الشريط الجانبي', 'control'); ?></label>
+                                <input type="color" name="design_sidebar_bg" value="<?php echo esc_attr($settings['design_sidebar_bg']->setting_value ?? '#0f172a'); ?>" style="height:40px;">
+                            </div>
+                        </div>
+
+                        <!-- Buttons & Actions -->
+                        <div style="background:var(--control-bg); padding:20px; border-radius:12px; border:1px solid var(--control-border);">
+                            <h4 style="margin:0 0 15px 0; font-size:0.9rem;"><?php _e('الأزرار والإجراءات', 'control'); ?></h4>
+                            <div class="control-grid" style="grid-template-columns: 1fr 1fr; gap:10px;">
+                                <div class="control-form-group">
+                                    <label><?php _e('اللون الرئيسي', 'control'); ?></label>
+                                    <input type="color" name="design_btn_primary" value="<?php echo esc_attr($settings['design_btn_primary']->setting_value ?? '#0f172a'); ?>">
+                                </div>
+                                <div class="control-form-group">
+                                    <label><?php _e('اللون الثانوي', 'control'); ?></label>
+                                    <input type="color" name="design_btn_secondary" value="<?php echo esc_attr($settings['design_btn_secondary']->setting_value ?? '#1e293b'); ?>">
+                                </div>
+                                <div class="control-form-group">
+                                    <label><?php _e('لون التمييز', 'control'); ?></label>
+                                    <input type="color" name="design_accent" value="<?php echo esc_attr($settings['design_accent']->setting_value ?? '#D4AF37'); ?>">
+                                </div>
+                                <div class="control-form-group">
+                                    <label><?php _e('لون التحويم (Hover)', 'control'); ?></label>
+                                    <input type="color" name="design_btn_hover" value="<?php echo esc_attr($settings['design_btn_hover']->setting_value ?? '#1e293b'); ?>">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="control-grid" style="grid-template-columns: 1fr 1fr; gap:25px; margin-top:20px;">
+                        <!-- Color Schemes -->
+                        <div style="background:var(--control-bg); padding:20px; border-radius:12px; border:1px solid var(--control-border);">
+                            <h4 style="margin:0 0 15px 0; font-size:0.9rem;"><?php _e('مخطط ألوان الواجهة', 'control'); ?></h4>
+                            <div class="control-grid" style="grid-template-columns: 1fr 1fr; gap:10px;">
+                                <div class="control-form-group">
+                                    <label><?php _e('لون النص الأساسي', 'control'); ?></label>
+                                    <input type="color" name="design_text_main" value="<?php echo esc_attr($settings['design_text_main']->setting_value ?? '#334155'); ?>">
+                                </div>
+                                <div class="control-form-group">
+                                    <label><?php _e('لون الخلفية العامة', 'control'); ?></label>
+                                    <input type="color" name="design_bg_main" value="<?php echo esc_attr($settings['design_bg_main']->setting_value ?? '#f8fafc'); ?>">
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Typography -->
+                        <div style="background:var(--control-bg); padding:20px; border-radius:12px; border:1px solid var(--control-border);">
+                            <h4 style="margin:0 0 15px 0; font-size:0.9rem;"><?php _e('تنسيق الخطوط (Typography)', 'control'); ?></h4>
+                            <div class="control-grid" style="grid-template-columns: 1fr 1fr; gap:15px;">
+                                <div class="control-form-group">
+                                    <label><?php _e('حجم الخط الأساسي (px)', 'control'); ?></label>
+                                    <input type="number" name="design_font_size" value="<?php echo esc_attr($settings['design_font_size']->setting_value ?? '14'); ?>" min="12" max="18">
+                                </div>
+                                <div class="control-form-group">
+                                    <label><?php _e('وزن الخط للعناوين', 'control'); ?></label>
+                                    <select name="design_font_weight_bold">
+                                        <option value="600" <?php selected($settings['design_font_weight_bold']->setting_value ?? '700', '600'); ?>>Medium (600)</option>
+                                        <option value="700" <?php selected($settings['design_font_weight_bold']->setting_value ?? '700', '700'); ?>>Bold (700)</option>
+                                        <option value="800" <?php selected($settings['design_font_weight_bold']->setting_value ?? '700', '800'); ?>>Extra Bold (800)</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Accessibility -->
+                        <div style="background:var(--control-bg); padding:20px; border-radius:12px; border:1px solid var(--control-border);">
+                            <h4 style="margin:0 0 15px 0; font-size:0.9rem;"><?php _e('إمكانية الوصول والتباين', 'control'); ?></h4>
+                            <div class="control-form-group">
+                                <label><?php _e('تباين النص المرتفع', 'control'); ?></label>
+                                <select name="design_high_contrast">
+                                    <option value="no" <?php selected($settings['design_high_contrast']->setting_value ?? 'no', 'no'); ?>><?php _e('افتراضي', 'control'); ?></option>
+                                    <option value="yes" <?php selected($settings['design_high_contrast']->setting_value ?? 'no', 'yes'); ?>><?php _e('تباين عالي', 'control'); ?></option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="margin-top:35px; border-top:1px solid var(--control-bg); padding-top:20px;">
+                        <button type="submit" class="control-btn control-btn-accent" style="height:48px; border-radius:8px; font-weight:800; min-width:220px;"><?php _e('حفظ إعدادات التصميم', 'control'); ?></button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Section 3: PWA & Mobile App Settings -->
         <div id="tab-pwa" class="control-tab-content" style="display:none;">
             <div class="control-card" style="border-top: 4px solid var(--control-primary); padding: 25px;">
                 <div style="margin-bottom:25px; border-bottom:1px solid var(--control-bg); padding-bottom:15px;">

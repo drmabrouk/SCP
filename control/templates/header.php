@@ -2,7 +2,27 @@
     global $wpdb;
     $logo_url = $wpdb->get_var("SELECT setting_value FROM {$wpdb->prefix}control_settings WHERE setting_key = 'company_logo'");
     $system_name = $wpdb->get_var("SELECT setting_value FROM {$wpdb->prefix}control_settings WHERE setting_key = 'system_name'") ?: 'Control';
+    $design = $wpdb->get_results("SELECT * FROM {$wpdb->prefix}control_settings WHERE setting_key LIKE 'design_%'", OBJECT_K);
 ?>
+<style id="control-dynamic-styles">
+    :root {
+        <?php if (isset($design['design_sidebar_bg'])) : ?>--control-sidebar-bg: <?php echo esc_attr($design['design_sidebar_bg']->setting_value); ?>;<?php endif; ?>
+        <?php if (isset($design['design_btn_primary'])) : ?>--control-primary: <?php echo esc_attr($design['design_btn_primary']->setting_value); ?>;<?php endif; ?>
+        <?php if (isset($design['design_btn_secondary'])) : ?>--control-primary-soft: <?php echo esc_attr($design['design_btn_secondary']->setting_value); ?>;<?php endif; ?>
+        <?php if (isset($design['design_accent'])) : ?>--control-accent: <?php echo esc_attr($design['design_accent']->setting_value); ?>;<?php endif; ?>
+        <?php if (isset($design['design_text_main'])) : ?>--control-text: <?php echo esc_attr($design['design_text_main']->setting_value); ?>;<?php endif; ?>
+        <?php if (isset($design['design_bg_main'])) : ?>--control-bg: <?php echo esc_attr($design['design_bg_main']->setting_value); ?>;<?php endif; ?>
+        <?php if (isset($design['design_font_size'])) : ?>font-size: <?php echo esc_attr($design['design_font_size']->setting_value); ?>px !important;<?php endif; ?>
+        <?php if (isset($design['design_font_weight_bold'])) : ?>--control-font-weight-bold: <?php echo esc_attr($design['design_font_weight_bold']->setting_value); ?>;<?php endif; ?>
+    }
+    <?php if (isset($design['design_btn_hover'])) : ?>
+    .control-btn:hover { background-color: <?php echo esc_attr($design['design_btn_hover']->setting_value); ?> !important; opacity: 1; }
+    <?php endif; ?>
+    <?php if (isset($design['design_high_contrast']) && $design['design_high_contrast']->setting_value === 'yes') : ?>
+    body { filter: contrast(1.1) saturate(1.1); }
+    .control-text-dark, .control-card h3 { color: #000 !important; font-weight: 800; }
+    <?php endif; ?>
+</style>
 <div class="control-dashboard" id="control-system-root">
     <div class="control-mobile-header" style="display:none; background:#000; padding:10px 15px; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:10005; border-bottom:1px solid #1a1a1a; direction: rtl;">
         <div class="mobile-header-logo" style="flex: 1; text-align: right;">

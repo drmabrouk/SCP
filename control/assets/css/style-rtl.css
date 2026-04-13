@@ -139,7 +139,7 @@ body, .control-dashboard {
 .control-card h3 {
     margin: 0 0 15px 0;
     font-size: 1rem;
-    font-weight: 800;
+    font-weight: var(--control-font-weight-bold, 800);
     color: var(--control-primary);
 }
 
