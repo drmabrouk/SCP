@@ -24,21 +24,32 @@ class Control_Shortcode {
 
 		switch ( $view ) {
 			case 'users':
-				if ( ! $is_admin ) {
+				if ( ! Control_Auth::has_permission('users_view') ) {
 					echo '<p>' . __( 'ليس لديك صلاحية للوصول لهذه الصفحة.', 'control' ) . '</p>';
 				} else {
 					include CONTROL_PATH . 'templates/users.php';
 				}
 				break;
+			case 'roles':
+				if ( ! Control_Auth::has_permission('roles_manage') ) {
+					echo '<p>' . __( 'ليس لديك صلاحية للوصول لهذه الصفحة.', 'control' ) . '</p>';
+				} else {
+					include CONTROL_PATH . 'templates/roles.php';
+				}
+				break;
 			case 'settings':
-				if ( ! $is_admin ) {
+				if ( ! Control_Auth::has_permission('settings_manage') ) {
 					echo '<p>' . __( 'ليس لديك صلاحية للوصول لهذه الصفحة.', 'control' ) . '</p>';
 				} else {
 					include CONTROL_PATH . 'templates/settings.php';
 				}
 				break;
 			default:
-				include CONTROL_PATH . 'templates/dashboard-home.php';
+				if ( ! Control_Auth::has_permission('dashboard') ) {
+					echo '<p>' . __( 'أهلاً بك في نظام كنترول. ليس لديك صلاحية لعرض لوحة المعلومات.', 'control' ) . '</p>';
+				} else {
+					include CONTROL_PATH . 'templates/dashboard-home.php';
+				}
 				break;
 		}
 

@@ -10,7 +10,7 @@ class Control_Ajax {
 		$private_actions = array(
 			'logout', 'add_user', 'save_user', 'delete_user', 'save_settings',
 			'undo_activity', 'toggle_user_restriction', 'export_data', 'import_data',
-			'create_backup', 'restore_backup'
+			'create_backup', 'restore_backup', 'save_role', 'delete_role'
 		);
 
 		foreach ( $private_actions as $action ) {
@@ -99,7 +99,7 @@ class Control_Ajax {
 
 	public function add_user() {
 		check_ajax_referer( 'control_nonce', 'nonce' );
-		if ( ! Control_Auth::is_admin() ) $this->send_error( 'Unauthorized', 403 );
+		if ( ! Control_Auth::has_permission('users_manage') ) $this->send_error( 'Unauthorized', 403 );
 
 		global $wpdb;
 		$table = $wpdb->prefix . 'control_staff';
@@ -135,7 +135,7 @@ class Control_Ajax {
 
 	public function save_user() {
 		check_ajax_referer( 'control_nonce', 'nonce' );
-		if ( ! Control_Auth::is_admin() ) $this->send_error( 'Unauthorized', 403 );
+		if ( ! Control_Auth::has_permission('users_manage') ) $this->send_error( 'Unauthorized', 403 );
 
 		global $wpdb;
 		$id = intval( $_POST['id'] );
@@ -171,7 +171,7 @@ class Control_Ajax {
 
 	public function delete_user() {
 		check_ajax_referer( 'control_nonce', 'nonce' );
-		if ( ! Control_Auth::is_admin() ) $this->send_error( 'Unauthorized', 403 );
+		if ( ! Control_Auth::has_permission('users_delete') ) $this->send_error( 'Unauthorized', 403 );
 
 		$id = intval( $_POST['id'] );
 		global $wpdb;
@@ -189,7 +189,7 @@ class Control_Ajax {
 
 	public function toggle_user_restriction() {
 		check_ajax_referer( 'control_nonce', 'nonce' );
-		if ( ! Control_Auth::is_admin() ) $this->send_error( 'Unauthorized', 403 );
+		if ( ! Control_Auth::has_permission('users_manage') ) $this->send_error( 'Unauthorized', 403 );
 
 		global $wpdb;
 		$id = intval( $_POST['id'] );
@@ -222,7 +222,7 @@ class Control_Ajax {
 
 	public function save_settings() {
 		check_ajax_referer( 'control_nonce', 'nonce' );
-		if ( ! Control_Auth::is_admin() ) $this->send_error( 'Unauthorized', 403 );
+		if ( ! Control_Auth::has_permission('settings_manage') ) $this->send_error( 'Unauthorized', 403 );
 
 		global $wpdb;
 		$table = $wpdb->prefix . 'control_settings';
@@ -241,7 +241,7 @@ class Control_Ajax {
 
 	public function export_data() {
 		check_ajax_referer( 'control_nonce', 'nonce' );
-		if ( ! Control_Auth::is_admin() ) $this->send_error( 'Unauthorized', 403 );
+		if ( ! Control_Auth::has_permission('users_view') ) $this->send_error( 'Unauthorized', 403 );
 
 		$type = sanitize_text_field( $_POST['type'] ?? 'users' );
 		global $wpdb;
@@ -268,7 +268,7 @@ class Control_Ajax {
 
 	public function import_data() {
 		check_ajax_referer( 'control_nonce', 'nonce' );
-		if ( ! Control_Auth::is_admin() ) $this->send_error( 'Unauthorized', 403 );
+		if ( ! Control_Auth::has_permission('users_manage') ) $this->send_error( 'Unauthorized', 403 );
 
 		$type = sanitize_text_field( $_POST['type'] ?? 'users' );
 		$csv_data = $_POST['csv_data'] ?? '';
@@ -301,7 +301,7 @@ class Control_Ajax {
 
 	public function undo_activity() {
 		check_ajax_referer( 'control_nonce', 'nonce' );
-		if ( ! Control_Auth::is_admin() ) $this->send_error( 'Unauthorized', 403 );
+		if ( ! Control_Auth::has_permission('audit_view') ) $this->send_error( 'Unauthorized', 403 );
 
 		global $wpdb;
 		$log_id = intval( $_POST['log_id'] );
@@ -323,7 +323,7 @@ class Control_Ajax {
 
 	public function create_backup() {
 		check_ajax_referer( 'control_nonce', 'nonce' );
-		if ( ! Control_Auth::is_admin() ) $this->send_error( 'Unauthorized', 403 );
+		if ( ! Control_Auth::has_permission('backup_manage') ) $this->send_error( 'Unauthorized', 403 );
 
 		global $wpdb;
 		$tables = array( 'control_staff', 'control_settings', 'control_activity_logs' );
@@ -342,7 +342,7 @@ class Control_Ajax {
 
 	public function restore_backup() {
 		check_ajax_referer( 'control_nonce', 'nonce' );
-		if ( ! Control_Auth::is_admin() ) $this->send_error( 'Unauthorized', 403 );
+		if ( ! Control_Auth::has_permission('backup_manage') ) $this->send_error( 'Unauthorized', 403 );
 
 		$backup_json = $_POST['backup_data'] ?? '';
 		if ( empty($backup_json) ) $this->send_error( 'No backup data provided' );
@@ -361,6 +361,54 @@ class Control_Ajax {
 
 		Control_Audit::log('restore_backup', 'System restored from a backup file');
 		$this->send_success( 'System restored successfully' );
+	}
+
+	public function save_role() {
+		check_ajax_referer( 'control_nonce', 'nonce' );
+		if ( ! Control_Auth::has_permission('roles_manage') ) $this->send_error( 'Unauthorized', 403 );
+
+		global $wpdb;
+		$id = intval( $_POST['id'] ?? 0 );
+		$role_key = sanitize_key( $_POST['role_key'] );
+		$role_name = sanitize_text_field( $_POST['role_name'] );
+		$permissions = $_POST['permissions'] ?? array();
+
+		$data = array(
+			'role_key' => $role_key,
+			'role_name' => $role_name,
+			'permissions' => json_encode( $permissions )
+		);
+
+		if ( $id ) {
+			$wpdb->update( $wpdb->prefix . 'control_roles', $data, array( 'id' => $id ) );
+			Control_Audit::log('edit_role', "Updated role: $role_name");
+		} else {
+			$wpdb->insert( $wpdb->prefix . 'control_roles', $data );
+			Control_Audit::log('add_role', "Added role: $role_name");
+		}
+
+		// Re-sync WP roles
+		Control_Auth::sync_roles();
+		$this->send_success();
+	}
+
+	public function delete_role() {
+		check_ajax_referer( 'control_nonce', 'nonce' );
+		if ( ! Control_Auth::has_permission('roles_manage') ) $this->send_error( 'Unauthorized', 403 );
+
+		global $wpdb;
+		$id = intval( $_POST['id'] );
+		$role = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$wpdb->prefix}control_roles WHERE id = %d", $id ) );
+
+		if ( ! $role ) $this->send_error( 'Role not found' );
+		if ( $role->is_system ) $this->send_error( 'Cannot delete system roles' );
+
+		$wpdb->delete( "{$wpdb->prefix}control_roles", array( 'id' => $id ) );
+		Control_Audit::log('delete_role', "Deleted role: {$role->role_name}");
+
+		// Re-sync WP roles
+		Control_Auth::sync_roles();
+		$this->send_success();
 	}
 }
 

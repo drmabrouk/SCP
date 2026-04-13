@@ -35,7 +35,7 @@
         <div style="display:flex; align-items:center; gap: 10px;">
             <button id="control-header-logout" class="control-pill-logout" style="background:#ef4444; color:#fff; border:none; border-radius:30px; padding:8px 16px; font-size:0.75rem; font-weight:800; cursor:pointer; display:flex; align-items:center; gap:6px;">
                 <span class="dashicons dashicons-no-alt" style="font-size:16px; width:16px; height:16px;"></span>
-                <span>Logout</span>
+                <span><?php _e('خروج', 'control'); ?></span>
             </button>
         </div>
     </div>
@@ -50,17 +50,27 @@
             ?>
         </div>
         <nav class="control-sidebar-nav">
-            <a href="<?php echo add_query_arg('control_view', 'dashboard'); ?>" class="<?php echo (!isset($_GET['control_view']) || $_GET['control_view'] == 'dashboard') ? 'active' : ''; ?>">
-                <span class="dashicons dashicons-dashboard"></span> <?php _e('لوحة المعلومات', 'control'); ?>
-            </a>
-
-
-            <?php if ( Control_Auth::is_admin() ) : ?>
-                <a href="<?php echo add_query_arg('control_view', 'users'); ?>" class="<?php echo (isset($_GET['control_view']) && $_GET['control_view'] == 'users') ? 'active' : ''; ?>">
-                    <span class="dashicons dashicons-admin-users"></span> <?php _e('إدارة المستخدمين', 'control'); ?>
+            <?php if ( Control_Auth::has_permission('dashboard') ) : ?>
+                <a href="<?php echo add_query_arg('control_view', 'dashboard'); ?>" class="<?php echo (!isset($_GET['control_view']) || $_GET['control_view'] == 'dashboard') ? 'active' : ''; ?>">
+                    <span class="dashicons dashicons-dashboard"></span> <?php _e('لوحة المعلومات', 'control'); ?>
                 </a>
+            <?php endif; ?>
+
+            <?php if ( Control_Auth::has_permission('users_view') ) : ?>
+                <a href="<?php echo add_query_arg('control_view', 'users'); ?>" class="<?php echo (isset($_GET['control_view']) && $_GET['control_view'] == 'users') ? 'active' : ''; ?>">
+                    <span class="dashicons dashicons-admin-users"></span> <?php _e('إدارة الكوادر', 'control'); ?>
+                </a>
+            <?php endif; ?>
+
+            <?php if ( Control_Auth::has_permission('roles_manage') ) : ?>
+                <a href="<?php echo add_query_arg('control_view', 'roles'); ?>" class="<?php echo (isset($_GET['control_view']) && $_GET['control_view'] == 'roles') ? 'active' : ''; ?>">
+                    <span class="dashicons dashicons-shield"></span> <?php _e('الأدوار والصلاحيات', 'control'); ?>
+                </a>
+            <?php endif; ?>
+
+            <?php if ( Control_Auth::has_permission('settings_manage') ) : ?>
                 <a href="<?php echo add_query_arg('control_view', 'settings'); ?>" class="<?php echo (isset($_GET['control_view']) && $_GET['control_view'] == 'settings') ? 'active' : ''; ?>">
-                    <span class="dashicons dashicons-admin-generic"></span> <?php _e('الإعدادات', 'control'); ?>
+                    <span class="dashicons dashicons-admin-generic"></span> <?php _e('إعدادات النظام', 'control'); ?>
                 </a>
             <?php endif; ?>
         </nav>
@@ -81,17 +91,23 @@
 
     <!-- Mobile Bottom Bar (Fixed) -->
     <div class="control-mobile-bottom-bar" style="display:none;">
-        <a href="<?php echo add_query_arg('control_view', 'dashboard'); ?>" class="mobile-nav-item <?php echo (!isset($_GET['control_view']) || $_GET['control_view'] == 'dashboard') ? 'active' : ''; ?>">
-            <span class="dashicons dashicons-performance"></span>
-            <small><?php _e('الرئيسية', 'control'); ?></small>
-        </a>
-        <div class="mobile-divider"></div>
-        <?php if ( Control_Auth::is_admin() ) : ?>
+        <?php if ( Control_Auth::has_permission('dashboard') ) : ?>
+            <a href="<?php echo add_query_arg('control_view', 'dashboard'); ?>" class="mobile-nav-item <?php echo (!isset($_GET['control_view']) || $_GET['control_view'] == 'dashboard') ? 'active' : ''; ?>">
+                <span class="dashicons dashicons-performance"></span>
+                <small><?php _e('الرئيسية', 'control'); ?></small>
+            </a>
+            <div class="mobile-divider"></div>
+        <?php endif; ?>
+
+        <?php if ( Control_Auth::has_permission('users_view') ) : ?>
             <a href="<?php echo add_query_arg('control_view', 'users'); ?>" class="mobile-nav-item <?php echo (isset($_GET['control_view']) && $_GET['control_view'] == 'users') ? 'active' : ''; ?>">
                 <span class="dashicons dashicons-admin-users"></span>
                 <small><?php _e('المستخدمين', 'control'); ?></small>
             </a>
             <div class="mobile-divider"></div>
+        <?php endif; ?>
+
+        <?php if ( Control_Auth::has_permission('settings_manage') ) : ?>
             <a href="<?php echo add_query_arg('control_view', 'settings'); ?>" class="mobile-nav-item <?php echo (isset($_GET['control_view']) && $_GET['control_view'] == 'settings') ? 'active' : ''; ?>">
                 <span class="dashicons dashicons-admin-generic"></span>
                 <small><?php _e('الإعدادات', 'control'); ?></small>

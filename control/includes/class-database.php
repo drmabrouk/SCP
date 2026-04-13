@@ -12,6 +12,7 @@ class Control_Database {
 
 		$table_staff        = $wpdb->prefix . 'control_staff';
 		$table_settings     = $wpdb->prefix . 'control_settings';
+		$table_roles        = $wpdb->prefix . 'control_roles';
 		$table_activity_logs = $wpdb->prefix . 'control_activity_logs';
 
 		$sql = "CREATE TABLE $table_staff (
@@ -55,6 +56,16 @@ class Control_Database {
 			PRIMARY KEY  (setting_key)
 		) $charset_collate;
 
+		CREATE TABLE $table_roles (
+			id mediumint(9) NOT NULL AUTO_INCREMENT,
+			role_key varchar(50) NOT NULL,
+			role_name varchar(100) NOT NULL,
+			permissions longtext,
+			is_system tinyint(1) DEFAULT 0,
+			PRIMARY KEY  (id),
+			UNIQUE KEY role_key (role_key)
+		) $charset_collate;
+
 		CREATE TABLE $table_activity_logs (
 			id bigint(20) NOT NULL AUTO_INCREMENT,
 			user_id varchar(100) NOT NULL,
@@ -81,6 +92,30 @@ class Control_Database {
 		global $wpdb;
 		$table_staff    = $wpdb->prefix . 'control_staff';
 		$table_settings = $wpdb->prefix . 'control_settings';
+		$table_roles    = $wpdb->prefix . 'control_roles';
+
+		// Seed initial roles
+		$initial_roles = array(
+			array(
+				'role_key'  => 'admin',
+				'role_name' => 'System Administrator',
+				'permissions' => json_encode(array('all' => true)),
+				'is_system' => 1
+			),
+			array(
+				'role_key'  => 'coach',
+				'role_name' => 'Sports Coach',
+				'permissions' => json_encode(array('dashboard' => true, 'users_view' => true)),
+				'is_system' => 1
+			)
+		);
+
+		foreach ( $initial_roles as $role ) {
+			$exists = $wpdb->get_var( $wpdb->prepare( "SELECT id FROM $table_roles WHERE role_key = %s", $role['role_key'] ) );
+			if ( ! $exists ) {
+				$wpdb->insert( $table_roles, $role );
+			}
+		}
 
 		// Default settings
 		$defaults = array(

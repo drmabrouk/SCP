@@ -40,45 +40,27 @@ class Control_Auth {
 	}
 
 	/**
-	 * Sync system roles and remove non-explicit roles.
+	 * Sync system roles from database and remove non-explicit roles.
 	 */
 	public static function sync_roles() {
-		$new_roles = array(
-			'admin'       => array(
-				'name' => __( 'System Administrator', 'control' ),
-				'caps' => array( 'read' => true, 'manage_options' => true, 'upload_files' => true )
-			),
-			'coach'       => array(
-				'name' => __( 'Sports Coach', 'control' ),
-				'caps' => array( 'read' => true )
-			),
-			'therapist'   => array(
-				'name' => __( 'Sports Therapist', 'control' ),
-				'caps' => array( 'read' => true )
-			),
-			'nutritionist' => array(
-				'name' => __( 'Sports Nutrition Specialist', 'control' ),
-				'caps' => array( 'read' => true )
-			),
-			'pe_teacher'  => array(
-				'name' => __( 'Physical Education Teacher', 'control' ),
-				'caps' => array( 'read' => true )
-			),
-			'researcher'  => array(
-				'name' => __( 'Sports Researcher', 'control' ),
-				'caps' => array( 'read' => true )
-			),
-		);
+		global $wpdb;
+		$roles = $wpdb->get_results( "SELECT * FROM {$wpdb->prefix}control_roles" );
 
-		foreach ( $new_roles as $role_id => $role_data ) {
-			if ( ! get_role( $role_id ) ) {
-				add_role( $role_id, $role_data['name'], $role_data['caps'] );
+		$keep_roles = array( 'administrator' ); // Always keep WP Super Admin
+
+		foreach ( $roles as $role ) {
+			$role_key = $role->role_key;
+			$keep_roles[] = $role_key;
+
+			$caps = array( 'read' => true, 'upload_files' => true );
+			if ( $role_key === 'admin' ) {
+				$caps['manage_options'] = true;
+			}
+
+			if ( ! get_role( $role_key ) ) {
+				add_role( $role_key, $role->role_name, $caps );
 			}
 		}
-
-		// Core roles to keep
-		$keep_roles = array_keys( $new_roles );
-		$keep_roles[] = 'administrator'; // Standard WP admin
 
 		// Remove all other roles
 		global $wp_roles;
@@ -89,6 +71,29 @@ class Control_Auth {
 				}
 			}
 		}
+	}
+
+	/**
+	 * Check if current user has a specific permission.
+	 */
+	public static function has_permission( $permission ) {
+		if ( current_user_can( 'manage_options' ) ) {
+			return true; // WP Super Admin has all permissions
+		}
+
+		$user = self::current_user();
+		if ( ! $user ) return false;
+
+		global $wpdb;
+		$role = $wpdb->get_row( $wpdb->prepare( "SELECT permissions FROM {$wpdb->prefix}control_roles WHERE role_key = %s", $user->role ) );
+
+		if ( ! $role ) return false;
+
+		$perms = json_decode( $role->permissions, true );
+
+		if ( isset($perms['all']) && $perms['all'] ) return true;
+
+		return isset( $perms[$permission] ) && $perms[$permission];
 	}
 
 	/**
