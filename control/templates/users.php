@@ -75,10 +75,12 @@ function control_get_time_ago($timestamp) {
 <div class="control-header-flex" style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
     <h2 style="font-weight:800; font-size:1.3rem; margin:0; color:var(--control-text-dark);"><?php _e('إدارة الكوادر البشرية', 'control'); ?></h2>
     <div style="display:flex; gap:10px;">
-        <?php if($can_manage): ?>
+        <?php if(Control_Auth::has_permission('users_manage')): ?>
             <button id="control-add-user-btn" class="control-btn" style="background:var(--control-primary); border:none;">
                 <span class="dashicons dashicons-plus-alt" style="margin-left:5px;"></span><?php _e('إضافة كادر', 'control'); ?>
             </button>
+        <?php endif; ?>
+        <?php if(Control_Auth::has_permission('users_view')): ?>
             <div class="control-dropdown" style="position:relative;">
                 <button class="control-btn" style="background:#fff; color:var(--control-text-dark) !important; border:1px solid var(--control-border);" onclick="jQuery('#user-tools-dropdown').toggle()">
                     <span class="dashicons dashicons-ellipsis"></span>
@@ -169,14 +171,16 @@ function control_get_time_ago($timestamp) {
                     <?php endif; ?>
                 </div>
                 <div style="display:flex; gap:8px; flex-shrink:0;">
-                    <?php if($can_manage): ?>
+                    <?php if(Control_Auth::has_permission('users_manage')): ?>
                         <button class="control-btn control-edit-user" title="<?php _e('تعديل', 'control'); ?>" style="padding:0; width:34px; height:34px; background:#fff; color:var(--control-muted) !important; border:1px solid var(--control-border);"><span class="dashicons dashicons-edit"></span></button>
                         <?php if($u->username !== 'admin' && $u->phone !== '1234567890'): ?>
                             <button class="control-btn control-restrict-user" data-id="<?php echo $u->id; ?>" title="<?php echo $u->is_restricted ? __('إلغاء التقييد', 'control') : __('تقييد', 'control'); ?>" style="padding:0; width:34px; height:34px; background:<?php echo $u->is_restricted ? '#ecfdf5' : '#fff7ed'; ?>; color:<?php echo $u->is_restricted ? '#059669' : '#d97706'; ?> !important; border:1px solid <?php echo $u->is_restricted ? '#d1fae5' : '#ffedd5'; ?>;">
                                 <span class="dashicons <?php echo $u->is_restricted ? 'dashicons-unlock' : 'dashicons-lock'; ?>"></span>
                             </button>
-                            <button class="control-btn control-delete-user" data-id="<?php echo $u->id; ?>" title="<?php _e('حذف', 'control'); ?>" style="padding:0; width:34px; height:34px; background:#fef2f2; color:#ef4444 !important; border:1px solid #fee2e2;"><span class="dashicons dashicons-trash"></span></button>
                         <?php endif; ?>
+                    <?php endif; ?>
+                    <?php if(Control_Auth::has_permission('users_delete') && $u->username !== 'admin' && $u->phone !== '1234567890'): ?>
+                        <button class="control-btn control-delete-user" data-id="<?php echo $u->id; ?>" title="<?php _e('حذف', 'control'); ?>" style="padding:0; width:34px; height:34px; background:#fef2f2; color:#ef4444 !important; border:1px solid #fee2e2;"><span class="dashicons dashicons-trash"></span></button>
                     <?php endif; ?>
                 </div>
             </div>
