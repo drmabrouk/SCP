@@ -82,18 +82,6 @@ class Control_Database {
 		$table_staff    = $wpdb->prefix . 'control_staff';
 		$table_settings = $wpdb->prefix . 'control_settings';
 
-		// Default admin if not exists
-		$exists = $wpdb->get_var( $wpdb->prepare( "SELECT id FROM $table_staff WHERE phone = %s", '1234567890' ) );
-		if ( ! $exists ) {
-			$wpdb->insert( $table_staff, array(
-				'username' => 'admin',
-				'phone'    => '1234567890',
-				'password' => password_hash( 'admin123', PASSWORD_DEFAULT ),
-				'name'     => 'System Admin',
-				'role'     => 'admin'
-			) );
-		}
-
 		// Default settings
 		$defaults = array(
 			'fullscreen_password' => '123456789',

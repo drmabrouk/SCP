@@ -211,7 +211,28 @@ jQuery(document).ready(function($) {
         });
     });
 
-    // --- Settings System ---
+    // --- Settings System & Real-time Design Preview ---
+
+    $('#control-design-form input, #control-design-form select').on('input change', function() {
+        const name = $(this).attr('name');
+        const val = $(this).val();
+        const root = document.documentElement;
+
+        switch(name) {
+            case 'design_sidebar_bg': root.style.setProperty('--control-sidebar-bg', val); break;
+            case 'design_btn_primary': root.style.setProperty('--control-primary', val); break;
+            case 'design_btn_secondary': root.style.setProperty('--control-primary-soft', val); break;
+            case 'design_accent': root.style.setProperty('--control-accent', val); break;
+            case 'design_text_main': root.style.setProperty('--control-text', val); break;
+            case 'design_bg_main': root.style.setProperty('--control-bg', val); break;
+            case 'design_font_size': root.style.setProperty('font-size', val + 'px', 'important'); break;
+            case 'design_font_weight_bold': root.style.setProperty('--control-font-weight-bold', val); break;
+            case 'design_high_contrast':
+                if(val === 'yes') $('body').css('filter', 'contrast(1.1) saturate(1.1)');
+                else $('body').css('filter', 'none');
+                break;
+        }
+    });
 
     $('.control-tab-btn').on('click', function() {
         const tab = $(this).data('tab');

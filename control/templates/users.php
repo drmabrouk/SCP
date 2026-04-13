@@ -24,9 +24,12 @@ $countries = array(
 function control_get_time_ago($timestamp) {
     if (!$timestamp) return 'غير نشط';
 
+    // Use WordPress local time for consistency with current_time('mysql')
     $time = is_numeric($timestamp) ? $timestamp : strtotime($timestamp);
-    $diff = time() - $time;
+    $now = current_time('timestamp');
+    $diff = $now - $time;
 
+    if ($diff < 0) $diff = 0; // Prevent negative values from timezone mismatches
     if ($diff < 60) return 'الآن';
 
     $units = array(

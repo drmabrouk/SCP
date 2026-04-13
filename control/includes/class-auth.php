@@ -24,6 +24,7 @@ class Control_Auth {
 	public static function update_last_activity() {
 		if ( self::is_logged_in() ) {
 			$user = self::current_user();
+			// Only update if it's a control_staff user (not a wp_ prefix admin)
 			if ( $user && is_numeric( $user->id ) ) {
 				global $wpdb;
 				$wpdb->update(
@@ -31,6 +32,9 @@ class Control_Auth {
 					array( 'last_activity' => current_time( 'mysql' ) ),
 					array( 'id' => $user->id )
 				);
+
+				// Also update the session data if needed to keep it fresh
+				$_SESSION['control_last_activity'] = current_time( 'mysql' );
 			}
 		}
 	}
