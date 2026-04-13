@@ -3,24 +3,24 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-class Sukna_Database {
+class Control_Database {
 
 	public static function create_tables() {
 		global $wpdb;
 
 		$charset_collate = $wpdb->get_charset_collate();
 
-		$table_staff        = $wpdb->prefix . 'sukna_staff';
-		$table_settings     = $wpdb->prefix . 'sukna_settings';
-		$table_properties   = $wpdb->prefix . 'sukna_properties';
-		$table_rooms        = $wpdb->prefix . 'sukna_rooms';
-		$table_investments  = $wpdb->prefix . 'sukna_investments';
-		$table_wallets      = $wpdb->prefix . 'sukna_wallets';
-		$table_transactions = $wpdb->prefix . 'sukna_transactions';
-		$table_payments     = $wpdb->prefix . 'sukna_payments';
-		$table_contracts    = $wpdb->prefix . 'sukna_contracts';
-		$table_expenses     = $wpdb->prefix . 'sukna_expenses';
-		$table_setup_items  = $wpdb->prefix . 'sukna_setup_items';
+		$table_staff        = $wpdb->prefix . 'control_staff';
+		$table_settings     = $wpdb->prefix . 'control_settings';
+		$table_properties   = $wpdb->prefix . 'control_properties';
+		$table_rooms        = $wpdb->prefix . 'control_rooms';
+		$table_investments  = $wpdb->prefix . 'control_investments';
+		$table_wallets      = $wpdb->prefix . 'control_wallets';
+		$table_transactions = $wpdb->prefix . 'control_transactions';
+		$table_payments     = $wpdb->prefix . 'control_payments';
+		$table_contracts    = $wpdb->prefix . 'control_contracts';
+		$table_expenses     = $wpdb->prefix . 'control_expenses';
+		$table_setup_items  = $wpdb->prefix . 'control_setup_items';
 
 		$sql = "CREATE TABLE $table_staff (
 			id mediumint(9) NOT NULL AUTO_INCREMENT,
@@ -159,7 +159,7 @@ class Sukna_Database {
 			PRIMARY KEY  (setting_key)
 		) $charset_collate;
 
-		CREATE TABLE {$wpdb->prefix}sukna_activity_logs (
+		CREATE TABLE {$wpdb->prefix}control_activity_logs (
 			id bigint(20) NOT NULL AUTO_INCREMENT,
 			user_id varchar(100) NOT NULL,
 			action_type varchar(100) NOT NULL,
@@ -183,8 +183,8 @@ class Sukna_Database {
 
 	private static function seed_data() {
 		global $wpdb;
-		$table_staff    = $wpdb->prefix . 'sukna_staff';
-		$table_settings = $wpdb->prefix . 'sukna_settings';
+		$table_staff    = $wpdb->prefix . 'control_staff';
+		$table_settings = $wpdb->prefix . 'control_settings';
 
 		// Default admin if not exists
 		$exists = $wpdb->get_var( $wpdb->prepare( "SELECT id FROM $table_staff WHERE phone = %s", '1234567890' ) );
@@ -201,10 +201,10 @@ class Sukna_Database {
 		// Default settings
 		$defaults = array(
 			'fullscreen_password' => '123456789',
-			'system_name'         => 'Sukna',
-			'company_name'        => 'Sukna',
-			'pwa_app_name'        => 'Sukna',
-			'pwa_short_name'      => 'Sukna',
+			'system_name'         => 'Control',
+			'company_name'        => 'Control',
+			'pwa_app_name'        => 'Control',
+			'pwa_short_name'      => 'Control',
 			'pwa_theme_color'     => '#000000',
 			'pwa_bg_color'        => '#ffffff',
 		);

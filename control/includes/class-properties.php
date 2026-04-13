@@ -3,11 +3,11 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-class Sukna_Properties {
+class Control_Properties {
 
 	public static function add_property( $data ) {
 		global $wpdb;
-		$table = $wpdb->prefix . 'sukna_properties';
+		$table = $wpdb->prefix . 'control_properties';
 
 		$setup_items = $data['setup_items'] ?? array();
 		unset($data['setup_items']);
@@ -17,7 +17,7 @@ class Sukna_Properties {
 
 		// Automatically add creator as an investor if they are master tenant/owner
 		if ( ! empty($data['owner_id']) ) {
-			Sukna_Investments::add_investment( array(
+			Control_Investments::add_investment( array(
 				'investor_id' => $data['owner_id'],
 				'property_id' => $id,
 				'amount'      => 0, // Initial entry, can be updated later
@@ -38,7 +38,7 @@ class Sukna_Properties {
 
 	public static function update_property( $id, $data ) {
 		global $wpdb;
-		$table = $wpdb->prefix . 'sukna_properties';
+		$table = $wpdb->prefix . 'control_properties';
 
 		$old_rooms = $wpdb->get_var( $wpdb->prepare( "SELECT total_rooms FROM $table WHERE id = %d", $id ) );
 
@@ -58,7 +58,7 @@ class Sukna_Properties {
 
 	private static function save_setup_items( $property_id, $items ) {
 		global $wpdb;
-		$table = $wpdb->prefix . 'sukna_setup_items';
+		$table = $wpdb->prefix . 'control_setup_items';
 
 		$wpdb->delete( $table, array( 'property_id' => $property_id ) );
 
@@ -74,18 +74,18 @@ class Sukna_Properties {
 			$total_setup_cost += $cost;
 		}
 
-		$wpdb->update( $wpdb->prefix . 'sukna_properties', array( 'total_setup_cost' => $total_setup_cost ), array( 'id' => $property_id ) );
+		$wpdb->update( $wpdb->prefix . 'control_properties', array( 'total_setup_cost' => $total_setup_cost ), array( 'id' => $property_id ) );
 	}
 
 	public static function get_setup_items( $property_id ) {
 		global $wpdb;
-		$table = $wpdb->prefix . 'sukna_setup_items';
+		$table = $wpdb->prefix . 'control_setup_items';
 		return $wpdb->get_results( $wpdb->prepare( "SELECT * FROM $table WHERE property_id = %d", $property_id ) );
 	}
 
 	private static function auto_generate_rooms( $property_id, $count ) {
 		global $wpdb;
-		$table = $wpdb->prefix . 'sukna_rooms';
+		$table = $wpdb->prefix . 'control_rooms';
 
 		$existing_rooms = $wpdb->get_results( $wpdb->prepare( "SELECT room_number FROM $table WHERE property_id = %d", $property_id ) );
 		$existing_numbers = wp_list_pluck( $existing_rooms, 'room_number' );
@@ -108,24 +108,24 @@ class Sukna_Properties {
 
 	public static function delete_property( $id ) {
 		global $wpdb;
-		$table = $wpdb->prefix . 'sukna_properties';
+		$table = $wpdb->prefix . 'control_properties';
 		$wpdb->delete( $table, array( 'id' => $id ) );
 		// Also delete rooms and setup items
-		$wpdb->delete( $wpdb->prefix . 'sukna_rooms', array( 'property_id' => $id ) );
-		$wpdb->delete( $wpdb->prefix . 'sukna_setup_items', array( 'property_id' => $id ) );
+		$wpdb->delete( $wpdb->prefix . 'control_rooms', array( 'property_id' => $id ) );
+		$wpdb->delete( $wpdb->prefix . 'control_setup_items', array( 'property_id' => $id ) );
 	}
 
 	public static function get_property( $id ) {
 		global $wpdb;
-		$table = $wpdb->prefix . 'sukna_properties';
+		$table = $wpdb->prefix . 'control_properties';
 		return $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $table WHERE id = %d", $id ) );
 	}
 
 	public static function get_all_properties( $args = array() ) {
 		global $wpdb;
-		$table = $wpdb->prefix . 'sukna_properties';
+		$table = $wpdb->prefix . 'control_properties';
 
-		$query = "SELECT p.*, s.name as owner_name FROM $table p LEFT JOIN {$wpdb->prefix}sukna_staff s ON p.owner_id = s.id";
+		$query = "SELECT p.*, s.name as owner_name FROM $table p LEFT JOIN {$wpdb->prefix}control_staff s ON p.owner_id = s.id";
 		$where = array();
 
 		if ( ! empty( $args['owner_id'] ) ) {
@@ -155,26 +155,26 @@ class Sukna_Properties {
 
 	public static function add_room( $data ) {
 		global $wpdb;
-		$table = $wpdb->prefix . 'sukna_rooms';
+		$table = $wpdb->prefix . 'control_rooms';
 		$wpdb->insert( $table, $data );
 		return $wpdb->insert_id;
 	}
 
 	public static function update_room( $id, $data ) {
 		global $wpdb;
-		$table = $wpdb->prefix . 'sukna_rooms';
+		$table = $wpdb->prefix . 'control_rooms';
 		$wpdb->update( $table, $data, array( 'id' => $id ) );
 	}
 
 	public static function delete_room( $id ) {
 		global $wpdb;
-		$table = $wpdb->prefix . 'sukna_rooms';
+		$table = $wpdb->prefix . 'control_rooms';
 		$wpdb->delete( $table, array( 'id' => $id ) );
 	}
 
 	public static function reset_rooms_occupancy( $property_id ) {
 		global $wpdb;
-		$wpdb->update( "{$wpdb->prefix}sukna_rooms", array(
+		$wpdb->update( "{$wpdb->prefix}control_rooms", array(
 			'status' => 'available',
 			'tenant_id' => null,
 			'guest_tenant_name' => null,
@@ -184,13 +184,13 @@ class Sukna_Properties {
 
 	public static function get_rooms( $property_id ) {
 		global $wpdb;
-		$table = $wpdb->prefix . 'sukna_rooms';
-		return $wpdb->get_results( $wpdb->prepare( "SELECT r.*, COALESCE(s.name, r.guest_tenant_name) as tenant_name FROM $table r LEFT JOIN {$wpdb->prefix}sukna_staff s ON r.tenant_id = s.id WHERE r.property_id = %d", $property_id ) );
+		$table = $wpdb->prefix . 'control_rooms';
+		return $wpdb->get_results( $wpdb->prepare( "SELECT r.*, COALESCE(s.name, r.guest_tenant_name) as tenant_name FROM $table r LEFT JOIN {$wpdb->prefix}control_staff s ON r.tenant_id = s.id WHERE r.property_id = %d", $property_id ) );
 	}
 
 	public static function save_contract( $data ) {
 		global $wpdb;
-		$table = $wpdb->prefix . 'sukna_contracts';
+		$table = $wpdb->prefix . 'control_contracts';
 
 		$wpdb->insert( $table, $data );
 		$contract_id = $wpdb->insert_id;
@@ -206,17 +206,17 @@ class Sukna_Properties {
 			'guest_tenant_name' => $data['guest_tenant_name'] ?? null,
 			'rental_start_date' => $data['start_date']
 		);
-		$wpdb->update( "{$wpdb->prefix}sukna_rooms", $room_data, array('id' => $data['room_id']) );
+		$wpdb->update( "{$wpdb->prefix}control_rooms", $room_data, array('id' => $data['room_id']) );
 
 		// Immediate Proportional Revenue Capture for first installment
-		$room = $wpdb->get_row($wpdb->prepare("SELECT property_id, room_number FROM {$wpdb->prefix}sukna_rooms WHERE id = %d", $data['room_id']));
+		$room = $wpdb->get_row($wpdb->prepare("SELECT property_id, room_number FROM {$wpdb->prefix}control_rooms WHERE id = %d", $data['room_id']));
 		$first_installment = $data['total_value'] / $data['installment_count'];
 
-		Sukna_Investments::distribute_proportional_amount(
+		Control_Investments::distribute_proportional_amount(
 			$room->property_id,
 			$first_installment,
 			'room_revenue',
-			sprintf(__('إيراد إيجار - وحدة #%s (الدفعة 1)', 'sukna'), $room->room_number)
+			sprintf(__('إيراد إيجار - وحدة #%s (الدفعة 1)', 'control'), $room->room_number)
 		);
 
 		return $contract_id;
@@ -224,10 +224,10 @@ class Sukna_Properties {
 
 	private static function generate_installments( $contract_id, $total_value, $count, $start_date ) {
 		global $wpdb;
-		$table = $wpdb->prefix . 'sukna_payments';
+		$table = $wpdb->prefix . 'control_payments';
 
 		// Get property installments setting
-		$room = $wpdb->get_row($wpdb->prepare("SELECT property_id FROM {$wpdb->prefix}sukna_rooms WHERE id = (SELECT room_id FROM {$wpdb->prefix}sukna_contracts WHERE id = %d)", $contract_id));
+		$room = $wpdb->get_row($wpdb->prepare("SELECT property_id FROM {$wpdb->prefix}control_rooms WHERE id = (SELECT room_id FROM {$wpdb->prefix}control_contracts WHERE id = %d)", $contract_id));
 		$property = self::get_property($room->property_id);
 		$per_year = $property->installments_per_year ?: 4;
 
@@ -253,7 +253,7 @@ class Sukna_Properties {
 
 	public static function record_expense( $data ) {
 		global $wpdb;
-		$table = $wpdb->prefix . 'sukna_expenses';
+		$table = $wpdb->prefix . 'control_expenses';
 		$wpdb->insert( $table, $data );
 		return $wpdb->insert_id;
 	}
@@ -265,36 +265,36 @@ class Sukna_Properties {
 		if ( ! $property ) return array('income' => 0, 'expenses' => 0, 'net' => 0, 'roi' => 0, 'monthly_income' => 0, 'total_invested' => 0);
 
 		// Total Investment (Sum of investor contributions)
-		$total_invested = $wpdb->get_var( $wpdb->prepare( "SELECT SUM(amount) FROM {$wpdb->prefix}sukna_investments WHERE property_id = %d", $property_id ) ) ?: 0;
+		$total_invested = $wpdb->get_var( $wpdb->prepare( "SELECT SUM(amount) FROM {$wpdb->prefix}control_investments WHERE property_id = %d", $property_id ) ) ?: 0;
 
 		// Monthly Income (Actual paid installments this month)
 		$current_month_start = date('Y-m-01 00:00:00');
 		$monthly_income = $wpdb->get_var( $wpdb->prepare( "
 			SELECT SUM(p.amount)
-			FROM {$wpdb->prefix}sukna_payments p
-			JOIN {$wpdb->prefix}sukna_contracts c ON p.contract_id = c.id
-			JOIN {$wpdb->prefix}sukna_rooms r ON c.room_id = r.id
+			FROM {$wpdb->prefix}control_payments p
+			JOIN {$wpdb->prefix}control_contracts c ON p.contract_id = c.id
+			JOIN {$wpdb->prefix}control_rooms r ON c.room_id = r.id
 			WHERE r.property_id = %d AND p.status = 'paid' AND p.payment_date >= %s
 		", $property_id, $current_month_start ) ) ?: 0;
 
 		// Monthly Expected (Occupancy based potential)
-		$monthly_expected = $wpdb->get_var( $wpdb->prepare( "SELECT SUM(rental_price) FROM {$wpdb->prefix}sukna_rooms WHERE property_id = %d AND status = 'rented'", $property_id ) ) ?: 0;
+		$monthly_expected = $wpdb->get_var( $wpdb->prepare( "SELECT SUM(rental_price) FROM {$wpdb->prefix}control_rooms WHERE property_id = %d AND status = 'rented'", $property_id ) ) ?: 0;
 
 		// Total Income from all rented rooms of this property (Historical Paid)
 		$income = $wpdb->get_var( $wpdb->prepare( "
 			SELECT SUM(p.amount)
-			FROM {$wpdb->prefix}sukna_payments p
-			JOIN {$wpdb->prefix}sukna_contracts c ON p.contract_id = c.id
-			JOIN {$wpdb->prefix}sukna_rooms r ON c.room_id = r.id
+			FROM {$wpdb->prefix}control_payments p
+			JOIN {$wpdb->prefix}control_contracts c ON p.contract_id = c.id
+			JOIN {$wpdb->prefix}control_rooms r ON c.room_id = r.id
 			WHERE r.property_id = %d AND p.status = 'paid'
 		", $property_id ) ) ?: 0;
 
 		// Total Expenses recorded
-		$expenses = $wpdb->get_var( $wpdb->prepare( "SELECT SUM(amount) FROM {$wpdb->prefix}sukna_expenses WHERE property_id = %d", $property_id ) ) ?: 0;
+		$expenses = $wpdb->get_var( $wpdb->prepare( "SELECT SUM(amount) FROM {$wpdb->prefix}control_expenses WHERE property_id = %d", $property_id ) ) ?: 0;
 
 		// Monthly Expenses (Current Month)
 		$current_month_start = date('Y-m-01 00:00:00');
-		$monthly_expenses = $wpdb->get_var( $wpdb->prepare( "SELECT SUM(amount) FROM {$wpdb->prefix}sukna_expenses WHERE property_id = %d AND expense_date >= %s", $property_id, $current_month_start ) ) ?: 0;
+		$monthly_expenses = $wpdb->get_var( $wpdb->prepare( "SELECT SUM(amount) FROM {$wpdb->prefix}control_expenses WHERE property_id = %d AND expense_date >= %s", $property_id, $current_month_start ) ) ?: 0;
 
 		// Total Setup/Initial Cost
 		$initial_setup_cost = floatval($property->total_setup_cost) + floatval($property->gov_fees) + floatval($property->additional_setup_cost);
@@ -337,10 +337,10 @@ class Sukna_Properties {
 		$monthly_gross = $monthly_income;
 		$monthly_net = $monthly_gross - $monthly_expenses;
 
-		$active_contracts = $wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM {$wpdb->prefix}sukna_contracts c JOIN {$wpdb->prefix}sukna_rooms r ON c.room_id = r.id WHERE r.property_id = %d AND c.status = 'active'", $property_id)) ?: 0;
-		$expired_contracts = $wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM {$wpdb->prefix}sukna_contracts c JOIN {$wpdb->prefix}sukna_rooms r ON c.room_id = r.id WHERE r.property_id = %d AND c.status = 'expired'", $property_id)) ?: 0;
+		$active_contracts = $wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM {$wpdb->prefix}control_contracts c JOIN {$wpdb->prefix}control_rooms r ON c.room_id = r.id WHERE r.property_id = %d AND c.status = 'active'", $property_id)) ?: 0;
+		$expired_contracts = $wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM {$wpdb->prefix}control_contracts c JOIN {$wpdb->prefix}control_rooms r ON c.room_id = r.id WHERE r.property_id = %d AND c.status = 'expired'", $property_id)) ?: 0;
 
-		$avg_rent = $wpdb->get_var($wpdb->prepare("SELECT AVG(rental_price) FROM {$wpdb->prefix}sukna_rooms WHERE property_id = %d AND rental_price > 0", $property_id)) ?: 0;
+		$avg_rent = $wpdb->get_var($wpdb->prepare("SELECT AVG(rental_price) FROM {$wpdb->prefix}control_rooms WHERE property_id = %d AND rental_price > 0", $property_id)) ?: 0;
 		$op_margin = ($monthly_gross > 0) ? ($monthly_net / $monthly_gross) * 100 : 0;
 
 		// Partnership Model Calculations (Projections)
@@ -351,7 +351,7 @@ class Sukna_Properties {
 		$projected_quarterly_revenue = $projected_monthly_revenue * 3;
 		$projected_quarterly_net = $projected_quarterly_revenue - $quarterly_rent - $quarterly_opex;
 
-		$investor_count = $wpdb->get_var($wpdb->prepare("SELECT COUNT(DISTINCT investor_id) FROM {$wpdb->prefix}sukna_investments WHERE property_id = %d", $property_id)) ?: 3;
+		$investor_count = $wpdb->get_var($wpdb->prepare("SELECT COUNT(DISTINCT investor_id) FROM {$wpdb->prefix}control_investments WHERE property_id = %d", $property_id)) ?: 3;
 
 		$quarterly_rent_per_investor = $quarterly_rent / $investor_count;
 		$monthly_rent_per_investor = $quarterly_rent_per_investor / 3;
