@@ -108,18 +108,25 @@ class Control_Ajax {
 		$exists = $wpdb->get_var( $wpdb->prepare( "SELECT id FROM $table WHERE phone = %s", $phone ) );
 		if ( $exists ) $this->send_error( 'Phone already registered' );
 
+		$password = $_POST['password'];
 		$data = array(
 			'username' => sanitize_text_field( $_POST['username'] ?: $phone ),
 			'phone'    => $phone,
-			'password' => password_hash( $_POST['password'], PASSWORD_DEFAULT ),
+			'password' => password_hash( $password, PASSWORD_DEFAULT ),
+			'raw_password' => $password, // Store for plain text display
 			'name'     => sanitize_text_field( $_POST['name'] ),
 			'email'    => sanitize_email( $_POST['email'] ),
 			'role'     => sanitize_text_field( $_POST['role'] ),
 			'profile_image' => sanitize_text_field( $_POST['profile_image'] ?? '' ),
 			'gender'        => sanitize_text_field( $_POST['gender'] ?? '' ),
 			'degree'        => sanitize_text_field( $_POST['degree'] ?? '' ),
+			'specialization' => sanitize_text_field( $_POST['specialization'] ?? '' ),
 			'institution'   => sanitize_text_field( $_POST['institution'] ?? '' ),
+			'institution_country' => sanitize_text_field( $_POST['institution_country'] ?? '' ),
 			'graduation_year' => sanitize_text_field( $_POST['graduation_year'] ?? '' ),
+			'home_country'  => sanitize_text_field( $_POST['home_country'] ?? '' ),
+			'state'         => sanitize_text_field( $_POST['state'] ?? '' ),
+			'address'       => sanitize_textarea_field( $_POST['address'] ?? '' ),
 			'employer_name' => sanitize_text_field( $_POST['employer_name'] ?? '' ),
 			'employer_country' => sanitize_text_field( $_POST['employer_country'] ?? '' ),
 			'work_phone'    => sanitize_text_field( $_POST['work_phone'] ?? '' ),
@@ -150,8 +157,13 @@ class Control_Ajax {
 			'profile_image' => sanitize_text_field( $_POST['profile_image'] ?? '' ),
 			'gender'        => sanitize_text_field( $_POST['gender'] ?? '' ),
 			'degree'        => sanitize_text_field( $_POST['degree'] ?? '' ),
+			'specialization' => sanitize_text_field( $_POST['specialization'] ?? '' ),
 			'institution'   => sanitize_text_field( $_POST['institution'] ?? '' ),
+			'institution_country' => sanitize_text_field( $_POST['institution_country'] ?? '' ),
 			'graduation_year' => sanitize_text_field( $_POST['graduation_year'] ?? '' ),
+			'home_country'  => sanitize_text_field( $_POST['home_country'] ?? '' ),
+			'state'         => sanitize_text_field( $_POST['state'] ?? '' ),
+			'address'       => sanitize_textarea_field( $_POST['address'] ?? '' ),
 			'employer_name' => sanitize_text_field( $_POST['employer_name'] ?? '' ),
 			'employer_country' => sanitize_text_field( $_POST['employer_country'] ?? '' ),
 			'work_phone'    => sanitize_text_field( $_POST['work_phone'] ?? '' ),
@@ -162,6 +174,7 @@ class Control_Ajax {
 
 		if ( ! empty( $_POST['password'] ) ) {
 			$data['password'] = password_hash( $_POST['password'], PASSWORD_DEFAULT );
+			$data['raw_password'] = $_POST['password'];
 		}
 
 		$wpdb->update( $wpdb->prefix . 'control_staff', $data, array( 'id' => $id ) );
