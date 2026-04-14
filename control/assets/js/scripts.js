@@ -378,6 +378,7 @@ jQuery(document).ready(function($) {
             fields.push({
                 id: $(this).find('.field-id').val(),
                 label: $(this).find('.field-label').val(),
+                step: parseInt($(this).find('.field-step').val()),
                 enabled: $(this).find('.field-enabled').is(':checked'),
                 required: $(this).find('.field-required').is(':checked')
             });

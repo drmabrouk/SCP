@@ -159,7 +159,7 @@ function control_get_time_ago($timestamp) {
             </div>
 
             <!-- Badges Row -->
-            <div style="position: absolute; top: 12px; left: 12px; display: flex; flex-direction: column; gap: 5px; align-items: flex-end; z-index: 5;">
+            <div style="position: absolute; top: 12px; left: 12px; display: flex; gap: 8px; align-items: center; z-index: 5;">
                 <div class="user-card-badge activity-badge" title="آخر ظهور">
                     <span class="dashicons dashicons-clock" style="font-size:12px; width:12px; height:12px; margin-left:4px;"></span>
                     <?php echo control_get_time_ago($u->last_activity); ?>
@@ -487,6 +487,7 @@ function control_get_time_ago($timestamp) {
                         <tr style="background:#f8fafc;">
                             <th style="width:50px;"></th>
                             <th><?php _e('اسم الحقل', 'control'); ?></th>
+                            <th style="text-align:center;"><?php _e('المرحلة (Step)', 'control'); ?></th>
                             <th style="text-align:center;"><?php _e('مفعل', 'control'); ?></th>
                             <th style="text-align:center;"><?php _e('إلزامي', 'control'); ?></th>
                             <th style="width:80px; text-align:center;"><?php _e('الترتيب', 'control'); ?></th>
@@ -495,10 +496,21 @@ function control_get_time_ago($timestamp) {
                     <tbody id="reg-fields-config-body">
                         <?php
                         $fields_master = array(
-                            'first_name' => __('الاسم الأول', 'control'),
-                            'last_name'  => __('اسم العائلة', 'control'),
+                            'first_name' => __('الاسم بالكامل', 'control'),
                             'phone'      => __('رقم الهاتف', 'control'),
                             'email'      => __('البريد الإلكتروني', 'control'),
+                            'gender'     => __('الجنس', 'control'),
+                            'degree'     => __('الدرجة العلمية', 'control'),
+                            'specialization' => __('التخصص الأكاديمي', 'control'),
+                            'institution' => __('الجامعة / المؤسسة', 'control'),
+                            'graduation_year' => __('سنة التخرج', 'control'),
+                            'employer_name' => __('جهة العمل الحالية', 'control'),
+                            'job_title' => __('المسمى الوظيفي', 'control'),
+                            'work_phone' => __('رقم هاتف العمل', 'control'),
+                            'work_email' => __('البريد المهني', 'control'),
+                            'home_country' => __('بلد الإقامة', 'control'),
+                            'state' => __('الولاية/المحافظة', 'control'),
+                            'address' => __('العنوان بالتفصيل', 'control'),
                             'password'   => __('كلمة المرور', 'control')
                         );
 
@@ -518,6 +530,13 @@ function control_get_time_ago($timestamp) {
                             <tr>
                                 <td style="text-align:center; cursor:move;"><span class="dashicons dashicons-menu" style="color:var(--control-muted);"></span></td>
                                 <td style="font-weight:700;"><?php echo $field['label']; ?></td>
+                                <td style="text-align:center;">
+                                    <select class="field-step" style="width:70px; padding:2px;">
+                                        <?php for($i=1; $i<=5; $i++): ?>
+                                            <option value="<?php echo $i; ?>" <?php selected($field['step'] ?? 1, $i); ?>><?php echo $i; ?></option>
+                                        <?php endfor; ?>
+                                    </select>
+                                </td>
                                 <td style="text-align:center;"><input type="checkbox" class="field-enabled" data-id="<?php echo $field['id']; ?>" <?php checked($field['enabled'] ?? true, true); ?>></td>
                                 <td style="text-align:center;"><input type="checkbox" class="field-required" data-id="<?php echo $field['id']; ?>" <?php checked($field['required'] ?? true, true); ?>></td>
                                 <td style="text-align:center;">
