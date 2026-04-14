@@ -44,6 +44,12 @@ class Control_Ajax {
 	public function login() {
 		check_ajax_referer( 'control_nonce', 'nonce' );
 
+		global $wpdb;
+		$login_enabled = $wpdb->get_var("SELECT setting_value FROM {$wpdb->prefix}control_settings WHERE setting_key = 'auth_login_enabled'");
+		if ($login_enabled === '0') {
+			$this->send_error(__('نعتذر، تسجيل الدخول معطل حالياً لأعمال الصيانة.', 'control'));
+		}
+
 		$phone = sanitize_text_field( $_POST['phone'] ?? '' );
 		$password = $_POST['password'] ?? '';
 
@@ -63,16 +69,32 @@ class Control_Ajax {
 	public function register() {
 		check_ajax_referer( 'control_nonce', 'nonce' );
 
-		$data = array(
-			'first_name' => sanitize_text_field( $_POST['first_name'] ),
-			'last_name'  => sanitize_text_field( $_POST['last_name'] ),
-			'phone'      => sanitize_text_field( $_POST['phone'] ),
-			'email'      => sanitize_email( $_POST['email'] ),
-			'password'   => $_POST['password'],
-		);
+		global $wpdb;
+		$reg_enabled = $wpdb->get_var("SELECT setting_value FROM {$wpdb->prefix}control_settings WHERE setting_key = 'auth_registration_enabled'");
+		if ($reg_enabled === '0') {
+			$this->send_error(__('نعتذر، التسجيل مغلق حالياً بقرار إداري.', 'control'));
+		}
 
-		if ( empty($data['first_name']) || empty($data['last_name']) || empty($data['phone']) || empty($data['password']) ) {
-			$this->send_error( __( 'يرجى ملء جميع الحقول المطلوبة.', 'control' ) );
+		$reg_fields_json = $wpdb->get_var("SELECT setting_value FROM {$wpdb->prefix}control_settings WHERE setting_key = 'auth_registration_fields'");
+		$reg_fields = json_decode($reg_fields_json, true) ?: array();
+
+		$data = array();
+		foreach ($reg_fields as $field) {
+			if (!($field['enabled'] ?? true)) continue;
+
+			$val = $_POST[$field['id']] ?? '';
+			if ($field['id'] === 'email') $val = sanitize_email($val);
+			else $val = sanitize_text_field($val);
+
+			if (($field['required'] ?? true) && empty($val)) {
+				$this->send_error(sprintf(__('الحقل (%s) مطلوب.', 'control'), $field['label']));
+			}
+			$data[$field['id']] = $val;
+		}
+
+		// Ensure core fields for registration logic even if not in dynamic config (should not happen if config is correct)
+		if (empty($data['phone']) || empty($data['password'])) {
+			$this->send_error(__('بيانات التسجيل الأساسية ناقصة.', 'control'));
 		}
 
 		if ( ! preg_match('/^\+(20|971|966|965|974|973|968)[0-9]{7,12}$/', $data['phone']) ) {

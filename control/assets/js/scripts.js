@@ -72,7 +72,10 @@ jQuery(document).ready(function($) {
     });
 
     let regCurrentStep = 1;
-    const regTotalSteps = 4;
+
+    function getRegTotalSteps() {
+        return $('.reg-step').length;
+    }
 
     $('#reg-next').on('click', function() {
         if (validateRegStep(regCurrentStep)) {
@@ -91,9 +94,10 @@ jQuery(document).ready(function($) {
     });
 
     function updateRegButtons() {
+        const total = getRegTotalSteps();
         $('#reg-prev').toggle(regCurrentStep > 1);
-        $('#reg-next').toggle(regCurrentStep < regTotalSteps);
-        $('#reg-submit').toggle(regCurrentStep === regTotalSteps);
+        $('#reg-next').toggle(regCurrentStep < total);
+        $('#reg-submit').toggle(regCurrentStep === total);
     }
 
     function validateRegStep(step) {
@@ -361,4 +365,46 @@ jQuery(document).ready(function($) {
             }
         });
     });
+
+    // Auth Control Panel Logic
+    $('#auth-control-form').on('submit', function(e) {
+        e.preventDefault();
+        const $btn = $(this).find('button[type="submit"]');
+        $btn.prop('disabled', true).text('جاري الحفظ...');
+
+        // Collect fields configuration
+        let fields = [];
+        $('#reg-fields-config-body tr').each(function() {
+            fields.push({
+                id: $(this).find('.field-id').val(),
+                label: $(this).find('.field-label').val(),
+                enabled: $(this).find('.field-enabled').is(':checked'),
+                required: $(this).find('.field-required').is(':checked')
+            });
+        });
+
+        const formData = $(this).serialize() + '&action=control_save_settings&nonce=' + control_ajax.nonce + '&auth_registration_fields=' + encodeURIComponent(JSON.stringify(fields));
+
+        $.post(control_ajax.ajax_url, formData, function(res) {
+            if (res.success) {
+                alert('تم تحديث إعدادات المصادقة بنجاح');
+                location.reload();
+            } else {
+                alert(res.data || 'حدث خطأ');
+                $btn.prop('disabled', false).text('حفظ وتطبيق الإعدادات');
+            }
+        });
+    });
+
+    // Drag and drop for registration fields (simplified)
+    if ($.fn.sortable) {
+        $('#reg-fields-config-body').sortable({
+            handle: 'td:first-child',
+            update: function() {
+                $('#reg-fields-config-body tr').each(function(index) {
+                    $(this).find('.field-order-badge').text(index + 1);
+                });
+            }
+        });
+    }
 });
