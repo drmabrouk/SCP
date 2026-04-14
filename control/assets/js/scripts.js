@@ -407,4 +407,67 @@ jQuery(document).ready(function($) {
             }
         });
     }
+
+    // --- Advanced Backup & Maintenance Tools ---
+
+    let currentDestructiveAction = null;
+
+    $('#export-user-package-btn').on('click', function() {
+        const $btn = $(this);
+        $btn.prop('disabled', true).text('جاري التجهيز...');
+
+        $.post(control_ajax.ajax_url, { action: 'control_export_user_package', nonce: control_ajax.nonce }, function(res) {
+            if (res.success) {
+                const blob = new Blob([res.data.json], { type: 'application/json' });
+                const link = document.createElement("a");
+                link.href = URL.createObjectURL(blob);
+                link.download = res.data.filename;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            } else {
+                alert(res.data);
+            }
+            $btn.prop('disabled', false).text('تصدير الحزمة الآن');
+        });
+    });
+
+    $('#bulk-delete-all-btn').on('click', function() {
+        currentDestructiveAction = 'bulk_delete_all_users';
+        $('#destructive-modal-title').text('حذف كافة الحسابات');
+        $('#destructive-modal-desc').text('أنت على وشك حذف كافة الكوادر البشرية المسجلة. لن يتم حذف حسابك الحالي. هذا الإجراء نهائي ولا يمكن التراجع عنه.');
+        $('#reset-word-verification').hide();
+        $('#control-destructive-modal').css('display', 'flex');
+    });
+
+    $('#system-reset-btn').on('click', function() {
+        currentDestructiveAction = 'system_data_reset';
+        $('#destructive-modal-title').text('تصفير النظام بالكامل');
+        $('#destructive-modal-desc').text('سيتم مسح كافة الكوادر، سجلات النشاط، والبيانات المدخلة. سيتم الحفاظ على إعدادات النظام، الأدوار، والقوالب فقط لضمان بقاء الهيكل الأساسي.');
+        $('#reset-word-verification').show();
+        $('#destructive-verify-word').val('');
+        $('#control-destructive-modal').css('display', 'flex');
+    });
+
+    $('#confirm-destructive-btn').on('click', function() {
+        if (currentDestructiveAction === 'system_data_reset') {
+            if ($('#destructive-verify-word').val() !== 'تأكيد') {
+                alert('يرجى كتابة كلمة "تأكيد" بشكل صحيح للمتابعة.');
+                return;
+            }
+        }
+
+        const $btn = $(this);
+        $btn.prop('disabled', true).text('جاري التنفيذ...');
+
+        $.post(control_ajax.ajax_url, { action: 'control_' + currentDestructiveAction, nonce: control_ajax.nonce }, function(res) {
+            if (res.success) {
+                alert(res.data);
+                location.reload();
+            } else {
+                alert(res.data);
+                $btn.prop('disabled', false).text('نعم، تنفيذ الآن');
+            }
+        });
+    });
 });

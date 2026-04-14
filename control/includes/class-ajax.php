@@ -12,7 +12,9 @@ class Control_Ajax {
 			'update_profile', 'undo_activity', 'delete_activity', 'toggle_user_restriction',
 			'bulk_delete_users', 'bulk_restrict_users',
 			'export_data', 'import_data',
-			'preview_import', 'create_backup', 'restore_backup', 'save_role', 'delete_role'
+			'preview_import', 'create_backup', 'restore_backup',
+			'export_user_package', 'bulk_delete_all_users', 'system_data_reset',
+			'save_role', 'delete_role'
 		);
 
 		foreach ( $private_actions as $action ) {
@@ -531,12 +533,19 @@ class Control_Ajax {
 		if ( ! Control_Auth::has_permission('backup_manage') ) $this->send_error( 'Unauthorized', 403 );
 
 		global $wpdb;
-		$tables = array( 'control_staff', 'control_settings', 'control_activity_logs', 'control_roles' );
-		$backup = array();
+		$tables = array( 'control_staff', 'control_settings', 'control_activity_logs', 'control_roles', 'control_email_templates' );
+		$backup = array(
+			'metadata' => array(
+				'version' => '2.0.0',
+				'timestamp' => current_time('mysql'),
+				'site_url' => site_url()
+			),
+			'data' => array()
+		);
 
 		foreach ( $tables as $table ) {
 			$full_table_name = $wpdb->prefix . $table;
-			$backup[$table] = $wpdb->get_results( "SELECT * FROM $full_table_name", ARRAY_A );
+			$backup['data'][$table] = $wpdb->get_results( "SELECT * FROM $full_table_name", ARRAY_A );
 		}
 
 		$backup_data = json_encode( $backup );
@@ -556,10 +565,13 @@ class Control_Ajax {
 		if ( ! is_array($backup) ) $this->send_error( 'Invalid backup format' );
 
 		global $wpdb;
-		$allowed_tables = array( 'control_staff', 'control_settings', 'control_activity_logs', 'control_roles' );
+		$allowed_tables = array( 'control_staff', 'control_settings', 'control_activity_logs', 'control_roles', 'control_email_templates' );
 
-		foreach ( $backup as $table => $rows ) {
-			if ( ! in_array( $table, $allowed_tables ) ) continue; // Secure validation
+		// Handle legacy format (v1.0) and new format (v2.0)
+		$data_to_restore = isset($backup['data']) ? $backup['data'] : $backup;
+
+		foreach ( $data_to_restore as $table => $rows ) {
+			if ( ! in_array( $table, $allowed_tables ) ) continue;
 
 			$full_table_name = $wpdb->prefix . $table;
 			$wpdb->query( "DELETE FROM $full_table_name" );
@@ -570,6 +582,67 @@ class Control_Ajax {
 
 		Control_Audit::log('restore_backup', 'System restored from a backup file');
 		$this->send_success( 'System restored successfully' );
+	}
+
+	public function export_user_package() {
+		check_ajax_referer( 'control_nonce', 'nonce' );
+		if ( ! Control_Auth::has_permission('backup_manage') ) $this->send_error( 'Unauthorized', 403 );
+
+		global $wpdb;
+		$users = $wpdb->get_results( "SELECT * FROM {$wpdb->prefix}control_staff", ARRAY_A );
+		$logs = $wpdb->get_results( "SELECT * FROM {$wpdb->prefix}control_activity_logs", ARRAY_A );
+
+		// Secure handle sensitive data metadata
+		foreach($users as &$u) {
+			unset($u['password']);
+			$u['has_stored_credentials'] = !empty($u['raw_password']);
+		}
+
+		$package = array(
+			'export_type' => 'user_data_package',
+			'timestamp' => current_time('mysql'),
+			'user_count' => count($users),
+			'users' => $users,
+			'activity_logs' => $logs
+		);
+
+		$this->send_success( array(
+			'json' => json_encode($package, JSON_PRETTY_PRINT),
+			'filename' => "control_user_package_" . date('Y-m-d') . ".json"
+		) );
+	}
+
+	public function bulk_delete_all_users() {
+		check_ajax_referer( 'control_nonce', 'nonce' );
+		if ( ! Control_Auth::has_permission('users_delete') ) $this->send_error( 'Unauthorized', 403 );
+
+		global $wpdb;
+		$current_user = Control_Auth::current_user();
+
+		// Delete all but current admin
+		$count = $wpdb->query( $wpdb->prepare( "DELETE FROM {$wpdb->prefix}control_staff WHERE id != %d AND username != 'admin'", $current_user->id ) );
+
+		Control_Audit::log( 'system_maintenance', sprintf(__('حذف شامل لجميع الكوادر (%d حساب)', 'control'), $count) );
+		$this->send_success( sprintf(__('تم حذف %d كادر بنجاح.', 'control'), $count) );
+	}
+
+	public function system_data_reset() {
+		check_ajax_referer( 'control_nonce', 'nonce' );
+		if ( ! Control_Auth::has_permission('settings_manage') ) $this->send_error( 'Unauthorized', 403 );
+
+		global $wpdb;
+		$current_user = Control_Auth::current_user();
+
+		// 1. Clear Staff (preserve active admin)
+		$wpdb->query( $wpdb->prepare( "DELETE FROM {$wpdb->prefix}control_staff WHERE id != %d AND username != 'admin'", $current_user->id ) );
+
+		// 2. Clear Logs
+		$wpdb->query( "TRUNCATE TABLE {$wpdb->prefix}control_activity_logs" );
+
+		// 3. Keep Settings, Roles, and Email Templates (System Structure)
+
+		Control_Audit::log( 'system_reset', 'System data reset executed' );
+		$this->send_success( __('تم تصفير بيانات النظام بنجاح مع الحفاظ على الإعدادات الأساسية.', 'control') );
 	}
 
 	public function save_role() {
