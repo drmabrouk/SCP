@@ -63,13 +63,16 @@ if ( Control_Auth::is_admin() ) {
                     <a href="<?php echo add_query_arg('control_view', 'users'); ?>" class="control-btn" style="background:var(--control-primary); border:none;"><?php _e('إدارة الكوادر', 'control'); ?></a>
                 </div>
 
-                <div class="control-grid" style="grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 20px;">
-                    <?php foreach($role_labels as $role_key => $label):
+                <div class="workforce-distribution-grid">
+                    <?php
+                    // Limit to 6 roles for the metrics
+                    $display_roles = array_slice($role_labels, 0, 6, true);
+                    foreach($display_roles as $role_key => $label):
                         $count = $roles_count[$role_key]->count ?? 0;
                         ?>
-                        <div style="background:var(--control-bg); padding:20px; border-radius:16px; text-align:center; border:1px solid var(--control-border);">
-                            <div style="font-size:0.75rem; color:var(--control-muted); margin-bottom:8px; font-weight:600;"><?php echo $label; ?></div>
-                            <div style="font-size:1.3rem; font-weight:800; color:var(--control-text-dark);"><?php echo number_format($count); ?></div>
+                        <div class="workforce-card">
+                            <div class="workforce-label"><?php echo $label; ?></div>
+                            <div class="workforce-count"><?php echo number_format($count); ?></div>
                         </div>
                     <?php endforeach; ?>
                 </div>

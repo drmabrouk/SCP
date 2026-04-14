@@ -242,7 +242,32 @@ $settings = $wpdb->get_results( "SELECT * FROM {$wpdb->prefix}control_settings",
                 </div>
 
                 <form id="control-notifications-form" class="control-system-settings-form">
-                    <div class="control-grid" style="grid-template-columns: 1fr 1fr; gap:25px;">
+                    <div class="control-grid" style="grid-template-columns: 240px 1fr; gap:25px;">
+
+                        <!-- Notifications Sidebar -->
+                        <div style="background:var(--control-bg); padding:20px; border-radius:12px; border:1px solid var(--control-border); height: fit-content;">
+                            <h4 style="margin:0 0 15px 0; font-size:0.9rem; color:var(--control-primary);"><?php _e('قوالب البريد', 'control'); ?></h4>
+                            <div style="display:flex; flex-direction:column; gap:8px;">
+                                <button type="button" class="tpl-nav-btn active" data-tpl="welcome_email"><?php _e('رسالة الترحيب', 'control'); ?></button>
+                                <button type="button" class="tpl-nav-btn" data-tpl="engagement_reminder"><?php _e('تذكير التفاعل', 'control'); ?></button>
+                            </div>
+
+                            <h4 style="margin:25px 0 15px 0; font-size:0.9rem; color:var(--control-primary);"><?php _e('سمة البريد (Theme)', 'control'); ?></h4>
+                            <select name="email_theme" style="margin-bottom:10px;">
+                                <option value="modern" <?php selected($settings['email_theme']->setting_value ?? 'modern', 'modern'); ?>>Modern (Gradient)</option>
+                                <option value="classic" <?php selected($settings['email_theme']->setting_value ?? 'modern', 'classic'); ?>>Classic (Clean)</option>
+                            </select>
+
+                            <div style="margin-top:30px; padding:15px; background:#fff; border-radius:8px; border:1px solid var(--control-border);">
+                                <small style="display:block; font-weight:700; color:var(--control-muted); margin-bottom:5px;"><?php _e('نصيحة:', 'control'); ?></small>
+                                <p style="font-size:0.7rem; color:var(--control-muted); margin:0; line-height:1.4;">
+                                    <?php _e('استخدم محرر HTML لتنسيق الرسائل بشكل احترافي. يمكنك إضافة صور، روابط، وجداول.', 'control'); ?>
+                                </p>
+                            </div>
+                        </div>
+
+                        <div>
+                    <div class="control-grid" style="grid-template-columns: 1fr 1fr; gap:25px; margin-bottom:25px;">
                         <!-- SMTP Settings -->
                         <div style="background:var(--control-bg); padding:20px; border-radius:12px; border:1px solid var(--control-border);">
                             <h4 style="margin:0 0 15px 0; font-size:0.9rem; color:var(--control-primary);"><?php _e('إعدادات خادم الإرسال (SMTP)', 'control'); ?></h4>
@@ -293,35 +318,37 @@ $settings = $wpdb->get_results( "SELECT * FROM {$wpdb->prefix}control_settings",
                         </div>
                     </div>
 
-                    <div style="margin-top:25px; background:var(--control-bg); padding:20px; border-radius:12px; border:1px solid var(--control-border);">
-                        <h4 style="margin:0 0 20px 0; font-size:0.9rem; color:var(--control-primary); border-bottom:1px solid var(--control-border); padding-bottom:10px;"><?php _e('تخصيص قوالب البريد الإلكتروني', 'control'); ?></h4>
+                    <div style="background:var(--control-bg); padding:20px; border-radius:12px; border:1px solid var(--control-border);">
+                        <h4 style="margin:0 0 20px 0; font-size:0.9rem; color:var(--control-primary); border-bottom:1px solid var(--control-border); padding-bottom:10px;"><?php _e('محرر محتوى القالب', 'control'); ?></h4>
 
                         <?php
                         $templates_data = $wpdb->get_results("SELECT * FROM {$wpdb->prefix}control_email_templates", OBJECT_K);
                         $tpl_labels = array(
-                            'welcome_email' => array('label' => __('رسالة الترحيب (بعد التسجيل)', 'control'), 'icon' => 'dashicons-welcome-learn-more'),
-                            'engagement_reminder' => array('label' => __('تذكير التفاعل (عند الانقطاع)', 'control'), 'icon' => 'dashicons-clock')
+                            'welcome_email' => array('label' => __('رسالة الترحيب', 'control')),
+                            'engagement_reminder' => array('label' => __('تذكير التفاعل', 'control'))
                         );
-
                         foreach($tpl_labels as $key => $info):
                             $tpl = $templates_data[$key] ?? (object) array('subject' => '', 'content' => '');
                         ?>
-                            <div class="tpl-edit-section" style="margin-bottom:30px; padding-bottom:20px; border-bottom:1px solid var(--control-border);">
-                                <div style="display:flex; align-items:center; gap:10px; margin-bottom:15px;">
-                                    <span class="dashicons <?php echo $info['icon']; ?>" style="color:var(--control-accent);"></span>
-                                    <h5 style="margin:0; font-weight:700;"><?php echo $info['label']; ?></h5>
+                            <div id="tpl-section-<?php echo $key; ?>" class="tpl-content-section" style="<?php echo $key === 'welcome_email' ? '' : 'display:none;'; ?>">
+                                <div class="control-form-group">
+                                    <label><?php _e('عنوان البريد (Subject)', 'control'); ?></label>
+                                    <input type="text" name="tpl_subject_<?php echo $key; ?>" value="<?php echo esc_attr($tpl->subject); ?>" style="font-weight:700;">
                                 </div>
                                 <div class="control-form-group">
-                                    <label><?php _e('عنوان الرسالة (Subject)', 'control'); ?></label>
-                                    <input type="text" name="tpl_subject_<?php echo $key; ?>" value="<?php echo esc_attr($tpl->subject); ?>">
-                                </div>
-                                <div class="control-form-group">
-                                    <label><?php _e('محتوى الرسالة (HTML)', 'control'); ?></label>
-                                    <textarea name="tpl_content_<?php echo $key; ?>" rows="6" style="font-family:monospace; font-size:0.85rem;"><?php echo esc_textarea($tpl->content); ?></textarea>
-                                    <small style="color:var(--control-muted);"><?php _e('الوسوم المتاحة:', 'control'); ?> <code>{user_name}</code>, <code>{system_name}</code>, <code>{site_url}</code></small>
+                                    <label><?php _e('هيكل ومحتوى الرسالة (HTML/CSS Editor)', 'control'); ?></label>
+                                    <textarea name="tpl_content_<?php echo $key; ?>" rows="12" style="font-family:monospace; font-size:0.85rem; line-height:1.5; background:#1e293b; color:#cbd5e1; border:none; padding:15px;"><?php echo esc_textarea($tpl->content); ?></textarea>
+                                    <div style="margin-top:10px; display:flex; gap:10px; flex-wrap:wrap;">
+                                        <small style="color:var(--control-muted);"><?php _e('المتغيرات:', 'control'); ?></small>
+                                        <code class="tpl-tag">{user_name}</code>
+                                        <code class="tpl-tag">{system_name}</code>
+                                        <code class="tpl-tag">{site_url}</code>
+                                    </div>
                                 </div>
                             </div>
                         <?php endforeach; ?>
+                    </div>
+                    </div>
                     </div>
 
                     <div style="margin-top:30px; border-top:1px solid var(--control-bg); padding-top:20px;">
@@ -384,14 +411,14 @@ $settings = $wpdb->get_results( "SELECT * FROM {$wpdb->prefix}control_settings",
                     <button id="control-export-audit-pdf" class="control-btn" style="background:var(--control-primary); border:none; padding:8px 15px; font-size:0.8rem; height:38px;"><span class="dashicons dashicons-media-document" style="margin-left:8px;"></span><?php _e('تصدير PDF', 'control'); ?></button>
                 </div>
                 <div style="max-height:600px; overflow-y:auto;">
-                    <table class="control-table" style="font-size:0.85rem;">
+                    <table class="control-table" style="font-size:0.8rem; border-collapse: separate; border-spacing: 0;">
                         <thead style="background:#f8fafc; position:sticky; top:0; z-index:10; box-shadow:0 2px 4px rgba(0,0,0,0.02);">
                             <tr>
-                                <th style="padding:15px 25px; border-bottom:1px solid var(--control-border);"><?php _e('المسؤول', 'control'); ?></th>
-                                <th style="padding:15px 25px; border-bottom:1px solid var(--control-border);"><?php _e('العملية', 'control'); ?></th>
-                                <th style="padding:15px 25px; border-bottom:1px solid var(--control-border);"><?php _e('التفاصيل', 'control'); ?></th>
-                                <th style="padding:15px 25px; border-bottom:1px solid var(--control-border);"><?php _e('التاريخ', 'control'); ?></th>
-                                <th style="padding:15px 25px; border-bottom:1px solid var(--control-border); text-align:left;"><?php _e('إجراءات', 'control'); ?></th>
+                                <th style="padding:10px 15px; border-bottom:1px solid var(--control-border); width: 120px;"><?php _e('المسؤول', 'control'); ?></th>
+                                <th style="padding:10px 15px; border-bottom:1px solid var(--control-border); width: 100px;"><?php _e('العملية', 'control'); ?></th>
+                                <th style="padding:10px 15px; border-bottom:1px solid var(--control-border);"><?php _e('التفاصيل والسياق', 'control'); ?></th>
+                                <th style="padding:10px 15px; border-bottom:1px solid var(--control-border); width: 130px;"><?php _e('التاريخ والوقت', 'control'); ?></th>
+                                <th style="padding:10px 15px; border-bottom:1px solid var(--control-border); text-align:left; width: 150px;"><?php _e('الإجراءات', 'control'); ?></th>
                             </tr>
                         </thead>
                         <tbody id="control-audit-logs-body">
@@ -406,16 +433,39 @@ $settings = $wpdb->get_results( "SELECT * FROM {$wpdb->prefix}control_settings",
                                 'restore_backup' => 'استعادة النظام'
                             );
                             $audit_logs = Control_Audit::get_logs();
-                            foreach($audit_logs as $log): ?>
-                                <tr style="border-bottom:1px solid var(--control-bg);">
-                                    <td style="padding:12px 25px;"><strong><?php echo esc_html($log->user_id); ?></strong></td>
-                                    <td style="padding:12px 25px;"><span class="control-status-indicator indicator-accent" style="font-size:0.7rem;"><?php echo $action_map[$log->action_type] ?? $log->action_type; ?></span></td>
-                                    <td style="padding:12px 25px;"><small style="color:var(--control-text);"><?php echo esc_html($log->description); ?></small></td>
-                                    <td style="padding:12px 25px; white-space:nowrap; color:var(--control-muted); font-size:0.75rem;"><?php echo date('Y-m-d | H:i', strtotime($log->action_date)); ?></td>
-                                    <td style="padding:12px 25px; text-align:left;">
-                                        <?php if($log->action_type === 'delete_user'): ?>
-                                            <button class="control-btn undo-action" title="<?php _e('استعادة البيانات المحذوفة', 'control'); ?>" data-id="<?php echo $log->id; ?>" style="padding:4px 10px; font-size:0.7rem; background:#ecfdf5; color:#059669 !important; border:1px solid #d1fae5; border-radius:4px;"><span class="dashicons dashicons-undo" style="font-size:14px; margin-left:4px;"></span> <?php _e('استعادة', 'control'); ?></button>
+                            foreach($audit_logs as $log):
+                                $meta = json_decode($log->meta_data, true);
+                            ?>
+                                <tr style="border-bottom:1px solid #f1f5f9; transition: background 0.2s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='transparent'">
+                                    <td style="padding:8px 15px;">
+                                        <div style="font-weight:700; color:var(--control-text-dark);"><?php echo esc_html($log->user_id); ?></div>
+                                        <div style="font-size:0.65rem; color:var(--control-muted);"><?php echo esc_html($log->ip_address); ?></div>
+                                    </td>
+                                    <td style="padding:8px 15px;">
+                                        <span class="control-status-indicator indicator-accent" style="font-size:0.65rem; padding:2px 6px;"><?php echo $action_map[$log->action_type] ?? $log->action_type; ?></span>
+                                    </td>
+                                    <td style="padding:8px 15px;">
+                                        <div style="font-weight:600; color:var(--control-text-dark); margin-bottom:2px;"><?php echo esc_html($log->description); ?></div>
+                                        <?php if($meta): ?>
+                                            <div style="font-size:0.65rem; color:var(--control-muted); font-style: italic;">
+                                                <?php echo esc_html(substr(json_encode($meta, JSON_UNESCAPED_UNICODE), 0, 100)) . (strlen(json_encode($meta)) > 100 ? '...' : ''); ?>
+                                            </div>
                                         <?php endif; ?>
+                                    </td>
+                                    <td style="padding:8px 15px; white-space:nowrap; color:var(--control-muted); font-size:0.7rem;">
+                                        <div style="font-weight:600;"><?php echo date('Y/m/d', strtotime($log->action_date)); ?></div>
+                                        <div><?php echo date('H:i:s', strtotime($log->action_date)); ?></div>
+                                    </td>
+                                    <td style="padding:8px 15px; text-align:left;">
+                                        <div style="display:flex; gap:5px; justify-content: flex-end;">
+                                            <button class="audit-action-btn view-log-info" title="<?php _e('تفاصيل كاملة', 'control'); ?>" data-log='<?php echo json_encode($log, JSON_UNESCAPED_UNICODE); ?>'><span class="dashicons dashicons-info"></span></button>
+
+                                            <?php if($log->action_type === 'delete_user'): ?>
+                                                <button class="audit-action-btn undo-action" title="<?php _e('استعادة (تراجع)', 'control'); ?>" data-id="<?php echo $log->id; ?>" style="color:#059669;"><span class="dashicons dashicons-undo"></span></button>
+                                            <?php endif; ?>
+
+                                            <button class="audit-action-btn delete-log-entry" title="<?php _e('حذف السجل', 'control'); ?>" data-id="<?php echo $log->id; ?>" style="color:#ef4444;"><span class="dashicons dashicons-trash"></span></button>
+                                        </div>
                                     </td>
                                 </tr>
                             <?php endforeach; ?>

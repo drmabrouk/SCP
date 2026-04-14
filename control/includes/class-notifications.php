@@ -72,6 +72,7 @@ class Control_Notifications {
 		global $wpdb;
 		$system_name = $wpdb->get_var( "SELECT setting_value FROM {$wpdb->prefix}control_settings WHERE setting_key = 'system_name'" ) ?: 'Control';
 		$logo_url    = $wpdb->get_var( "SELECT setting_value FROM {$wpdb->prefix}control_settings WHERE setting_key = 'company_logo'" );
+		$theme       = $wpdb->get_var( "SELECT setting_value FROM {$wpdb->prefix}control_settings WHERE setting_key = 'email_theme'" ) ?: 'modern';
 		$primary_color = '#000000'; // Default
 
 		// Try to get dynamic color if exists
@@ -81,6 +82,10 @@ class Control_Notifications {
 		$header_content = '<h1>' . $system_name . '</h1>';
 		if ( $logo_url ) {
 			$header_content = '<img src="' . esc_url($logo_url) . '" alt="' . esc_attr($system_name) . '" style="max-height: 80px;">';
+		}
+
+		if ($theme === 'classic') {
+			return self::get_classic_theme($header_content, $content, $system_name);
 		}
 
 		return '
@@ -110,6 +115,30 @@ class Control_Notifications {
 					&copy; ' . date('Y') . ' ' . $system_name . ' - ' . __('جميع الحقوق محفوظة', 'control') . '<br>
 					' . __('هذا البريد تم إرساله تلقائياً من نظام الإدارة.', 'control') . '
 				</div>
+			</div>
+		</body>
+		</html>';
+	}
+
+	private static function get_classic_theme($header, $content, $system_name) {
+		return '
+		<!DOCTYPE html>
+		<html dir="rtl" lang="ar">
+		<head>
+			<meta charset="UTF-8">
+			<style>
+				body { background: #fff; color: #444; font-family: sans-serif; }
+				.wrap { border: 1px solid #ccc; max-width: 600px; margin: 20px auto; }
+				.head { border-bottom: 2px solid #333; padding: 20px; text-align: center; }
+				.main { padding: 30px; }
+				.foot { background: #eee; padding: 15px; text-align: center; font-size: 11px; }
+			</style>
+		</head>
+		<body>
+			<div class="wrap">
+				<div class="head">' . $header . '</div>
+				<div class="main">' . $content . '</div>
+				<div class="foot">&copy; ' . date('Y') . ' ' . $system_name . '</div>
 			</div>
 		</body>
 		</html>';

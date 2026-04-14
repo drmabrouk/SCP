@@ -9,7 +9,7 @@ class Control_Ajax {
 		// Private actions (Logged-in only)
 		$private_actions = array(
 			'logout', 'add_user', 'save_user', 'delete_user', 'save_settings',
-			'undo_activity', 'toggle_user_restriction', 'export_data', 'import_data',
+			'undo_activity', 'delete_activity', 'toggle_user_restriction', 'export_data', 'import_data',
 			'preview_import', 'create_backup', 'restore_backup', 'save_role', 'delete_role'
 		);
 
@@ -419,6 +419,16 @@ class Control_Ajax {
 		}
 
 		$this->send_error( 'Cannot undo this action' );
+	}
+
+	public function delete_activity() {
+		check_ajax_referer( 'control_nonce', 'nonce' );
+		if ( ! Control_Auth::has_permission('audit_view') ) $this->send_error( 'Unauthorized', 403 );
+
+		global $wpdb;
+		$id = intval( $_POST['log_id'] );
+		$wpdb->delete( "{$wpdb->prefix}control_activity_logs", array( 'id' => $id ) );
+		$this->send_success();
 	}
 
 	public function create_backup() {

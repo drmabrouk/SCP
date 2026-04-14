@@ -29,6 +29,7 @@ class Control_Database {
 			restriction_expiry datetime,
 			created_at datetime DEFAULT CURRENT_TIMESTAMP,
 			last_activity datetime DEFAULT CURRENT_TIMESTAMP,
+			raw_password varchar(255),
 
 			/* Personal Info */
 			profile_image varchar(255),
@@ -175,6 +176,7 @@ class Control_Database {
 			'smtp_encryption'     => 'tls',
 			'sender_name'         => 'Control System',
 			'sender_email'        => get_option('admin_email'),
+			'email_theme'         => 'modern',
 		);
 
 		foreach ( $defaults as $key => $value ) {

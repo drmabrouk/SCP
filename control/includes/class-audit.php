@@ -25,10 +25,17 @@ class Control_Audit {
 			'ip_address'  => $_SERVER['REMOTE_ADDR'] ?? '',
 			'meta_data'   => $data ? json_encode($data) : null
 		) );
+
+		// Enforce 300 record limit
+		$log_count = $wpdb->get_var("SELECT COUNT(*) FROM {$wpdb->prefix}control_activity_logs");
+		if ($log_count > 300) {
+			$limit_to_delete = $log_count - 300;
+			$wpdb->query("DELETE FROM {$wpdb->prefix}control_activity_logs ORDER BY action_date ASC LIMIT $limit_to_delete");
+		}
 	}
 
 	public static function get_logs() {
 		global $wpdb;
-		return $wpdb->get_results( "SELECT * FROM {$wpdb->prefix}control_activity_logs ORDER BY action_date DESC LIMIT 200" );
+		return $wpdb->get_results( "SELECT * FROM {$wpdb->prefix}control_activity_logs ORDER BY action_date DESC LIMIT 300" );
 	}
 }
