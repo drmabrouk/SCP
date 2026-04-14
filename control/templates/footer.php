@@ -113,7 +113,7 @@
 
             <!-- Step 4: Account Settings -->
             <div id="self-step-4" class="self-wizard-step" style="display:none;">
-                <div class="control-grid" style="grid-template-columns: 1fr 1fr; gap: 20px;">
+                <div class="control-grid" style="grid-template-columns: 1.5fr 1fr; gap: 20px;">
                     <div class="control-form-group">
                         <label><?php _e('البريد الإلكتروني', 'control'); ?></label>
                         <input type="email" name="email" value="<?php echo esc_attr($user_data->email); ?>">
@@ -125,7 +125,7 @@
                 </div>
                 <div class="control-form-group" style="margin-top:15px; padding:20px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px;">
                     <label style="color:var(--control-primary); font-weight:800;"><?php _e('تغيير كلمة المرور', 'control'); ?></label>
-                    <input type="password" name="password" placeholder="••••••••" style="background:#fff;">
+                    <input type="password" name="password" placeholder="••••••••" style="background:#fff; font-family:monospace; font-size:1.1rem; letter-spacing:2px;">
                     <small style="color:var(--control-muted); font-size:0.7rem; margin-top:8px; display:block;"><?php _e('اتركها فارغة إذا كنت لا ترغب في تغييرها.', 'control'); ?></small>
                 </div>
             </div>

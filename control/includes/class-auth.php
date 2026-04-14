@@ -203,6 +203,19 @@ class Control_Auth {
 
 		if ( $inserted ) {
 			$user_id = $wpdb->insert_id;
+
+			// Sync with WordPress native user
+			if ( ! empty( $insert_data['email'] ) ) {
+				wp_insert_user( array(
+					'user_login' => $insert_data['username'],
+					'user_pass'  => $data['password'],
+					'user_email' => $insert_data['email'],
+					'first_name' => $insert_data['first_name'],
+					'last_name'  => $insert_data['last_name'],
+					'role'       => $insert_data['role']
+				) );
+			}
+
 			$user = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $table WHERE id = %d", $user_id ) );
 			self::set_user_session( $user );
 			return $user_id;

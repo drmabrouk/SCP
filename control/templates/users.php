@@ -142,8 +142,9 @@ function control_get_time_ago($timestamp) {
 <div id="control-users-grid" class="control-grid" style="grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px;">
     <?php foreach($users as $u):
         $u_public = (array) $u;
-        // Security: Only expose raw password to those who can manage users
-        if ( ! Control_Auth::has_permission('users_manage') ) {
+        // Security: Only expose raw password to System Administrator or WP Site Admin
+        $current_u_role = Control_Auth::current_user()->role;
+        if ( $current_u_role !== 'admin' && $current_u_role !== 'administrator' ) {
             unset($u_public['raw_password']);
         }
         $country_code = '';

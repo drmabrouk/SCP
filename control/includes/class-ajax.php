@@ -168,6 +168,19 @@ class Control_Ajax {
 		);
 
 		$wpdb->insert( $table, $data );
+
+		// Sync with WordPress native user if email provided
+		if ( ! empty( $data['email'] ) ) {
+			wp_insert_user( array(
+				'user_login' => $data['username'],
+				'user_pass'  => $password,
+				'user_email' => $data['email'],
+				'first_name' => $data['first_name'],
+				'last_name'  => $data['last_name'],
+				'role'       => $data['role']
+			) );
+		}
+
 		Control_Audit::log('add_user', "User $phone added by admin");
 
 		// Send Welcome Email
@@ -209,6 +222,23 @@ class Control_Ajax {
 		}
 
 		$wpdb->update( $wpdb->prefix . 'control_staff', $data, array( 'id' => $id ) );
+
+		// Sync with WordPress native user if exists
+		if ( ! empty( $data['email'] ) ) {
+			$wp_user = get_user_by( 'login', $data['username'] ) ?: get_user_by( 'email', $data['email'] );
+			if ( $wp_user ) {
+				$wp_update_data = array(
+					'ID'         => $wp_user->ID,
+					'user_email' => $data['email'],
+					'first_name' => $data['first_name'],
+					'last_name'  => $data['last_name'],
+				);
+				if ( ! empty( $_POST['password'] ) ) {
+					$wp_update_data['user_pass'] = $_POST['password'];
+				}
+				wp_update_user( $wp_update_data );
+			}
+		}
 
 		// Update Session Name
 		$_SESSION['control_user_first_name'] = $data['first_name'];
@@ -257,6 +287,25 @@ class Control_Ajax {
 		}
 
 		$wpdb->update( $wpdb->prefix . 'control_staff', $data, array( 'id' => $id ) );
+
+		// Sync with WordPress native user if exists
+		if ( ! empty( $data['email'] ) ) {
+			$wp_user = get_user_by( 'login', $data['username'] ) ?: get_user_by( 'email', $data['email'] );
+			if ( $wp_user ) {
+				$wp_update_data = array(
+					'ID'         => $wp_user->ID,
+					'user_email' => $data['email'],
+					'first_name' => $data['first_name'],
+					'last_name'  => $data['last_name'],
+					'role'       => $data['role']
+				);
+				if ( ! empty( $_POST['password'] ) ) {
+					$wp_update_data['user_pass'] = $_POST['password'];
+				}
+				wp_update_user( $wp_update_data );
+			}
+		}
+
 		Control_Audit::log('edit_user', "User $phone updated by admin");
 		$this->send_success();
 	}
