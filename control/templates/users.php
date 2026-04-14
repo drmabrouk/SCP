@@ -83,17 +83,52 @@ function control_get_time_ago($timestamp) {
 </div>
 
 <div class="control-card" style="padding:15px; margin-bottom:20px; border:none; background:rgba(0,0,0,0.02);">
-    <div style="display:flex; gap:12px; align-items: center;">
-        <div style="flex:1; position:relative;">
+    <div style="display:flex; gap:12px; align-items: center; flex-wrap: wrap;">
+        <div style="display:flex; align-items:center; gap:10px; background:#fff; padding:5px 12px; border-radius:8px; border:1px solid var(--control-border);">
+            <input type="checkbox" id="select-all-users" style="width:18px; height:18px; cursor:pointer;">
+            <label for="select-all-users" style="font-size:0.8rem; font-weight:700; cursor:pointer; color:var(--control-muted);"><?php _e('الكل', 'control'); ?></label>
+        </div>
+
+        <div style="flex:1; position:relative; min-width: 250px;">
             <span class="dashicons dashicons-search" style="position:absolute; right:12px; top:50%; transform:translateY(-50%); color:var(--control-muted);"></span>
             <input type="text" id="user-search-input" placeholder="<?php _e('ابحث بالاسم، الهاتف، أو التخصص...', 'control'); ?>" style="padding:10px 40px 10px 12px;">
         </div>
-        <select id="user-role-filter" style="width:200px; padding:10px;">
+
+        <select id="user-status-filter" style="width:140px; padding:10px;">
+            <option value=""><?php _e('كل الحالات', 'control'); ?></option>
+            <option value="active"><?php _e('نشط', 'control'); ?></option>
+            <option value="restricted"><?php _e('مقيد', 'control'); ?></option>
+        </select>
+
+        <select id="user-role-filter" style="width:180px; padding:10px;">
             <option value=""><?php _e('جميع التخصصات', 'control'); ?></option>
             <?php foreach($role_labels as $val => $label): ?>
                 <option value="<?php echo $val; ?>"><?php echo $label; ?></option>
             <?php endforeach; ?>
         </select>
+
+        <select id="user-sort-filter" style="width:160px; padding:10px;">
+            <option value="newest"><?php _e('الأحدث تسجيلاً', 'control'); ?></option>
+            <option value="oldest"><?php _e('الأقدم تسجيلاً', 'control'); ?></option>
+            <option value="name_asc"><?php _e('الاسم (أ-ي)', 'control'); ?></option>
+        </select>
+    </div>
+</div>
+
+<!-- Bulk Actions Toolbar -->
+<div id="bulk-actions-toolbar" style="display:none; background:var(--control-primary-soft); color:#fff; padding:12px 25px; border-radius:15px; margin-bottom:20px; align-items:center; justify-content:space-between; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.2);">
+    <div style="display:flex; align-items:center; gap:15px;">
+        <span id="selected-count" style="font-weight:800; font-size:1.1rem; background:var(--control-accent); color:var(--control-primary); padding:2px 12px; border-radius:8px; min-width:40px; text-align:center;">0</span>
+        <span style="font-size:0.95rem; font-weight:700;"><?php _e('كوادر مختارة للعمليات الجماعية', 'control'); ?></span>
+    </div>
+    <div style="display:flex; gap:12px;">
+        <?php if(Control_Auth::has_permission('users_manage')): ?>
+            <button id="bulk-restrict-btn" class="control-btn" style="background:#f59e0b; border:none; height:40px; padding:0 20px; font-weight:700;"><span class="dashicons dashicons-lock" style="margin-left:8px;"></span><?php _e('تقييد/تعليق', 'control'); ?></button>
+        <?php endif; ?>
+        <?php if(Control_Auth::has_permission('users_delete')): ?>
+            <button id="bulk-delete-btn" class="control-btn" style="background:#ef4444; border:none; height:40px; padding:0 20px; font-weight:700;"><span class="dashicons dashicons-trash" style="margin-left:8px;"></span><?php _e('حذف نهائي', 'control'); ?></button>
+        <?php endif; ?>
+        <button id="cancel-bulk-btn" class="control-btn" style="background:rgba(255,255,255,0.15); border:none; height:40px; padding:0 20px; font-weight:700;"><?php _e('إلغاء', 'control'); ?></button>
     </div>
 </div>
 
@@ -104,15 +139,33 @@ function control_get_time_ago($timestamp) {
         if ( ! Control_Auth::has_permission('users_manage') ) {
             unset($u_public['raw_password']);
         }
+        $country_code = '';
+        if (preg_match('/^\+(20|971|966|965|974|973|968)/', $u->phone, $matches)) {
+            $country_code = $matches[0];
+        }
+        $country_info = $countries[$country_code] ?? null;
     ?>
-        <div class="control-card user-card-item" data-user='<?php echo json_encode($u_public); ?>' data-role="<?php echo $u->role; ?>" data-search="<?php echo esc_attr(strtolower($u->name . ' ' . $u->phone . ' ' . ($role_labels[$u->role] ?? ''))); ?>" style="padding:0; display:flex; flex-direction:column;">
+        <div class="control-card user-card-item" data-user='<?php echo json_encode($u_public); ?>' data-role="<?php echo $u->role; ?>" data-status="<?php echo $u->is_restricted ? 'restricted' : 'active'; ?>" data-date="<?php echo strtotime($u->created_at); ?>" data-name="<?php echo esc_attr($u->name); ?>" data-search="<?php echo esc_attr(strtolower($u->name . ' ' . $u->phone . ' ' . ($role_labels[$u->role] ?? ''))); ?>" style="padding:0; display:flex; flex-direction:column;">
 
-            <!-- Activity Badge -->
-            <div class="user-activity-badge" title="آخر ظهور">
-                <?php echo control_get_time_ago($u->last_activity); ?>
+            <div class="user-card-select-overlay">
+                <input type="checkbox" class="user-bulk-select" value="<?php echo $u->id; ?>">
             </div>
 
-            <div style="padding:20px; flex:1;">
+            <!-- Badges Row -->
+            <div style="position: absolute; top: 12px; left: 12px; display: flex; flex-direction: column; gap: 5px; align-items: flex-end; z-index: 5;">
+                <div class="user-card-badge activity-badge" title="آخر ظهور">
+                    <span class="dashicons dashicons-clock" style="font-size:12px; width:12px; height:12px; margin-left:4px;"></span>
+                    <?php echo control_get_time_ago($u->last_activity); ?>
+                </div>
+                <?php if($country_info): ?>
+                    <div class="user-card-badge country-badge" title="<?php echo esc_attr($country_info['name']); ?>">
+                        <span style="margin-left:5px;"><?php echo $country_info['flag']; ?></span>
+                        <?php echo $country_info['name']; ?>
+                    </div>
+                <?php endif; ?>
+            </div>
+
+            <div style="padding:20px; flex:1; padding-top: 35px;">
                 <div style="display:flex; gap:15px; align-items:flex-start;">
                     <div style="position:relative;">
                         <div style="width:64px; height:64px; background:var(--control-bg); border-radius:16px; overflow:hidden; border:1px solid var(--control-border); display:flex; align-items:center; justify-content:center;">
@@ -789,21 +842,96 @@ jQuery(document).ready(function($) {
         });
     });
 
-    $('#user-search-input, #user-role-filter').on('keyup change', function() {
+    function filterUsers() {
         const query = $('#user-search-input').val().toLowerCase();
         const role = $('#user-role-filter').val();
+        const status = $('#user-status-filter').val();
+        const sort = $('#user-sort-filter').val();
 
-        $('.user-card-item').each(function() {
+        let visibleCards = $('.user-card-item').filter(function() {
             const card = $(this);
             const searchVal = card.data('search');
             const userRole = card.data('role');
+            const userStatus = card.data('status');
 
             const matchesSearch = !query || searchVal.includes(query);
             const matchesRole = !role || userRole === role;
+            const matchesStatus = !status || userStatus === status;
 
-            if (matchesSearch && matchesRole) card.fadeIn(200);
-            else card.hide();
+            return matchesSearch && matchesRole && matchesStatus;
         });
+
+        $('.user-card-item').hide();
+
+        // Sort visible cards
+        visibleCards.sort(function(a, b) {
+            const dateA = parseInt($(a).data('date'));
+            const dateB = parseInt($(b).data('date'));
+            const nameA = $(a).data('name').toLowerCase();
+            const nameB = $(b).data('name').toLowerCase();
+
+            if (sort === 'newest') return dateB - dateA;
+            if (sort === 'oldest') return dateA - dateB;
+            if (sort === 'name_asc') return nameA.localeCompare(nameB, 'ar');
+            return 0;
+        });
+
+        $('#control-users-grid').append(visibleCards);
+        visibleCards.fadeIn(200);
+    }
+
+    $('#user-search-input, #user-role-filter, #user-status-filter, #user-sort-filter').on('keyup change', filterUsers);
+
+    // Bulk Selection Logic
+    const bulkToolbar = $('#bulk-actions-toolbar');
+    const selectedCountSpan = $('#selected-count');
+
+    function updateBulkToolbar() {
+        const selectedCount = $('.user-bulk-select:checked').length;
+        if (selectedCount > 0) {
+            selectedCountSpan.text(selectedCount);
+            bulkToolbar.css('display', 'flex');
+        } else {
+            bulkToolbar.hide();
+            $('#select-all-users').prop('checked', false);
+        }
+    }
+
+    $(document).on('change', '.user-bulk-select', function() {
+        $(this).closest('.user-card-item').toggleClass('selected', this.checked);
+        updateBulkToolbar();
+    });
+
+    $('#select-all-users').on('change', function() {
+        const isChecked = this.checked;
+        $('.user-card-item:visible').each(function() {
+            $(this).find('.user-bulk-select').prop('checked', isChecked);
+            $(this).toggleClass('selected', isChecked);
+        });
+        updateBulkToolbar();
+    });
+
+    $('#cancel-bulk-btn').on('click', function() {
+        $('.user-bulk-select').prop('checked', false);
+        $('.user-card-item').removeClass('selected');
+        $('#select-all-users').prop('checked', false);
+        updateBulkToolbar();
+    });
+
+    $('#bulk-delete-btn').on('click', function() {
+        const ids = $('.user-bulk-select:checked').map((_, el) => el.value).get();
+        if (confirm(`<?php _e('هل أنت متأكد من حذف', 'control'); ?> ${ids.length} <?php _e('كادر بشكل نهائي؟', 'control'); ?>`)) {
+            $.post(control_ajax.ajax_url, { action: 'control_bulk_delete_users', ids: ids, nonce: control_ajax.nonce }, (res) => {
+                if (res.success) location.reload();
+                else alert(res.data);
+            });
+        }
+    });
+
+    $('#bulk-restrict-btn').on('click', function() {
+        const ids = $('.user-bulk-select:checked').map((_, el) => el.value).get();
+        $('#restrict-user-id').val('bulk'); // Special flag for bulk
+        $('#control-restrict-modal').css('display', 'flex').data('bulk-ids', ids);
     });
 
     let userToDelete = null;
@@ -849,9 +977,20 @@ jQuery(document).ready(function($) {
     $('#control-restrict-form').on('submit', function(e) {
         e.preventDefault();
         const $btn = $(this).find('button[type="submit"]');
+        const userId = $('#restrict-user-id').val();
+
         $btn.prop('disabled', true).text('<?php _e("جاري التنفيذ...", "control"); ?>');
 
-        const formData = $(this).serialize() + '&action=control_toggle_user_restriction&nonce=' + control_ajax.nonce;
+        let action = 'control_toggle_user_restriction';
+        let extraData = '';
+
+        if (userId === 'bulk') {
+            action = 'control_bulk_restrict_users';
+            const ids = $('#control-restrict-modal').data('bulk-ids');
+            ids.forEach(id => extraData += `&ids[]=${id}`);
+        }
+
+        const formData = $(this).serialize() + '&action=' + action + '&nonce=' + control_ajax.nonce + extraData;
         $.post(control_ajax.ajax_url, formData, function(res) {
             if (res.success) {
                 location.reload();
@@ -993,21 +1132,43 @@ jQuery(document).ready(function($) {
     transform: scale(1.3);
 }
 
-.user-activity-badge {
+.user-card-select-overlay {
     position: absolute;
-    top: 15px;
-    left: 15px;
-    background: #fef9c3; /* Pastel Yellow */
-    color: #854d0e;
-    padding: 3px 8px;
-    border-radius: 6px;
-    font-size: 0.65rem;
-    font-weight: 700;
-    z-index: 5;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    top: 12px;
+    right: 12px;
+    z-index: 10;
 }
 
-.user-card-item:hover .user-activity-badge {
-    background: #fef3c7;
+.user-bulk-select {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+    accent-color: var(--control-accent);
+}
+
+.user-card-badge {
+    padding: 3px 10px;
+    border-radius: 8px;
+    font-size: 0.65rem;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.03);
+    white-space: nowrap;
+}
+
+.activity-badge {
+    background: #f0f9ff; /* Light Blue */
+    color: #0369a1;
+}
+
+.country-badge {
+    background: #f0fdf4; /* Light Green */
+    color: #166534;
+}
+
+.user-card-item.selected {
+    border-color: var(--control-accent) !important;
+    box-shadow: 0 0 0 3px var(--control-accent-soft) !important;
 }
 </style>
