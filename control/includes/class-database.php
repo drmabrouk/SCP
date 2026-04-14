@@ -14,6 +14,7 @@ class Control_Database {
 		$table_settings     = $wpdb->prefix . 'control_settings';
 		$table_roles        = $wpdb->prefix . 'control_roles';
 		$table_activity_logs = $wpdb->prefix . 'control_activity_logs';
+		$table_email_templates = $wpdb->prefix . 'control_email_templates';
 
 		$sql = "CREATE TABLE $table_staff (
 			id mediumint(9) NOT NULL AUTO_INCREMENT,
@@ -84,6 +85,14 @@ class Control_Database {
 			meta_data longtext,
 			action_date datetime DEFAULT CURRENT_TIMESTAMP,
 			PRIMARY KEY  (id)
+		) $charset_collate;
+
+		CREATE TABLE $table_email_templates (
+			template_key varchar(100) NOT NULL,
+			subject text NOT NULL,
+			content longtext NOT NULL,
+			last_updated datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+			PRIMARY KEY  (template_key)
 		) $charset_collate;";
 
 		if ( file_exists( ABSPATH . 'wp-admin/includes/upgrade.php' ) ) {
@@ -101,6 +110,7 @@ class Control_Database {
 		$table_staff    = $wpdb->prefix . 'control_staff';
 		$table_settings = $wpdb->prefix . 'control_settings';
 		$table_roles    = $wpdb->prefix . 'control_roles';
+		$table_email_templates = $wpdb->prefix . 'control_email_templates';
 
 		// Seed initial roles
 		$initial_roles = array(
@@ -158,6 +168,13 @@ class Control_Database {
 			'pwa_short_name'      => 'Control',
 			'pwa_theme_color'     => '#000000',
 			'pwa_bg_color'        => '#ffffff',
+			'smtp_host'           => '',
+			'smtp_port'           => '587',
+			'smtp_user'           => '',
+			'smtp_pass'           => '',
+			'smtp_encryption'     => 'tls',
+			'sender_name'         => 'Control System',
+			'sender_email'        => get_option('admin_email'),
 		);
 
 		foreach ( $defaults as $key => $value ) {
@@ -166,6 +183,29 @@ class Control_Database {
 				$wpdb->insert( $table_settings, array(
 					'setting_key'   => $key,
 					'setting_value' => $value
+				) );
+			}
+		}
+
+		// Seed Email Templates
+		$templates = array(
+			'welcome_email' => array(
+				'subject' => 'مرحباً بك في منصة {system_name}',
+				'content' => '<h1>أهلاً بك يا {user_name}!</h1><p>يسعدنا انضمامك إلى منصتنا الاحترافية. نحن هنا لنوفر لك أفضل الأدوات لإدارة مهامك بكفاءة.</p><h3>ماذا تقدم لك المنصة؟</h3><ul><li>إدارة شاملة للكوادر البشرية</li><li>نظام صلاحيات متطور</li><li>لوحة تحكم تفاعلية وتقارير مباشرة</li></ul><p>يمكنك البدء الآن بتسجيل الدخول واستكمال بيانات ملفك الشخصي.</p>'
+			),
+			'engagement_reminder' => array(
+				'subject' => 'نفتقد وجودك في {system_name}',
+				'content' => '<h1>أهلاً {user_name}،</h1><p>لاحظنا غيابك عن المنصة لفترة من الوقت. نود تذكيرك بأن هناك تحديثات وأدوات جديدة بانتظارك.</p><p>ندعوك لتسجيل الدخول الآن والاطلاع على آخر المستجدات في لوحة التحكم الخاصة بك.</p>'
+			)
+		);
+
+		foreach ( $templates as $key => $tpl ) {
+			$exists = $wpdb->get_var( $wpdb->prepare( "SELECT template_key FROM $table_email_templates WHERE template_key = %s", $key ) );
+			if ( ! $exists ) {
+				$wpdb->insert( $table_email_templates, array(
+					'template_key' => $key,
+					'subject'      => $tpl['subject'],
+					'content'      => $tpl['content']
 				) );
 			}
 		}
