@@ -325,4 +325,40 @@ jQuery(document).ready(function($) {
         modal.find('button').on('click', () => overlay.remove());
         overlay.on('click', (e) => { if(e.target === overlay[0]) overlay.remove(); });
     });
+
+    // Self Profile Actions
+    $('#control-edit-profile-btn').on('click', function() {
+        $('#self-profile-modal').css('display', 'flex');
+    });
+
+    $('.close-self-modal').on('click', function() {
+        $('#self-profile-modal').hide();
+    });
+
+    $('#upload-self-image, #self-profile-preview').on('click', function(e) {
+        e.preventDefault();
+        const frame = wp.media({ title: 'اختر صورة شخصية', multiple: false }).open();
+        frame.on('select', function() {
+            const attachment = frame.state().get('selection').first().toJSON();
+            $('#self-image-url').val(attachment.url);
+            $('#self-profile-preview').html(`<img src="${attachment.url}" style="width:100%; height:100%; object-fit:cover;">`);
+        });
+    });
+
+    $('#self-profile-form').on('submit', function(e) {
+        e.preventDefault();
+        const $btn = $(this).find('button[type="submit"]');
+        $btn.prop('disabled', true).text('جاري الحفظ...');
+
+        const formData = $(this).serialize() + '&action=control_update_profile&nonce=' + control_ajax.nonce;
+        $.post(control_ajax.ajax_url, formData, function(res) {
+            if (res.success) {
+                alert(res.data);
+                location.reload();
+            } else {
+                alert(res.data || 'حدث خطأ');
+                $btn.prop('disabled', false).text('حفظ التعديلات');
+            }
+        });
+    });
 });

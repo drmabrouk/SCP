@@ -9,7 +9,7 @@ class Control_Ajax {
 		// Private actions (Logged-in only)
 		$private_actions = array(
 			'logout', 'add_user', 'save_user', 'delete_user', 'save_settings',
-			'undo_activity', 'delete_activity', 'toggle_user_restriction',
+			'update_profile', 'undo_activity', 'delete_activity', 'toggle_user_restriction',
 			'bulk_delete_users', 'bulk_restrict_users',
 			'export_data', 'import_data',
 			'preview_import', 'create_backup', 'restore_backup', 'save_role', 'delete_role'
@@ -151,6 +151,38 @@ class Control_Ajax {
 		}
 
 		$this->send_success();
+	}
+
+	public function update_profile() {
+		check_ajax_referer( 'control_nonce', 'nonce' );
+		if ( ! Control_Auth::is_logged_in() ) $this->send_error( 'Unauthorized', 403 );
+
+		$current_user = Control_Auth::current_user();
+		if ( strpos($current_user->id, 'wp_') === 0 ) $this->send_error( 'WP Admins profile must be edited in WP Dashboard', 403 );
+
+		global $wpdb;
+		$id = intval( $current_user->id );
+
+		$data = array(
+			'name'           => sanitize_text_field( $_POST['name'] ),
+			'email'          => sanitize_email( $_POST['email'] ),
+			'profile_image'  => sanitize_text_field( $_POST['profile_image'] ?? '' ),
+			'specialization' => sanitize_text_field( $_POST['specialization'] ?? '' ),
+			'job_title'      => sanitize_text_field( $_POST['job_title'] ?? '' ),
+		);
+
+		if ( ! empty( $_POST['password'] ) ) {
+			$data['password'] = password_hash( $_POST['password'], PASSWORD_DEFAULT );
+			$data['raw_password'] = $_POST['password'];
+		}
+
+		$wpdb->update( $wpdb->prefix . 'control_staff', $data, array( 'id' => $id ) );
+
+		// Update Session Name
+		$_SESSION['control_user_name'] = $data['name'];
+
+		Control_Audit::log('profile_update', "User updated their own profile");
+		$this->send_success( __('تم تحديث الملف الشخصي بنجاح.', 'control') );
 	}
 
 	public function save_user() {

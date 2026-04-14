@@ -13,6 +13,7 @@ $countries = array(
     '+968' => array('flag' => '🇴🇲', 'name' => 'عمان'),
 );
 
+if (!function_exists('control_get_time_ago')) {
 function control_get_time_ago($timestamp) {
     if (!$timestamp) return 'غير نشط';
 
@@ -61,6 +62,7 @@ function control_get_time_ago($timestamp) {
     }
 
     return 'منذ فترة';
+}
 }
 ?>
 
