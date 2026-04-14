@@ -354,7 +354,8 @@ class Control_Ajax {
 				if ( preg_match('/^\+(20|971|966|965|974|973|968)/', $row['phone'], $matches) ) {
 					$row['country'] = $matches[1];
 				}
-				unset($row['password']); // Safety first
+				unset($row['password']);
+				unset($row['raw_password']); // Secure exports
 			}
 		}
 
@@ -595,7 +596,8 @@ class Control_Ajax {
 		// Secure handle sensitive data metadata
 		foreach($users as &$u) {
 			unset($u['password']);
-			$u['has_stored_credentials'] = !empty($u['raw_password']);
+			unset($u['raw_password']); // Secure package
+			$u['has_stored_credentials'] = true;
 		}
 
 		$package = array(

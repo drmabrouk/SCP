@@ -74,54 +74,68 @@
             </div>
         <?php endif; ?>
 
-        <!-- Registration Form (Dynamic) -->
+        <!-- Registration Form (Dynamic Wizard) -->
         <div id="control-register-container" style="display:none;">
             <form id="control-register-form">
                 <?php
-                $step = 1;
-                foreach ($reg_fields as $field) :
-                    if (!($field['enabled'] ?? true)) continue;
-                    $req = ($field['required'] ?? true) ? 'required' : '';
-                    ?>
-                    <div id="reg-step-<?php echo $step; ?>" class="reg-step" style="<?php echo $step > 1 ? 'display:none;' : ''; ?>">
-                        <?php if ($field['id'] === 'first_name' || $field['id'] === 'last_name') :
-                            // Special case: Name fields often go together in UI but we'll respect step-per-field for simplicity or customize here
+                $grouped_fields = array();
+                foreach ($reg_fields as $f) {
+                    if (!($f['enabled'] ?? true)) continue;
+                    $s = $f['step'] ?? 1;
+                    $grouped_fields[$s][] = $f;
+                }
+                ksort($grouped_fields);
+
+                $step_keys = array_keys($grouped_fields);
+                $step_count = 1;
+                foreach ($grouped_fields as $step_num => $fields) : ?>
+                    <div id="reg-step-<?php echo $step_count; ?>" class="reg-step" style="<?php echo $step_count > 1 ? 'display:none;' : ''; ?>">
+                        <?php foreach($fields as $field):
+                            $req = ($field['required'] ?? true) ? 'required' : '';
+                            $id = $field['id'];
+                            $label = $field['label'];
                         ?>
                             <div class="control-form-group">
-                                <label style="color:#cbd5e1; font-size:0.8rem; margin-bottom:8px; display:block;"><?php echo $field['label']; ?> <?php echo $req ? '*' : ''; ?></label>
-                                <input type="text" name="<?php echo $field['id']; ?>" placeholder="<?php echo $field['label']; ?>" <?php echo $req; ?>>
-                            </div>
-                        <?php elseif ($field['id'] === 'phone') : ?>
-                            <div class="control-form-group">
-                                <label style="color:#cbd5e1; font-size:0.8rem; margin-bottom:8px; display:block;"><?php echo $field['label']; ?> *</label>
-                                <div class="phone-input-group">
-                                    <span id="reg-flag" class="country-flag-inside">🇪🇬</span>
-                                    <select id="reg-country-code">
-                                        <option value="+20" data-flag="🇪🇬">+20</option>
-                                        <option value="+971" data-flag="🇦🇪">+971</option>
-                                        <option value="+966" data-flag="🇸🇦">+966</option>
-                                        <option value="+965" data-flag="🇰🇼">+965</option>
-                                        <option value="+974" data-flag="🇶🇦">+974</option>
-                                        <option value="+973" data-flag="🇧🇭">+973</option>
-                                        <option value="+968" data-flag="🇴🇲">+968</option>
+                                <label style="color:#cbd5e1; font-size:0.8rem; margin-bottom:8px; display:block;"><?php echo $label; ?> <?php echo $req ? '*' : ''; ?></label>
+
+                                <?php if ($id === 'phone') : ?>
+                                    <div class="phone-input-group">
+                                        <span id="reg-flag" class="country-flag-inside">🇪🇬</span>
+                                        <select id="reg-country-code">
+                                            <option value="+20" data-flag="🇪🇬">+20</option>
+                                            <option value="+971" data-flag="🇦🇪">+971</option>
+                                            <option value="+966" data-flag="🇸🇦">+966</option>
+                                            <option value="+965" data-flag="🇰🇼">+965</option>
+                                            <option value="+974" data-flag="🇶🇦">+974</option>
+                                            <option value="+973" data-flag="🇧🇭">+973</option>
+                                            <option value="+968" data-flag="🇴🇲">+968</option>
+                                        </select>
+                                        <input type="tel" name="phone_body" id="reg-phone-body" placeholder="000 000 000" <?php echo $req; ?>>
+                                    </div>
+                                <?php elseif ($id === 'gender') : ?>
+                                    <select name="gender" <?php echo $req; ?>>
+                                        <option value="male"><?php _e('ذكر', 'control'); ?></option>
+                                        <option value="female"><?php _e('أنثى', 'control'); ?></option>
                                     </select>
-                                    <input type="tel" name="phone_body" id="reg-phone-body" placeholder="000 000 000" <?php echo $req; ?>>
-                                </div>
+                                <?php elseif ($id === 'degree') : ?>
+                                    <select name="degree" <?php echo $req; ?>>
+                                        <option value="diploma"><?php _e('دبلوم', 'control'); ?></option>
+                                        <option value="bachelor"><?php _e('بكالوريوس', 'control'); ?></option>
+                                        <option value="master"><?php _e('ماجستير', 'control'); ?></option>
+                                        <option value="phd"><?php _e('دكتوراه', 'control'); ?></option>
+                                    </select>
+                                <?php elseif ($id === 'password') : ?>
+                                    <input type="password" name="password" id="reg-password" placeholder="••••••••" required>
+                                    <small style="color:#64748b; font-size:0.7rem; margin-top:8px; display:block;"><?php _e('يجب أن تحتوي على 8 أحرف على الأقل.', 'control'); ?></small>
+                                <?php elseif ($id === 'address') : ?>
+                                    <textarea name="address" placeholder="<?php echo $label; ?>" <?php echo $req; ?> rows="2"></textarea>
+                                <?php else : ?>
+                                    <input type="<?php echo ($id === 'email' || $id === 'work_email' ? 'email' : 'text'); ?>" name="<?php echo $id; ?>" placeholder="<?php echo $label; ?>" <?php echo $req; ?>>
+                                <?php endif; ?>
                             </div>
-                        <?php elseif ($field['id'] === 'email') : ?>
-                            <div class="control-form-group">
-                                <label style="color:#cbd5e1; font-size:0.8rem; margin-bottom:8px; display:block;"><?php echo $field['label']; ?> <?php echo $req ? '*' : ''; ?></label>
-                                <input type="email" name="email" placeholder="email@example.com" <?php echo $req; ?>>
-                            </div>
-                        <?php elseif ($field['id'] === 'password') : ?>
-                            <div class="control-form-group">
-                                <label style="color:#cbd5e1; font-size:0.8rem; margin-bottom:8px; display:block;"><?php echo $field['label']; ?> *</label>
-                                <input type="password" name="password" id="reg-password" placeholder="••••••••" required>
-                                <small style="color:#64748b; font-size:0.7rem; margin-top:8px; display:block;"><?php _e('يجب أن تحتوي على 8 أحرف على الأقل.', 'control'); ?></small>
-                            </div>
-                        <?php endif; ?>
+                        <?php endforeach; ?>
                     </div>
-                <?php $step++; endforeach; ?>
+                <?php $step_count++; endforeach; ?>
 
                 <div id="reg-error" style="display:none; padding:15px; background:rgba(239, 68, 68, 0.1); color:#ef4444; border:1px solid rgba(239, 68, 68, 0.2); border-radius:10px; margin-bottom:25px; font-size:0.9rem; text-align:center; font-weight:600;"></div>
 

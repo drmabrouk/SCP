@@ -80,19 +80,22 @@
                 <?php
                 $curr_u = Control_Auth::current_user();
                 if ( $curr_u && strpos($curr_u->id, 'wp_') === false ) : ?>
-                    <button id="control-edit-profile-btn" class="sidebar-action-btn profile-btn">
+                    <button id="control-edit-profile-btn" class="sidebar-action-btn profile-btn full-width">
                         <span><?php _e('ملفي الشخصي', 'control'); ?></span>
                         <span class="dashicons dashicons-admin-users"></span>
                     </button>
                 <?php endif; ?>
-                <button id="control-refresh-btn" class="sidebar-action-btn update-btn">
-                    <span><?php _e('تحديث النظام', 'control'); ?></span>
-                    <span class="dashicons dashicons-update"></span>
-                </button>
-                <button id="control-logout-btn" class="sidebar-action-btn logout-btn">
-                    <span><?php _e('تسجيل الخروج', 'control'); ?></span>
-                    <span class="dashicons dashicons-exit"></span>
-                </button>
+
+                <div style="display:flex; gap:8px; width:100%;">
+                    <button id="control-refresh-btn" class="sidebar-action-btn update-btn half-width">
+                        <span><?php _e('تحديث', 'control'); ?></span>
+                        <span class="dashicons dashicons-update"></span>
+                    </button>
+                    <button id="control-logout-btn" class="sidebar-action-btn logout-btn half-width">
+                        <span><?php _e('خروج', 'control'); ?></span>
+                        <span class="dashicons dashicons-exit"></span>
+                    </button>
+                </div>
             </div>
         </div>
     </aside>

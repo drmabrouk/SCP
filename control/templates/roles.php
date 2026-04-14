@@ -22,13 +22,13 @@ $available_permissions = Control_Auth::get_permissions_registry();
                     <h3 style="margin:0;"><?php echo esc_html($role->role_name); ?></h3>
                     <code style="font-size:0.7rem; color:var(--control-muted);"><?php echo esc_html($role->role_key); ?></code>
                 </div>
-                <div style="display:flex; flex-direction:column; align-items:flex-end; gap:5px;">
+                <div style="display:flex; align-items:center; gap:8px;">
                     <div class="user-count-badge" title="<?php _e('عدد المستخدمين بهذا الدور', 'control'); ?>">
                         <span class="dashicons dashicons-admin-users" style="font-size:12px; width:12px; height:12px; margin-left:3px;"></span>
                         <?php echo number_format($role->user_count); ?>
                     </div>
                     <?php if($role->is_system): ?>
-                        <span class="control-status-indicator indicator-accent" style="font-size:0.6rem; padding:2px 6px;"><?php _e('أساسي', 'control'); ?></span>
+                        <span class="control-status-indicator indicator-accent" style="font-size:0.6rem; padding:2px 6px; white-space:nowrap;"><?php _e('أساسي', 'control'); ?></span>
                     <?php endif; ?>
                 </div>
             </div>

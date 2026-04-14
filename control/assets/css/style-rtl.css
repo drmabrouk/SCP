@@ -130,7 +130,6 @@ body, .control-dashboard {
 }
 
 .sidebar-action-btn {
-    width: 100%;
     height: 38px;
     border-radius: 10px;
     border: none;
@@ -164,6 +163,9 @@ body, .control-dashboard {
 
 .logout-btn { background: #fef2f2; color: #991b1b; }
 .logout-btn:hover { background: #fee2e2; }
+
+.full-width { width: 100%; }
+.half-width { flex: 1; }
 
 .control-main-content {
     margin-right: 240px;
