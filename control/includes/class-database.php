@@ -189,6 +189,17 @@ class Control_Database {
 				array('id' => 'email', 'label' => 'البريد الإلكتروني', 'enabled' => true, 'required' => true),
 				array('id' => 'password', 'label' => 'كلمة المرور', 'enabled' => true, 'required' => true),
 			)),
+			'auth_logo_visible'      => '1',
+			'auth_bg_color'          => '#000000',
+			'auth_bg_image'          => '',
+			'auth_container_bg'      => '#000000',
+			'auth_container_opacity' => '1.0',
+			'auth_border_color'      => 'rgba(255,255,255,0.1)',
+			'auth_border_radius'     => '20',
+			'auth_container_shadow'  => '0 25px 50px -12px rgba(0, 0, 0, 0.5)',
+			'auth_input_bg'          => 'transparent',
+			'auth_input_border'      => 'rgba(255,255,255,0.2)',
+			'auth_input_focus'       => '#D4AF37',
 		);
 
 		foreach ( $defaults as $key => $value ) {

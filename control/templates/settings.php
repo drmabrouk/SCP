@@ -73,6 +73,79 @@ $settings = $wpdb->get_results( "SELECT * FROM {$wpdb->prefix}control_settings",
                         </div>
                     </div>
 
+                    <div style="margin:30px 0 20px 0; padding-bottom:10px; border-bottom:1px solid var(--control-border);">
+                        <h4 style="margin:0; font-size:1rem; color:var(--control-primary); font-weight:800;"><?php _e('تخصيص واجهة الدخول والتسجيل', 'control'); ?></h4>
+                    </div>
+
+                    <div class="control-grid" style="grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap:20px;">
+                        <!-- Auth Backdrop -->
+                        <div style="background:var(--control-bg); padding:20px; border-radius:12px; border:1px solid var(--control-border);">
+                            <h4 style="margin:0 0 15px 0; font-size:0.9rem;"><?php _e('الخلفية العامة (Backdrop)', 'control'); ?></h4>
+                            <div class="control-form-group">
+                                <label><?php _e('لون الخلفية', 'control'); ?></label>
+                                <input type="color" name="auth_bg_color" value="<?php echo esc_attr($settings['auth_bg_color']->setting_value ?? '#000000'); ?>">
+                            </div>
+                            <div class="control-form-group">
+                                <label><?php _e('رابط صورة الخلفية', 'control'); ?></label>
+                                <div style="display:flex; gap:10px;">
+                                    <input type="text" name="auth_bg_image" id="auth-bg-image-url" value="<?php echo esc_attr($settings['auth_bg_image']->setting_value ?? ''); ?>" placeholder="https://...">
+                                    <button type="button" class="control-upload-btn control-btn" style="min-width:40px; padding:0;"><span class="dashicons dashicons-upload"></span></button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Auth Container -->
+                        <div style="background:var(--control-bg); padding:20px; border-radius:12px; border:1px solid var(--control-border);">
+                            <h4 style="margin:0 0 15px 0; font-size:0.9rem;"><?php _e('وعاء النموذج (Form Container)', 'control'); ?></h4>
+                            <div class="control-grid" style="grid-template-columns: 1fr 1fr; gap:10px;">
+                                <div class="control-form-group">
+                                    <label><?php _e('لون الوعاء', 'control'); ?></label>
+                                    <input type="color" name="auth_container_bg" value="<?php echo esc_attr($settings['auth_container_bg']->setting_value ?? '#000000'); ?>">
+                                </div>
+                                <div class="control-form-group">
+                                    <label><?php _e('الشفافية (Opacity)', 'control'); ?></label>
+                                    <input type="number" name="auth_container_opacity" value="<?php echo esc_attr($settings['auth_container_opacity']->setting_value ?? '1.0'); ?>" step="0.1" min="0" max="1">
+                                </div>
+                            </div>
+                            <div class="control-grid" style="grid-template-columns: 1fr 1fr; gap:10px;">
+                                <div class="control-form-group">
+                                    <label><?php _e('لون الحدود', 'control'); ?></label>
+                                    <input type="text" name="auth_border_color" value="<?php echo esc_attr($settings['auth_border_color']->setting_value ?? 'rgba(255,255,255,0.1)'); ?>">
+                                </div>
+                                <div class="control-form-group">
+                                    <label><?php _e('نصف قطر الحدود', 'control'); ?></label>
+                                    <input type="number" name="auth_border_radius" value="<?php echo esc_attr($settings['auth_border_radius']->setting_value ?? '20'); ?>">
+                                </div>
+                            </div>
+                            <div class="control-form-group">
+                                <label><?php _e('ظل الوعاء (Shadow)', 'control'); ?></label>
+                                <input type="text" name="auth_container_shadow" value="<?php echo esc_attr($settings['auth_container_shadow']->setting_value ?? '0 25px 50px -12px rgba(0, 0, 0, 0.5)'); ?>">
+                            </div>
+                        </div>
+
+                        <!-- Input Styles & Logic -->
+                        <div style="background:var(--control-bg); padding:20px; border-radius:12px; border:1px solid var(--control-border);">
+                            <h4 style="margin:0 0 15px 0; font-size:0.9rem;"><?php _e('حقول الإدخال والهوية', 'control'); ?></h4>
+                            <div class="control-grid" style="grid-template-columns: 1fr 1fr; gap:10px;">
+                                <div class="control-form-group">
+                                    <label><?php _e('لون حدود الحقول', 'control'); ?></label>
+                                    <input type="text" name="auth_input_border" value="<?php echo esc_attr($settings['auth_input_border']->setting_value ?? 'rgba(255,255,255,0.2)'); ?>">
+                                </div>
+                                <div class="control-form-group">
+                                    <label><?php _e('لون التركيز (Focus)', 'control'); ?></label>
+                                    <input type="color" name="auth_input_focus" value="<?php echo esc_attr($settings['auth_input_focus']->setting_value ?? '#D4AF37'); ?>">
+                                </div>
+                            </div>
+                            <div class="control-form-group">
+                                <label><?php _e('ظهور شعار النظام', 'control'); ?></label>
+                                <select name="auth_logo_visible">
+                                    <option value="1" <?php selected($settings['auth_logo_visible']->setting_value ?? '1', '1'); ?>><?php _e('إظهار', 'control'); ?></option>
+                                    <option value="0" <?php selected($settings['auth_logo_visible']->setting_value ?? '1', '0'); ?>><?php _e('إخفاء', 'control'); ?></option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
                     <div style="margin-top:35px; border-top:1px solid var(--control-bg); padding-top:20px;">
                         <button type="submit" class="control-btn control-btn-accent" style="height:48px; border-radius:8px; font-weight:800; min-width:220px;"><?php _e('حفظ كافة التغييرات', 'control'); ?></button>
                     </div>
