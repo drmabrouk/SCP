@@ -1,6 +1,80 @@
         </div><!-- .control-content-inner -->
     </main><!-- .control-main-content -->
 </div><!-- .control-dashboard -->
+
+<!-- Self Profile Modal -->
+<div id="self-profile-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:100000; align-items:center; justify-content:center; backdrop-filter: blur(4px); direction: rtl;">
+    <div class="control-card" style="width:100%; max-width:650px; padding:0; border-radius:20px; overflow:hidden; box-shadow: 0 50px 100px -20px rgba(0, 0, 0, 0.25);">
+        <div style="background:var(--control-primary); color:#fff; padding:25px 30px; display:flex; justify-content:space-between; align-items:center;">
+            <h3 style="color:#fff; margin:0; font-size:1.2rem;"><?php _e('تعديل ملفي الشخصي', 'control'); ?></h3>
+            <button class="close-self-modal" style="background:none; border:none; color:#fff; cursor:pointer;"><span class="dashicons dashicons-no-alt"></span></button>
+        </div>
+
+        <form id="self-profile-form" style="padding:30px; max-height: 80vh; overflow-y: auto;">
+            <?php
+                $u = Control_Auth::current_user();
+                global $wpdb;
+                $user_data = $wpdb->get_row($wpdb->prepare("SELECT * FROM {$wpdb->prefix}control_staff WHERE id = %s", $u->id));
+                $countries = array(
+                    '+20' => array('flag' => '🇪🇬', 'name' => 'مصر'),
+                    '+971' => array('flag' => '🇦🇪', 'name' => 'الإمارات'),
+                    '+966' => array('flag' => '🇸🇦', 'name' => 'السعودية'),
+                    '+965' => array('flag' => '🇰🇼', 'name' => 'الكويت'),
+                    '+974' => array('flag' => '🇶🇦', 'name' => 'قطر'),
+                    '+973' => array('flag' => '🇧🇭', 'name' => 'البحرين'),
+                    '+968' => array('flag' => '🇴🇲', 'name' => 'عمان'),
+                );
+            ?>
+            <div style="display:flex; gap:25px; margin-bottom:25px; align-items:center; background:var(--control-bg); padding:20px; border-radius:16px; border:1px solid var(--control-border);">
+                <div id="self-profile-preview" style="width:90px; height:90px; background:#fff; border:2px dashed var(--control-border); border-radius:50%; display:flex; align-items:center; justify-content:center; overflow:hidden; cursor:pointer; position:relative; flex-shrink:0;">
+                    <?php if(!empty($user_data->profile_image)): ?>
+                        <img src="<?php echo esc_url($user_data->profile_image); ?>" style="width:100%; height:100%; object-fit:cover;">
+                    <?php else: ?>
+                        <span class="dashicons dashicons-camera" style="font-size:32px; color:var(--control-muted);"></span>
+                    <?php endif; ?>
+                </div>
+                <div style="flex:1;">
+                    <button type="button" id="upload-self-image" class="control-btn" style="background:#fff; color:var(--control-text-dark) !important; border:1px solid var(--control-border); padding:6px 15px; font-size:0.8rem; min-height:36px;"><?php _e('تغيير الصورة', 'control'); ?></button>
+                    <input type="hidden" name="profile_image" id="self-image-url" value="<?php echo esc_attr($user_data->profile_image ?? ''); ?>">
+                </div>
+            </div>
+
+            <div class="control-grid" style="grid-template-columns: 1fr 1fr; gap: 20px;">
+                <div class="control-form-group">
+                    <label><?php _e('الاسم بالكامل', 'control'); ?> *</label>
+                    <input type="text" name="name" value="<?php echo esc_attr($user_data->name); ?>" required>
+                </div>
+                <div class="control-form-group">
+                    <label><?php _e('البريد الإلكتروني', 'control'); ?></label>
+                    <input type="email" name="email" value="<?php echo esc_attr($user_data->email); ?>">
+                </div>
+            </div>
+
+            <div class="control-grid" style="grid-template-columns: 1fr 1fr; gap: 20px;">
+                <div class="control-form-group">
+                    <label><?php _e('التخصص الأكاديمي', 'control'); ?></label>
+                    <input type="text" name="specialization" value="<?php echo esc_attr($user_data->specialization); ?>">
+                </div>
+                <div class="control-form-group">
+                    <label><?php _e('المسمى الوظيفي', 'control'); ?></label>
+                    <input type="text" name="job_title" value="<?php echo esc_attr($user_data->job_title); ?>">
+                </div>
+            </div>
+
+            <div class="control-form-group" style="margin-top:15px; padding:20px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px;">
+                <label style="color:var(--control-primary); font-weight:800;"><?php _e('تغيير كلمة المرور', 'control'); ?></label>
+                <input type="password" name="password" placeholder="••••••••" style="background:#fff;">
+                <small style="color:var(--control-muted); font-size:0.7rem; margin-top:8px; display:block;"><?php _e('اتركها فارغة إذا كنت لا ترغب في تغييرها.', 'control'); ?></small>
+            </div>
+
+            <div style="display:flex; gap:15px; margin-top:30px; border-top:1px solid var(--control-border); padding-top:25px;">
+                <button type="submit" class="control-btn" style="flex:2; background:var(--control-primary); border:none; font-weight:800;"><?php _e('حفظ التعديلات', 'control'); ?></button>
+                <button type="button" class="control-btn close-self-modal" style="flex:1; background:var(--control-muted); border:none;"><?php _e('إلغاء', 'control'); ?></button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <footer class="control-footer">
     &copy; 2026 Control Team - control.online
 </footer>

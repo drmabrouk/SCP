@@ -28,7 +28,7 @@
     --control-transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-* {
+.control-dashboard * {
     font-family: 'Rubik', sans-serif !important;
     box-sizing: border-box;
     overflow-wrap: break-word;
@@ -64,7 +64,6 @@ body, .control-dashboard {
     z-index: 9999 !important;
     display: flex;
     flex-direction: column;
-    overflow-y: auto;
     border-left: 1px solid rgba(255,255,255,0.05);
     box-shadow: 10px 0 30px rgba(0,0,0,0.1);
 }
@@ -112,6 +111,59 @@ body, .control-dashboard {
     color: var(--control-primary-soft);
     font-weight: 700;
 }
+
+.control-sidebar-footer {
+    padding: 15px;
+    margin-top: auto;
+}
+
+.sidebar-action-container {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.sidebar-action-btn {
+    width: 100%;
+    height: 38px;
+    border-radius: 10px;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px;
+    padding: 0 15px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: var(--control-transition);
+}
+
+.sidebar-action-btn span:first-child {
+    flex: 1;
+    text-align: right;
+}
+
+.sidebar-action-btn .dashicons {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+}
+
+.profile-btn { background: rgba(255,255,255,0.1); color: #fff; }
+.profile-btn:hover { background: rgba(255,255,255,0.2); }
+
+.update-btn { background: #f0fdf4; color: #166534; }
+.update-btn:hover { background: #dcfce7; }
+
+.logout-btn { background: #fef2f2; color: #991b1b; }
+.logout-btn:hover { background: #fee2e2; }
 
 .control-main-content {
     margin-right: 240px;

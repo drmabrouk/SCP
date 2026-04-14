@@ -75,15 +75,23 @@
             <?php endif; ?>
         </nav>
 
-        <div class="control-sidebar-footer" style="padding: 10px; border-top: 1px solid #334155; margin-top: auto;">
-            <div class="control-sidebar-controls" style="display: flex; justify-content: space-around; align-items: center; gap: 2px;">
-                <button id="control-refresh-btn" class="sidebar-ctrl-icon" style="background:none; border:none; color:#94a3b8; cursor:pointer; padding:5px; flex:1; display:flex; flex-direction:column; align-items:center;">
-                    <span class="dashicons dashicons-update" style="font-size:18px; width:18px; height:18px;"></span>
-                    <small style="font-size:0.6rem; margin-top:2px;"><?php _e('تحديث', 'control'); ?></small>
+        <div class="control-sidebar-footer">
+            <div class="sidebar-action-container">
+                <?php
+                $curr_u = Control_Auth::current_user();
+                if ( $curr_u && strpos($curr_u->id, 'wp_') === false ) : ?>
+                    <button id="control-edit-profile-btn" class="sidebar-action-btn profile-btn">
+                        <span><?php _e('ملفي الشخصي', 'control'); ?></span>
+                        <span class="dashicons dashicons-admin-users"></span>
+                    </button>
+                <?php endif; ?>
+                <button id="control-refresh-btn" class="sidebar-action-btn update-btn">
+                    <span><?php _e('تحديث النظام', 'control'); ?></span>
+                    <span class="dashicons dashicons-update"></span>
                 </button>
-                <button id="control-logout-btn" class="sidebar-ctrl-icon logout" title="<?php _e('خروج', 'control'); ?>" style="background:none; border:none; color:#ef4444 !important; cursor:pointer; padding:5px; flex:1; display:flex; flex-direction:column; align-items:center;">
-                    <span class="dashicons dashicons-no-alt" style="font-size:18px; width:18px; height:18px;"></span>
-                    <small style="font-size:0.6rem; margin-top:2px;"><?php _e('خروج', 'control'); ?></small>
+                <button id="control-logout-btn" class="sidebar-action-btn logout-btn">
+                    <span><?php _e('تسجيل الخروج', 'control'); ?></span>
+                    <span class="dashicons dashicons-exit"></span>
                 </button>
             </div>
         </div>
