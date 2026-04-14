@@ -360,10 +360,10 @@ $settings = $wpdb->get_results( "SELECT * FROM {$wpdb->prefix}control_settings",
 
         <!-- Section 5: Backup & Restore -->
         <div id="tab-backup" class="control-tab-content" style="display:none;">
-            <div class="control-card" style="border-top: 4px solid #10b981; padding: 25px;">
+            <div class="control-card" style="border-top: 4px solid #10b981; padding: 25px; margin-bottom:25px;">
                 <div style="margin-bottom:25px; border-bottom:1px solid var(--control-bg); padding-bottom:15px;">
-                    <h3 style="margin:0; font-size:1.1rem; color:var(--control-text-dark);"><?php _e('إدارة النسخ الاحتياطي والاستعادة', 'control'); ?></h3>
-                    <div style="color:var(--control-muted); font-size:0.8rem; margin-top:5px;"><?php _e('تأمين بيانات النظام عبر تصديرها واستعادتها للحفاظ على استمرارية العمل.', 'control'); ?></div>
+                    <h3 style="margin:0; font-size:1.1rem; color:var(--control-text-dark);"><?php _e('محرك النسخ الاحتياطي والاستعادة المطور', 'control'); ?></h3>
+                    <div style="color:var(--control-muted); font-size:0.8rem; margin-top:5px;"><?php _e('تأمين بيانات النظام عبر تصديرها واستعادتها بذكاء لضمان استمرارية العمل المؤسسي.', 'control'); ?></div>
                 </div>
 
                 <div class="control-grid" style="grid-template-columns: 1fr 1fr; gap:25px;">
@@ -373,12 +373,12 @@ $settings = $wpdb->get_results( "SELECT * FROM {$wpdb->prefix}control_settings",
                                 <div style="width:48px; height:48px; background:#fff; border-radius:12px; display:flex; align-items:center; justify-content:center; box-shadow:var(--control-shadow-sm);">
                                     <span class="dashicons dashicons-cloud-save" style="color:#059669; font-size:28px; width:28px; height:28px;"></span>
                                 </div>
-                                <h4 style="margin:0; color:#064e3b; font-size:1rem;"><?php _e('توليد نسخة احتياطية', 'control'); ?></h4>
+                                <h4 style="margin:0; color:#064e3b; font-size:1rem;"><?php _e('توليد نسخة كاملة (Full Backup)', 'control'); ?></h4>
                             </div>
-                            <p style="font-size:0.8rem; color:#065f46; line-height:1.6; margin-bottom:25px;"><?php _e('سيتم تجميع كافة بيانات الكوادر، الإعدادات، وسجلات العمليات في ملف JSON مشفر للتحميل والاحتفاظ به.', 'control'); ?></p>
+                            <p style="font-size:0.8rem; color:#065f46; line-height:1.6; margin-bottom:25px;"><?php _e('سيتم تجميع كافة بيانات الكوادر، الإعدادات، سجلات العمليات، والأدوار في ملف JSON مهيكل ومؤرخ للحفظ والاحتفاظ به كمرجع تاريخي.', 'control'); ?></p>
                         </div>
                         <button id="control-generate-backup" class="control-btn" style="background:#059669; border:none; width:100%; height:48px; font-weight:800; font-size:0.9rem;">
-                            <?php _e('بدء النسخ الاحتياطي الآن', 'control'); ?>
+                            <span class="dashicons dashicons-download" style="margin-left:8px;"></span><?php _e('بدء النسخ الاحتياطي الآن', 'control'); ?>
                         </button>
                     </div>
 
@@ -388,14 +388,93 @@ $settings = $wpdb->get_results( "SELECT * FROM {$wpdb->prefix}control_settings",
                                 <div style="width:48px; height:48px; background:#fff; border-radius:12px; display:flex; align-items:center; justify-content:center; box-shadow:var(--control-shadow-sm);">
                                     <span class="dashicons dashicons-cloud-upload" style="color:#d97706; font-size:28px; width:28px; height:28px;"></span>
                                 </div>
-                                <h4 style="margin:0; color:#78350f; font-size:1rem;"><?php _e('استعادة بيانات النظام', 'control'); ?></h4>
+                                <h4 style="margin:0; color:#78350f; font-size:1rem;"><?php _e('استعادة نقطة حفظ (Restore)', 'control'); ?></h4>
                             </div>
-                            <p style="font-size:0.8rem; color:#92400e; line-height:1.6; margin-bottom:25px;"><strong><?php _e('تحذير:', 'control'); ?></strong> <?php _e('سيتم استبدال كافة البيانات الحالية في قاعدة البيانات بالبيانات الموجودة في ملف النسخ المرفوع.', 'control'); ?></p>
+                            <p style="font-size:0.8rem; color:#92400e; line-height:1.6; margin-bottom:25px;"><strong><?php _e('تحذير هام:', 'control'); ?></strong> <?php _e('هذه العملية ستؤدي إلى مسح البيانات الحالية واستبدالها كلياً بمحتويات ملف النسخة المختارة.', 'control'); ?></p>
                         </div>
                         <button id="control-restore-trigger" class="control-btn" style="background:#d97706; border:none; width:100%; height:48px; font-weight:800; font-size:0.9rem;">
-                            <?php _e('رفع واستعادة ملف نسخة', 'control'); ?>
+                            <span class="dashicons dashicons-upload" style="margin-left:8px;"></span><?php _e('رفع واستعادة ملف نسخة', 'control'); ?>
                         </button>
                     </div>
+                </div>
+            </div>
+
+            <!-- Advanced Maintenance Tools -->
+            <div class="control-card" style="border-top: 4px solid #ef4444; padding: 25px;">
+                <div style="margin-bottom:25px; border-bottom:1px solid var(--control-bg); padding-bottom:15px;">
+                    <h3 style="margin:0; font-size:1.1rem; color:#ef4444;"><?php _e('أدوات الإدارة المتقدمة والصيانة', 'control'); ?></h3>
+                    <div style="color:var(--control-muted); font-size:0.8rem; margin-top:5px;"><?php _e('عمليات حساسة لإدارة البيانات الضخمة وتصفير النظام.', 'control'); ?></div>
+                </div>
+
+                <div class="control-grid" style="grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap:25px;">
+                    <!-- User Data Package -->
+                    <div style="background:#f8fafc; border:1px solid #e2e8f0; padding:20px; border-radius:12px; display:flex; flex-direction:column; gap:15px;">
+                        <div style="display:flex; align-items:center; gap:12px;">
+                            <div style="width:40px; height:40px; background:#fff; border-radius:10px; display:flex; align-items:center; justify-content:center; color:#3b82f6; box-shadow:var(--control-shadow-sm);">
+                                <span class="dashicons dashicons-archive"></span>
+                            </div>
+                            <h5 style="margin:0; font-weight:700;"><?php _e('حزمة بيانات المستخدمين', 'control'); ?></h5>
+                        </div>
+                        <p style="font-size:0.75rem; color:var(--control-muted); margin:0; line-height:1.5;">
+                            <?php _e('تصدير حزمة شاملة تحتوي على كافة ملفات الكوادر، البريد، النشاطات المرتبطة، والبيانات الوظيفية بتنسيق مهيكل.', 'control'); ?>
+                        </p>
+                        <button id="export-user-package-btn" class="control-btn" style="background:#3b82f6; border:none; margin-top:auto;">
+                            <?php _e('تصدير الحزمة الآن', 'control'); ?>
+                        </button>
+                    </div>
+
+                    <!-- Bulk Delete Users -->
+                    <div style="background:#fff1f2; border:1px solid #fecdd3; padding:20px; border-radius:12px; display:flex; flex-direction:column; gap:15px;">
+                        <div style="display:flex; align-items:center; gap:12px;">
+                            <div style="width:40px; height:40px; background:#fff; border-radius:10px; display:flex; align-items:center; justify-content:center; color:#e11d48; box-shadow:var(--control-shadow-sm);">
+                                <span class="dashicons dashicons-trash"></span>
+                            </div>
+                            <h5 style="margin:0; font-weight:700; color:#9f1239;"><?php _e('حذف كافة الحسابات', 'control'); ?></h5>
+                        </div>
+                        <p style="font-size:0.75rem; color:#be123c; margin:0; line-height:1.5;">
+                            <?php _e('إزالة جميع الكوادر البشرية المسجلة في النظام دفعة واحدة. (يستثنى المدير الحالي من العملية).', 'control'); ?>
+                        </p>
+                        <button id="bulk-delete-all-btn" class="control-btn" style="background:#e11d48; border:none; margin-top:auto;">
+                            <?php _e('تنفيذ الحذف الجماعي', 'control'); ?>
+                        </button>
+                    </div>
+
+                    <!-- System Reset -->
+                    <div style="background:#000; border:1px solid #333; padding:20px; border-radius:12px; display:flex; flex-direction:column; gap:15px;">
+                        <div style="display:flex; align-items:center; gap:12px;">
+                            <div style="width:40px; height:40px; background:#1a1a1a; border-radius:10px; display:flex; align-items:center; justify-content:center; color:var(--control-accent); box-shadow:var(--control-shadow-sm);">
+                                <span class="dashicons dashicons-rest-api"></span>
+                            </div>
+                            <h5 style="margin:0; font-weight:700; color:#fff;"><?php _e('تصفير النظام (Data Reset)', 'control'); ?></h5>
+                        </div>
+                        <p style="font-size:0.75rem; color:#94a3b8; margin:0; line-height:1.5;">
+                            <?php _e('مسح شامل لكافة البيانات المدخلة والنشاطات مع الحفاظ على هيكلية الجداول، الأدوار الأساسية، وإعدادات الربط.', 'control'); ?>
+                        </p>
+                        <button id="system-reset-btn" class="control-btn control-btn-accent" style="border:none; margin-top:auto;">
+                            <?php _e('تفعيل وضع التصفير', 'control'); ?>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Destructive Action Confirmation Modal -->
+        <div id="control-destructive-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0, 0, 0, 0.7); z-index:100002; align-items:center; justify-content:center; backdrop-filter: blur(8px); direction: rtl;">
+            <div class="control-card" style="width:100%; max-width:450px; padding:35px; text-align:center; border-radius:24px; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);">
+                <div style="width:80px; height:80px; background:#fef2f2; color:#ef4444; border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 25px;">
+                    <span class="dashicons dashicons-warning" style="font-size:40px; width:40px; height:40px;"></span>
+                </div>
+                <h3 id="destructive-modal-title" style="margin-bottom:15px; color:var(--control-text-dark);"><?php _e('تأكيد الإجراء الحساس', 'control'); ?></h3>
+                <p id="destructive-modal-desc" style="color:var(--control-muted); font-size:0.95rem; margin-bottom:25px; line-height:1.6;"></p>
+
+                <div id="reset-word-verification" style="display:none; margin-bottom:25px;">
+                    <p style="font-size:0.8rem; margin-bottom:10px; color:#ef4444; font-weight:700;"><?php _e('أدخل كلمة "تأكيد" بالأسفل للمتابعة:', 'control'); ?></p>
+                    <input type="text" id="destructive-verify-word" placeholder="تأكيد" style="text-align:center; height:48px; font-weight:800; border-color:#fecdd3;">
+                </div>
+
+                <div style="display:flex; gap:15px;">
+                    <button id="confirm-destructive-btn" class="control-btn" style="flex:1; background:#ef4444; border:none; height:48px; font-weight:800;"><?php _e('نعم، تنفيذ الآن', 'control'); ?></button>
+                    <button type="button" onclick="jQuery('#control-destructive-modal').hide()" class="control-btn" style="flex:1; background:var(--control-bg); color:var(--control-text-dark) !important; border:none; height:48px;"><?php _e('تراجع', 'control'); ?></button>
                 </div>
             </div>
         </div>
