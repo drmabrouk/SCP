@@ -22,7 +22,7 @@ class Control_Ajax {
 		}
 
 		// Public actions (Non-logged-in)
-		$public_actions = array( 'login', 'register' );
+		$public_actions = array( 'login', 'register', 'forgot_password' );
 		foreach ( $public_actions as $action ) {
 			add_action( 'wp_ajax_control_' . $action, array( $this, $action ) );
 			add_action( 'wp_ajax_nopriv_control_' . $action, array( $this, $action ) );
@@ -61,7 +61,7 @@ class Control_Ajax {
 			$this->send_error( $result->get_error_message() );
 		} elseif ( $result ) {
 			Control_Audit::log('login', "User with phone $phone logged in");
-			$this->send_success();
+			$this->send_success( __('تم تسجيل الدخول بنجاح. جاري التحويل...', 'control') );
 		} else {
 			Control_Audit::log('failed_login', "Failed login attempt for phone $phone");
 			$this->send_error( __( 'بيانات الدخول غير صحيحة.', 'control' ) );
@@ -119,7 +119,24 @@ class Control_Ajax {
 		}
 
 		Control_Audit::log('registration', "New user registered: {$data['phone']}");
-		$this->send_success();
+		$this->send_success( __('تم إنشاء الحساب بنجاح. جاري تسجيل دخولك...', 'control') );
+	}
+
+	public function forgot_password() {
+		check_ajax_referer( 'control_nonce', 'nonce' );
+		$phone = sanitize_text_field( $_POST['phone'] ?? '' );
+
+		global $wpdb;
+		$user = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$wpdb->prefix}control_staff WHERE phone = %s", $phone ) );
+
+		if ( ! $user ) {
+			$this->send_error( __('رقم الهاتف غير مسجل لدينا.', 'control') );
+		}
+
+		// In a real scenario, send OTP/SMS. For now, we'll log it and return a success message.
+		Control_Audit::log('forgot_password_request', "Password reset requested for phone: $phone");
+
+		$this->send_success( __('تم استلام طلبك. يرجى مراجعة رسائل الهاتف أو التواصل مع الإدارة للحصول على كلمة مرور جديدة.', 'control') );
 	}
 
 	public function logout() {

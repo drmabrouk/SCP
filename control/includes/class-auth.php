@@ -60,7 +60,7 @@ class Control_Auth {
 		global $wpdb;
 		$roles = $wpdb->get_results( "SELECT * FROM {$wpdb->prefix}control_roles" );
 
-		$keep_roles = array( 'administrator' ); // Always keep WP Super Admin
+		$keep_roles = array( 'administrator', 'editor', 'author', 'contributor', 'subscriber' ); // Keep core WP roles
 
 		foreach ( $roles as $role ) {
 			$role_key = $role->role_key;
@@ -76,15 +76,9 @@ class Control_Auth {
 			}
 		}
 
-		// Remove all other roles
-		global $wp_roles;
-		if ( isset( $wp_roles->roles ) && is_array( $wp_roles->roles ) ) {
-			foreach ( $wp_roles->roles as $role_id => $data ) {
-				if ( ! in_array( $role_id, $keep_roles ) ) {
-					remove_role( $role_id );
-				}
-			}
-		}
+		// Only remove roles that are explicitly identified as "legacy" (e.g. from old brand)
+		// For safety in this transition, we'll avoid the destructive removal loop
+		// unless we have a specific list of branded keys to target.
 	}
 
 	/**

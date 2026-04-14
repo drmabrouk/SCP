@@ -2,7 +2,7 @@
     global $wpdb;
     $logo_url = $wpdb->get_var("SELECT setting_value FROM {$wpdb->prefix}control_settings WHERE setting_key = 'company_logo'");
     $system_name = $wpdb->get_var("SELECT setting_value FROM {$wpdb->prefix}control_settings WHERE setting_key = 'system_name'") ?: 'Control';
-    $design = $wpdb->get_results("SELECT * FROM {$wpdb->prefix}control_settings WHERE setting_key LIKE 'design_%'", OBJECT_K);
+    $design = $wpdb->get_results("SELECT * FROM {$wpdb->prefix}control_settings WHERE setting_key LIKE 'design_%' OR setting_key LIKE 'auth_%'", OBJECT_K);
 ?>
 <style id="control-dynamic-styles">
     :root {
@@ -14,6 +14,17 @@
         <?php if (isset($design['design_bg_main'])) : ?>--control-bg: <?php echo esc_attr($design['design_bg_main']->setting_value); ?>;<?php endif; ?>
         <?php if (isset($design['design_font_size'])) : ?>font-size: <?php echo esc_attr($design['design_font_size']->setting_value); ?>px !important;<?php endif; ?>
         <?php if (isset($design['design_font_weight_bold'])) : ?>--control-font-weight-bold: <?php echo esc_attr($design['design_font_weight_bold']->setting_value); ?>;<?php endif; ?>
+
+        /* Auth Customization */
+        <?php if (isset($design['auth_bg_color'])) : ?>--auth-bg-color: <?php echo esc_attr($design['auth_bg_color']->setting_value); ?>;<?php endif; ?>
+        <?php if (isset($design['auth_bg_image'])) : ?>--auth-bg-image: url('<?php echo esc_url($design['auth_bg_image']->setting_value); ?>');<?php endif; ?>
+        <?php if (isset($design['auth_container_bg'])) : ?>--auth-container-bg: <?php echo esc_attr($design['auth_container_bg']->setting_value); ?>;<?php endif; ?>
+        <?php if (isset($design['auth_container_opacity'])) : ?>--auth-container-opacity: <?php echo esc_attr($design['auth_container_opacity']->setting_value); ?>;<?php endif; ?>
+        <?php if (isset($design['auth_border_color'])) : ?>--auth-border-color: <?php echo esc_attr($design['auth_border_color']->setting_value); ?>;<?php endif; ?>
+        <?php if (isset($design['auth_border_radius'])) : ?>--auth-border-radius: <?php echo esc_attr($design['auth_border_radius']->setting_value); ?>px;<?php endif; ?>
+        <?php if (isset($design['auth_container_shadow'])) : ?>--auth-container-shadow: <?php echo esc_attr($design['auth_container_shadow']->setting_value); ?>;<?php endif; ?>
+        <?php if (isset($design['auth_input_border'])) : ?>--auth-input-border: <?php echo esc_attr($design['auth_input_border']->setting_value); ?>;<?php endif; ?>
+        <?php if (isset($design['auth_input_focus'])) : ?>--auth-input-focus: <?php echo esc_attr($design['auth_input_focus']->setting_value); ?>;<?php endif; ?>
     }
     <?php if (isset($design['design_btn_hover'])) : ?>
     .control-btn:hover { background-color: <?php echo esc_attr($design['design_btn_hover']->setting_value); ?> !important; opacity: 1; }

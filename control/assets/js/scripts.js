@@ -52,29 +52,25 @@ jQuery(document).ready(function($) {
 
     // --- Auth Toggling & Multi-step Registration ---
 
-    $('#switch-to-register').on('click', function() {
-        $('#control-login-container').fadeOut(200, function() {
-            $('#control-register-container').fadeIn(200);
+    function switchAuthView(hideSelector, showSelector) {
+        $(hideSelector).fadeOut(250, function() {
+            $(showSelector).fadeIn(250);
         });
-    });
+    }
 
-    $('#switch-to-login').on('click', function() {
-        $('#control-register-container').fadeOut(200, function() {
-            $('#control-login-container').fadeIn(200);
-        });
-    });
-
-    // Country Flag Toggling
-    $('#login-country-code, #reg-country-code').on('change', function() {
-        const flag = $(this).find(':selected').data('flag');
-        const target = $(this).attr('id') === 'login-country-code' ? '#login-flag' : '#reg-flag';
-        $(target).text(flag);
-    });
+    $('#switch-to-register').on('click', function() { switchAuthView('#control-login-container', '#control-register-container'); initRegDots(); });
+    $('#switch-to-login-from-reg').on('click', function() { switchAuthView('#control-register-container', '#control-login-container'); });
+    $('#switch-to-forgot').on('click', function() { switchAuthView('#control-login-container', '#control-forgot-container'); });
+    $('#switch-to-login-from-forgot').on('click', function() { switchAuthView('#control-forgot-container', '#control-login-container'); });
 
     let regCurrentStep = 1;
+    function getRegTotalSteps() { return $('.reg-step').length; }
 
-    function getRegTotalSteps() {
-        return $('.reg-step').length;
+    function initRegDots() {
+        const total = getRegTotalSteps();
+        let dots = '';
+        for(let i=1; i<=total; i++) dots += `<span class="step-dot ${i===1?'active':''}" data-step="${i}"></span>`;
+        $('#reg-step-indicator').html(dots);
     }
 
     $('#reg-next').on('click', function() {
@@ -82,7 +78,7 @@ jQuery(document).ready(function($) {
             $(`#reg-step-${regCurrentStep}`).hide();
             regCurrentStep++;
             $(`#reg-step-${regCurrentStep}`).fadeIn(300);
-            updateRegButtons();
+            updateRegUI();
         }
     });
 
@@ -90,14 +86,17 @@ jQuery(document).ready(function($) {
         $(`#reg-step-${regCurrentStep}`).hide();
         regCurrentStep--;
         $(`#reg-step-${regCurrentStep}`).fadeIn(300);
-        updateRegButtons();
+        updateRegUI();
     });
 
-    function updateRegButtons() {
+    function updateRegUI() {
         const total = getRegTotalSteps();
         $('#reg-prev').toggle(regCurrentStep > 1);
         $('#reg-next').toggle(regCurrentStep < total);
         $('#reg-submit').toggle(regCurrentStep === total);
+
+        $('.step-dot').removeClass('active');
+        $(`.step-dot[data-step="${regCurrentStep}"]`).addClass('active');
     }
 
     function validateRegStep(step) {
@@ -122,14 +121,15 @@ jQuery(document).ready(function($) {
         $('#login-phone-full').val(phoneFull);
 
         $btn.prop('disabled', true).text('جاري الدخول...');
-        $('#login-error').hide();
+        $('#login-error').hide().removeClass('error success');
 
         $.post(control_ajax.ajax_url, $(this).serialize() + '&action=control_login&nonce=' + control_ajax.nonce, function(res) {
             if (res.success) {
-                window.location.reload();
+                $('#login-error').text(res.data).addClass('success').show();
+                setTimeout(() => window.location.reload(), 1000);
             } else {
-                $btn.prop('disabled', false).text('تسجيل الدخول');
-                $('#login-error').text(res.data.message || 'حدث خطأ').show();
+                $btn.prop('disabled', false).text('تسجيل الدخول للنظام');
+                $('#login-error').text(res.data.message || 'حدث خطأ').addClass('error').show();
             }
         });
     });
@@ -140,12 +140,12 @@ jQuery(document).ready(function($) {
         const phoneFull = $('#reg-country-code').val() + $('#reg-phone-body').val();
 
         if ($('#reg-password').val().length < 8) {
-            $('#reg-error').text('كلمة المرور يجب أن لا تقل عن 8 أحرف').show();
+            $('#reg-error').text('كلمة المرور يجب أن لا تقل عن 8 أحرف').addClass('error').show();
             return;
         }
 
         $btn.prop('disabled', true).text('جاري التسجيل...');
-        $('#reg-error').hide();
+        $('#reg-error').hide().removeClass('error success');
 
         const formData = $(this).serializeArray();
         formData.push({ name: 'phone', value: phoneFull });
@@ -154,10 +154,33 @@ jQuery(document).ready(function($) {
 
         $.post(control_ajax.ajax_url, formData, function(res) {
             if (res.success) {
-                window.location.reload();
+                $('#reg-error').text('تم التسجيل بنجاح! جاري تحويلك...').addClass('success').show();
+                setTimeout(() => window.location.reload(), 1500);
             } else {
                 $btn.prop('disabled', false).text('إتمام التسجيل');
-                $('#reg-error').text(res.data.message || 'حدث خطأ').show();
+                $('#reg-error').text(res.data.message || 'حدث خطأ').addClass('error').show();
+            }
+        });
+    });
+
+    $('#control-forgot-form').on('submit', function(e) {
+        e.preventDefault();
+        const $btn = $(this).find('button[type="submit"]');
+        const phoneFull = $('#forgot-country-code').val() + $('#forgot-phone-body').val();
+
+        $btn.prop('disabled', true).text('جاري الإرسال...');
+        $('#forgot-feedback').hide().removeClass('error success');
+
+        $.post(control_ajax.ajax_url, {
+            action: 'control_forgot_password',
+            phone: phoneFull,
+            nonce: control_ajax.nonce
+        }, function(res) {
+            $btn.prop('disabled', false).text('إرسال طلب الاستعادة');
+            if (res.success) {
+                $('#forgot-feedback').text(res.data).addClass('success').fadeIn();
+            } else {
+                $('#forgot-feedback').text(res.data.message || 'رقم الهاتف غير مسجل لدينا.').addClass('error').fadeIn();
             }
         });
     });
@@ -182,6 +205,16 @@ jQuery(document).ready(function($) {
                 if(val === 'yes') $('body').css('filter', 'contrast(1.1) saturate(1.1)');
                 else $('body').css('filter', 'none');
                 break;
+
+            // Auth Previews
+            case 'auth_bg_color': root.style.setProperty('--auth-bg-color', val); break;
+            case 'auth_bg_image': root.style.setProperty('--auth-bg-image', `url(${val})`); break;
+            case 'auth_container_bg': root.style.setProperty('--auth-container-bg', val); break;
+            case 'auth_container_opacity': root.style.setProperty('--auth-container-opacity', val); break;
+            case 'auth_border_color': root.style.setProperty('--auth-border-color', val); break;
+            case 'auth_border_radius': root.style.setProperty('--auth-border-radius', val + 'px'); break;
+            case 'auth_input_border': root.style.setProperty('--auth-input-border', val); break;
+            case 'auth_input_focus': root.style.setProperty('--auth-input-focus', val); break;
         }
     });
 

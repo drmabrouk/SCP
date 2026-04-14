@@ -1,7 +1,7 @@
 <div class="control-auth-wrapper">
     <div class="control-auth-card">
 
-        <div style="text-align:center; margin-bottom:40px;">
+        <div style="text-align:center; margin-bottom:40px; <?php echo ($wpdb->get_var("SELECT setting_value FROM {$wpdb->prefix}control_settings WHERE setting_key = 'auth_logo_visible'") === '0') ? 'display:none;' : ''; ?>">
             <?php
                 global $wpdb;
                 $logo_url = $wpdb->get_var("SELECT setting_value FROM {$wpdb->prefix}control_settings WHERE setting_key = 'company_logo'");
@@ -28,10 +28,9 @@
         <div id="control-login-container" style="<?php echo ($login_visible === '0') ? 'display:none;' : ''; ?>">
             <form id="control-login-form">
                 <div class="control-form-group">
-                    <label style="color:#cbd5e1; font-size:0.8rem; margin-bottom:8px; display:block;"><?php _e('رقم الهاتف', 'control'); ?></label>
-                    <div class="phone-input-group">
-                        <span id="login-flag" class="country-flag-inside">🇪🇬</span>
-                        <select id="login-country-code">
+                    <label><?php _e('رقم الهاتف', 'control'); ?></label>
+                    <div class="auth-phone-row" style="display:flex; direction:ltr; gap:0;">
+                        <select id="login-country-code" style="width:100px; border-radius:12px 0 0 12px; border-right:none;">
                             <option value="+20" data-flag="🇪🇬">+20</option>
                             <option value="+971" data-flag="🇦🇪">+971</option>
                             <option value="+966" data-flag="🇸🇦">+966</option>
@@ -40,30 +39,61 @@
                             <option value="+973" data-flag="🇧🇭">+973</option>
                             <option value="+968" data-flag="🇴🇲">+968</option>
                         </select>
-                        <input type="tel" name="phone_body" id="login-phone-body" placeholder="000 000 000" required>
+                        <input type="tel" name="phone_body" id="login-phone-body" placeholder="000 000 000" style="border-radius:0 12px 12px 0; flex:1;" required>
                         <input type="hidden" name="phone" id="login-phone-full">
                     </div>
                 </div>
 
                 <div class="control-form-group">
-                    <label style="color:#cbd5e1; font-size:0.8rem; margin-bottom:8px; display:block;"><?php _e('كلمة المرور', 'control'); ?></label>
-                    <input type="password" name="password" required placeholder="••••••••">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                        <label style="margin:0;"><?php _e('كلمة المرور', 'control'); ?></label>
+                        <button type="button" id="switch-to-forgot" style="background:none; border:none; color:var(--control-accent); font-size:0.75rem; cursor:pointer; font-weight:700;"><?php _e('نسيت كلمة المرور؟', 'control'); ?></button>
+                    </div>
+                    <input type="password" name="password" required placeholder="••••••••" style="border-radius:12px;">
                 </div>
 
-                <div id="login-error" style="display:none; padding:15px; background:rgba(239, 68, 68, 0.1); color:#ef4444; border:1px solid rgba(239, 68, 68, 0.2); border-radius:10px; margin-bottom:25px; font-size:0.9rem; text-align:center; font-weight:600;"></div>
+                <div id="login-error" class="auth-feedback-box error" style="display:none;"></div>
 
-                <button type="submit" class="control-btn control-btn-accent" style="width:100%; height:55px; font-size:1.1rem; border-radius:12px; font-weight:800; box-shadow: 0 4px 12px rgba(212,175,55,0.2);">
-                    <?php _e('تسجيل الدخول', 'control'); ?>
+                <button type="submit" class="control-btn control-btn-accent auth-submit-btn">
+                    <?php _e('تسجيل الدخول للنظام', 'control'); ?>
                 </button>
 
                 <?php if ($reg_visible !== '0') : ?>
-                    <div style="text-align:center; margin-top:35px; padding-top:25px; border-top: 1px solid #1a1a1a;">
-                        <p style="color:#64748b; margin-bottom:15px; font-size:0.9rem;"><?php _e('ليس لديك حساب بعد؟', 'control'); ?></p>
-                        <button type="button" id="switch-to-register" style="background:none; border:none; color:#D4AF37; font-weight:700; cursor:pointer; font-size:1rem; transition: 0.2s;">
-                            <?php _e('إنشاء حساب جديد كعضو', 'control'); ?>
-                        </button>
+                    <div class="auth-footer-toggle">
+                        <p><?php _e('ليس لديك حساب بعد؟', 'control'); ?></p>
+                        <button type="button" id="switch-to-register" class="auth-toggle-link"><?php _e('إنشاء حساب جديد كعضو', 'control'); ?></button>
                     </div>
                 <?php endif; ?>
+            </form>
+        </div>
+
+        <!-- Forgot Password Form -->
+        <div id="control-forgot-container" style="display:none;">
+            <div style="margin-bottom:25px; text-align:center;">
+                <h3 style="color:#fff; margin-bottom:10px;"><?php _e('استعادة كلمة المرور', 'control'); ?></h3>
+                <p style="color:#94a3b8; font-size:0.85rem;"><?php _e('أدخل رقم هاتفك المسجل وسنقوم بإرسال تعليمات الاستعادة.', 'control'); ?></p>
+            </div>
+            <form id="control-forgot-form">
+                <div class="control-form-group">
+                    <label><?php _e('رقم الهاتف', 'control'); ?></label>
+                    <div class="auth-phone-row" style="display:flex; direction:ltr; gap:0;">
+                        <select id="forgot-country-code" style="width:100px; border-radius:12px 0 0 12px; border-right:none;">
+                            <option value="+20" data-flag="🇪🇬">+20</option>
+                            <option value="+971" data-flag="🇦🇪">+971</option>
+                            <option value="+966" data-flag="🇸🇦">+966</option>
+                            <option value="+965" data-flag="🇰🇼">+965</option>
+                            <option value="+974" data-flag="🇶🇦">+974</option>
+                            <option value="+973" data-flag="🇧🇭">+973</option>
+                            <option value="+968" data-flag="🇴🇲">+968</option>
+                        </select>
+                        <input type="tel" name="phone_body" id="forgot-phone-body" placeholder="000 000 000" style="border-radius:0 12px 12px 0; flex:1;" required>
+                    </div>
+                </div>
+                <div id="forgot-feedback" class="auth-feedback-box" style="display:none;"></div>
+                <button type="submit" class="control-btn control-btn-accent auth-submit-btn"><?php _e('إرسال طلب الاستعادة', 'control'); ?></button>
+                <div class="auth-footer-toggle">
+                    <button type="button" id="switch-to-login-from-forgot" class="auth-toggle-link"><?php _e('العودة لتسجيل الدخول', 'control'); ?></button>
+                </div>
             </form>
         </div>
 
@@ -76,6 +106,10 @@
 
         <!-- Registration Form (Dynamic Wizard) -->
         <div id="control-register-container" style="display:none;">
+            <div id="reg-wizard-header" style="text-align:center; margin-bottom:25px;">
+                <h3 style="color:#fff; margin-bottom:5px;"><?php _e('عضوية جديدة', 'control'); ?></h3>
+                <div id="reg-step-indicator" style="display:flex; justify-content:center; gap:8px; margin-top:10px;"></div>
+            </div>
             <form id="control-register-form">
                 <?php
                 $grouped_fields = array();
@@ -96,12 +130,11 @@
                             $label = $field['label'];
                         ?>
                             <div class="control-form-group">
-                                <label style="color:#cbd5e1; font-size:0.8rem; margin-bottom:8px; display:block;"><?php echo $label; ?> <?php echo $req ? '*' : ''; ?></label>
+                                <label><?php echo $label; ?> <?php echo $req ? '*' : ''; ?></label>
 
                                 <?php if ($id === 'phone') : ?>
-                                    <div class="phone-input-group">
-                                        <span id="reg-flag" class="country-flag-inside">🇪🇬</span>
-                                        <select id="reg-country-code">
+                                    <div class="auth-phone-row" style="display:flex; direction:ltr; gap:0;">
+                                        <select id="reg-country-code" style="width:100px; border-radius:12px 0 0 12px; border-right:none;">
                                             <option value="+20" data-flag="🇪🇬">+20</option>
                                             <option value="+971" data-flag="🇦🇪">+971</option>
                                             <option value="+966" data-flag="🇸🇦">+966</option>
@@ -110,45 +143,43 @@
                                             <option value="+973" data-flag="🇧🇭">+973</option>
                                             <option value="+968" data-flag="🇴🇲">+968</option>
                                         </select>
-                                        <input type="tel" name="phone_body" id="reg-phone-body" placeholder="000 000 000" <?php echo $req; ?>>
+                                        <input type="tel" name="phone_body" id="reg-phone-body" placeholder="000 000 000" style="border-radius:0 12px 12px 0; flex:1;" <?php echo $req; ?>>
                                     </div>
                                 <?php elseif ($id === 'gender') : ?>
-                                    <select name="gender" <?php echo $req; ?>>
+                                    <select name="gender" <?php echo $req; ?> style="border-radius:12px;">
                                         <option value="male"><?php _e('ذكر', 'control'); ?></option>
                                         <option value="female"><?php _e('أنثى', 'control'); ?></option>
                                     </select>
                                 <?php elseif ($id === 'degree') : ?>
-                                    <select name="degree" <?php echo $req; ?>>
+                                    <select name="degree" <?php echo $req; ?> style="border-radius:12px;">
                                         <option value="diploma"><?php _e('دبلوم', 'control'); ?></option>
                                         <option value="bachelor"><?php _e('بكالوريوس', 'control'); ?></option>
                                         <option value="master"><?php _e('ماجستير', 'control'); ?></option>
                                         <option value="phd"><?php _e('دكتوراه', 'control'); ?></option>
                                     </select>
                                 <?php elseif ($id === 'password') : ?>
-                                    <input type="password" name="password" id="reg-password" placeholder="••••••••" required>
+                                    <input type="password" name="password" id="reg-password" placeholder="••••••••" style="border-radius:12px;" required>
                                     <small style="color:#64748b; font-size:0.7rem; margin-top:8px; display:block;"><?php _e('يجب أن تحتوي على 8 أحرف على الأقل.', 'control'); ?></small>
                                 <?php elseif ($id === 'address') : ?>
-                                    <textarea name="address" placeholder="<?php echo $label; ?>" <?php echo $req; ?> rows="2"></textarea>
+                                    <textarea name="address" placeholder="<?php echo $label; ?>" <?php echo $req; ?> rows="2" style="border-radius:12px;"></textarea>
                                 <?php else : ?>
-                                    <input type="<?php echo ($id === 'email' || $id === 'work_email' ? 'email' : 'text'); ?>" name="<?php echo $id; ?>" placeholder="<?php echo $label; ?>" <?php echo $req; ?>>
+                                    <input type="<?php echo ($id === 'email' || $id === 'work_email' ? 'email' : 'text'); ?>" name="<?php echo $id; ?>" placeholder="<?php echo $label; ?>" <?php echo $req; ?> style="border-radius:12px;">
                                 <?php endif; ?>
                             </div>
                         <?php endforeach; ?>
                     </div>
                 <?php $step_count++; endforeach; ?>
 
-                <div id="reg-error" style="display:none; padding:15px; background:rgba(239, 68, 68, 0.1); color:#ef4444; border:1px solid rgba(239, 68, 68, 0.2); border-radius:10px; margin-bottom:25px; font-size:0.9rem; text-align:center; font-weight:600;"></div>
+                <div id="reg-error" class="auth-feedback-box error" style="display:none;"></div>
 
                 <div style="display:flex; gap:15px; margin-top:25px;">
-                    <button type="button" id="reg-prev" class="control-btn" style="flex:1; display:none; background:#1a1a1a; border:1px solid #333; height:50px; font-weight:700;"><?php _e('السابق', 'control'); ?></button>
-                    <button type="button" id="reg-next" class="control-btn control-btn-accent" style="flex:2; border-radius: 12px; height:50px; font-weight:800;"><?php _e('التالي', 'control'); ?></button>
-                    <button type="submit" id="reg-submit" class="control-btn control-btn-accent" style="flex:2; display:none; border-radius: 12px; height:50px; font-weight:800;"><?php _e('إكمال التسجيل', 'control'); ?></button>
+                    <button type="button" id="reg-prev" class="control-btn auth-wizard-btn prev-btn" style="display:none;"><?php _e('السابق', 'control'); ?></button>
+                    <button type="button" id="reg-next" class="control-btn control-btn-accent auth-wizard-btn next-btn"><?php _e('التالي', 'control'); ?></button>
+                    <button type="submit" id="reg-submit" class="control-btn control-btn-accent auth-wizard-btn next-btn" style="display:none;"><?php _e('إكمال التسجيل', 'control'); ?></button>
                 </div>
 
-                <div style="text-align:center; margin-top:35px; padding-top:25px; border-top: 1px solid #1a1a1a;">
-                    <button type="button" id="switch-to-login" style="background:none; border:none; color:#64748b; font-weight:700; cursor:pointer; font-size:1rem; transition: 0.2s;">
-                        <?php _e('العودة لتسجيل الدخول', 'control'); ?>
-                    </button>
+                <div class="auth-footer-toggle">
+                    <button type="button" id="switch-to-login-from-reg" class="auth-toggle-link"><?php _e('العودة لتسجيل الدخول', 'control'); ?></button>
                 </div>
             </form>
         </div>
