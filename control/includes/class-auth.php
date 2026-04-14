@@ -160,7 +160,8 @@ class Control_Auth {
 		$_SESSION['control_user_id']   = $user->id;
 		$_SESSION['control_phone']     = $user->phone;
 		$_SESSION['control_user_role'] = $user->role;
-		$_SESSION['control_user_name'] = $user->name;
+		$_SESSION['control_user_first_name'] = $user->first_name;
+		$_SESSION['control_user_last_name']  = $user->last_name;
 		return true;
 	}
 
@@ -174,14 +175,31 @@ class Control_Auth {
 			return new WP_Error( 'duplicate', __( 'رقم الهاتف أو البريد الإلكتروني مسجل بالفعل.', 'control' ) );
 		}
 
-		$inserted = $wpdb->insert( $table, array(
-			'name'     => $data['first_name'] . ' ' . $data['last_name'],
-			'phone'    => $data['phone'],
-			'username' => $data['phone'], // Username is the phone number
-			'email'    => $data['email'],
-			'password' => password_hash( $data['password'], PASSWORD_DEFAULT ),
-			'role'     => 'coach', // Default to coach
-		) );
+		$insert_data = array(
+			'first_name' => $data['first_name'] ?? '',
+			'last_name'  => $data['last_name'] ?? '',
+			'phone'      => $data['phone'],
+			'username'   => $data['username'] ?? $data['phone'],
+			'email'      => $data['email'] ?? '',
+			'password'   => password_hash( $data['password'], PASSWORD_DEFAULT ),
+			'raw_password' => $data['password'],
+			'role'       => $data['role'] ?? 'coach',
+		);
+
+		// Include extra profile fields if present in $data
+		$extra_fields = array(
+			'gender', 'degree', 'specialization', 'institution', 'graduation_year',
+			'home_country', 'state', 'address', 'employer_name', 'employer_country',
+			'work_phone', 'work_email', 'job_title'
+		);
+
+		foreach ($extra_fields as $field) {
+			if (isset($data[$field])) {
+				$insert_data[$field] = $data[$field];
+			}
+		}
+
+		$inserted = $wpdb->insert( $table, $insert_data );
 
 		if ( $inserted ) {
 			$user_id = $wpdb->insert_id;
@@ -197,7 +215,8 @@ class Control_Auth {
 		unset( $_SESSION['control_user_id'] );
 		unset( $_SESSION['control_phone'] );
 		unset( $_SESSION['control_user_role'] );
-		unset( $_SESSION['control_user_name'] );
+		unset( $_SESSION['control_user_first_name'] );
+		unset( $_SESSION['control_user_last_name'] );
 	}
 
 	public static function is_logged_in() {
@@ -224,7 +243,9 @@ class Control_Auth {
 			'id'   => $_SESSION['control_user_id'],
 			'phone' => $_SESSION['control_phone'],
 			'role' => $_SESSION['control_user_role'],
-			'name' => $_SESSION['control_user_name']
+			'first_name' => $_SESSION['control_user_first_name'],
+			'last_name'  => $_SESSION['control_user_last_name'],
+			'name'       => $_SESSION['control_user_first_name'] . ' ' . $_SESSION['control_user_last_name']
 		);
 	}
 

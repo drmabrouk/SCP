@@ -157,7 +157,7 @@ class Control_Notifications {
 		foreach ( $inactive_users as $user ) {
 			if ( ! empty($user->email) ) {
 				self::send( 'engagement_reminder', $user->email, array(
-					'{user_name}' => $user->name
+					'{user_name}' => $user->first_name . ' ' . $user->last_name
 				) );
 
 				// Update last_activity to prevent spamming (resets the 30-day counter)

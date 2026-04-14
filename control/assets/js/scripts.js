@@ -331,7 +331,25 @@ jQuery(document).ready(function($) {
     });
 
     // Self Profile Actions
+    let selfCurrentStep = 1;
+    function showSelfStep(step) {
+        $('.self-wizard-step').hide();
+        $(`#self-step-${step}`).fadeIn(300);
+        $('#self-wizard-dots .dot').removeClass('active');
+        $(`#self-wizard-dots .dot[data-step="${step}"]`).addClass('active');
+        $('#self-wizard-prev').toggle(step > 1);
+        $('#self-wizard-next').toggle(step < 4);
+        $('#self-wizard-submit').toggle(step === 4);
+        const labels = { 1: 'المعلومات الشخصية', 2: 'المؤهلات الأكاديمية', 3: 'المعلومات المهنية', 4: 'إعدادات الحساب' };
+        $('#self-wizard-step-label').text(labels[step]);
+        selfCurrentStep = step;
+    }
+
+    $('#self-wizard-next').on('click', function() { showSelfStep(selfCurrentStep + 1); });
+    $('#self-wizard-prev').on('click', function() { showSelfStep(selfCurrentStep - 1); });
+
     $('#control-edit-profile-btn').on('click', function() {
+        showSelfStep(1);
         $('#self-profile-modal').css('display', 'flex');
     });
 

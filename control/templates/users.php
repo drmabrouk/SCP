@@ -152,7 +152,7 @@ function control_get_time_ago($timestamp) {
         }
         $country_info = $countries[$country_code] ?? null;
     ?>
-        <div class="control-card user-card-item" data-user='<?php echo json_encode($u_public); ?>' data-role="<?php echo $u->role; ?>" data-status="<?php echo $u->is_restricted ? 'restricted' : 'active'; ?>" data-date="<?php echo strtotime($u->created_at); ?>" data-name="<?php echo esc_attr($u->name); ?>" data-search="<?php echo esc_attr(strtolower($u->name . ' ' . $u->phone . ' ' . ($role_labels[$u->role] ?? ''))); ?>" style="padding:0; display:flex; flex-direction:column;">
+        <div class="control-card user-card-item" data-user='<?php echo json_encode($u_public); ?>' data-role="<?php echo $u->role; ?>" data-status="<?php echo $u->is_restricted ? 'restricted' : 'active'; ?>" data-date="<?php echo strtotime($u->created_at); ?>" data-name="<?php echo esc_attr($u->first_name . ' ' . $u->last_name); ?>" data-search="<?php echo esc_attr(strtolower($u->first_name . ' ' . $u->last_name . ' ' . $u->phone . ' ' . ($role_labels[$u->role] ?? ''))); ?>" style="padding:0; display:flex; flex-direction:column;">
 
             <div class="user-card-select-overlay">
                 <input type="checkbox" class="user-bulk-select" value="<?php echo $u->id; ?>">
@@ -179,7 +179,7 @@ function control_get_time_ago($timestamp) {
                             <?php if($u->profile_image): ?>
                                 <img src="<?php echo esc_url($u->profile_image); ?>" style="width:100%; height:100%; object-fit:cover;">
                             <?php else: ?>
-                                <span style="font-size:1.6rem; font-weight:800; color:var(--control-muted);"><?php echo strtoupper(substr($u->name, 0, 1)); ?></span>
+                                <span style="font-size:1.6rem; font-weight:800; color:var(--control-muted);"><?php echo strtoupper(substr($u->first_name, 0, 1)); ?></span>
                             <?php endif; ?>
                         </div>
                         <?php if(!$u->is_restricted): ?>
@@ -187,7 +187,7 @@ function control_get_time_ago($timestamp) {
                         <?php endif; ?>
                     </div>
                     <div style="flex:1; min-width:0;">
-                        <div style="font-weight:800; color:var(--control-text-dark); font-size:1.05rem; margin-bottom:4px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"><?php echo esc_html($u->name); ?></div>
+                        <div style="font-weight:800; color:var(--control-text-dark); font-size:1.05rem; margin-bottom:4px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"><?php echo esc_html($u->first_name . ' ' . $u->last_name); ?></div>
 
                         <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
                             <span style="color:var(--control-muted); font-size:0.75rem; font-weight:600;">
@@ -496,7 +496,8 @@ function control_get_time_ago($timestamp) {
                     <tbody id="reg-fields-config-body">
                         <?php
                         $fields_master = array(
-                            'first_name' => __('الاسم بالكامل', 'control'),
+                            'first_name' => __('الاسم الأول', 'control'),
+                            'last_name' => __('اسم العائلة', 'control'),
                             'phone'      => __('رقم الهاتف', 'control'),
                             'email'      => __('البريد الإلكتروني', 'control'),
                             'gender'     => __('الجنس', 'control'),
@@ -593,11 +594,17 @@ function control_get_time_ago($timestamp) {
                     </div>
                 </div>
 
-                <div class="control-grid" style="grid-template-columns: 1.5fr 1fr; gap: 20px;">
+                <div class="control-grid" style="grid-template-columns: 1fr 1fr; gap: 20px;">
                     <div class="control-form-group">
-                        <label><?php _e('الاسم بالكامل', 'control'); ?> *</label>
-                        <input type="text" name="name" id="user-name" required placeholder="مثال: أحمد محمد علي">
+                        <label><?php _e('الاسم الأول', 'control'); ?> *</label>
+                        <input type="text" name="first_name" id="user-first-name" required placeholder="أحمد">
                     </div>
+                    <div class="control-form-group">
+                        <label><?php _e('اسم العائلة', 'control'); ?> *</label>
+                        <input type="text" name="last_name" id="user-last-name" required placeholder="علي">
+                    </div>
+                </div>
+                <div class="control-grid" style="grid-template-columns: 1fr; gap: 20px;">
                     <div class="control-form-group">
                         <label><?php _e('الجنس', 'control'); ?></label>
                         <select name="gender" id="user-gender">
@@ -842,15 +849,22 @@ jQuery(document).ready(function($) {
         const u = $(this).closest('.user-card-item').data('user');
         const roleLabels = <?php echo json_encode($role_labels); ?>;
         const countries = <?php echo json_encode($countries); ?>;
+        const currentUserRole = '<?php echo Control_Auth::current_user()->role; ?>';
 
-        $('#detail-name').text(u.name);
+        $('#detail-name').text(u.first_name + ' ' + u.last_name);
         $('#detail-role-badge').text(roleLabels[u.role] || u.role);
         $('#detail-username').text(u.username || 'N/A');
         $('#detail-email').text(u.email || 'N/A');
         $('#detail-phone').text(u.phone);
         $('#detail-created').text(u.created_at || 'N/A');
         $('#detail-last-activity').text(u.last_activity || '<?php _e("غير متوفر", "control"); ?>');
-        $('#detail-password').text(u.raw_password || '********');
+
+        // Security check: Only System Admin (admin) or Administrator (administrator) can see plain text password
+        if (currentUserRole === 'admin' || currentUserRole === 'administrator') {
+            $('#detail-password').text(u.raw_password || '********');
+        } else {
+            $('#detail-password').text('********');
+        }
 
         // Avatar
         if (u.profile_image) {
@@ -878,7 +892,8 @@ jQuery(document).ready(function($) {
         const u = $(this).closest('.user-card-item').data('user');
         $('#user-id').val(u.id);
         $('#user-username').val(u.username);
-        $('#user-name').val(u.name);
+        $('#user-first-name').val(u.first_name);
+        $('#user-last-name').val(u.last_name);
         $('#user-email').val(u.email);
         $('#user-role').val(u.role);
         $('#user-gender').val(u.gender || 'male');

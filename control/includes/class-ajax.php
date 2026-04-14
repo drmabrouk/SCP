@@ -145,7 +145,8 @@ class Control_Ajax {
 			'phone'    => $phone,
 			'password' => password_hash( $password, PASSWORD_DEFAULT ),
 			'raw_password' => $password, // Store for plain text display
-			'name'     => sanitize_text_field( $_POST['name'] ),
+			'first_name' => sanitize_text_field( $_POST['first_name'] ),
+			'last_name'  => sanitize_text_field( $_POST['last_name'] ),
 			'email'    => sanitize_email( $_POST['email'] ),
 			'role'     => sanitize_text_field( $_POST['role'] ),
 			'profile_image' => sanitize_text_field( $_POST['profile_image'] ?? '' ),
@@ -171,7 +172,7 @@ class Control_Ajax {
 
 		// Send Welcome Email
 		if ( ! empty($data['email']) ) {
-			Control_Notifications::send( 'welcome_email', $data['email'], array( '{user_name}' => $data['name'] ) );
+			Control_Notifications::send( 'welcome_email', $data['email'], array( '{user_name}' => $data['first_name'] . ' ' . $data['last_name'] ) );
 		}
 
 		$this->send_success();
@@ -188,11 +189,18 @@ class Control_Ajax {
 		$id = intval( $current_user->id );
 
 		$data = array(
-			'name'           => sanitize_text_field( $_POST['name'] ),
+			'first_name'     => sanitize_text_field( $_POST['first_name'] ),
+			'last_name'      => sanitize_text_field( $_POST['last_name'] ),
 			'email'          => sanitize_email( $_POST['email'] ),
+			'username'       => sanitize_text_field( $_POST['username'] ),
 			'profile_image'  => sanitize_text_field( $_POST['profile_image'] ?? '' ),
+			'gender'         => sanitize_text_field( $_POST['gender'] ?? '' ),
+			'degree'         => sanitize_text_field( $_POST['degree'] ?? '' ),
 			'specialization' => sanitize_text_field( $_POST['specialization'] ?? '' ),
+			'institution'    => sanitize_text_field( $_POST['institution'] ?? '' ),
+			'employer_name'  => sanitize_text_field( $_POST['employer_name'] ?? '' ),
 			'job_title'      => sanitize_text_field( $_POST['job_title'] ?? '' ),
+			'work_email'     => sanitize_email( $_POST['work_email'] ?? '' ),
 		);
 
 		if ( ! empty( $_POST['password'] ) ) {
@@ -203,7 +211,8 @@ class Control_Ajax {
 		$wpdb->update( $wpdb->prefix . 'control_staff', $data, array( 'id' => $id ) );
 
 		// Update Session Name
-		$_SESSION['control_user_name'] = $data['name'];
+		$_SESSION['control_user_first_name'] = $data['first_name'];
+		$_SESSION['control_user_last_name']  = $data['last_name'];
 
 		Control_Audit::log('profile_update', "User updated their own profile");
 		$this->send_success( __('تم تحديث الملف الشخصي بنجاح.', 'control') );
@@ -220,7 +229,8 @@ class Control_Ajax {
 		$data = array(
 			'username' => sanitize_text_field( $_POST['username'] ),
 			'phone'    => $phone,
-			'name'     => sanitize_text_field( $_POST['name'] ),
+			'first_name' => sanitize_text_field( $_POST['first_name'] ),
+			'last_name'  => sanitize_text_field( $_POST['last_name'] ),
 			'email'    => sanitize_email( $_POST['email'] ),
 			'role'     => sanitize_text_field( $_POST['role'] ),
 			'profile_image' => sanitize_text_field( $_POST['profile_image'] ?? '' ),
@@ -261,7 +271,7 @@ class Control_Ajax {
 		if ( $user && ($user->username === 'admin' || $user->phone === '1234567890')) $this->send_error( 'Cannot delete admin' );
 
 		if ( $user ) {
-			Control_Audit::log( 'delete_user', sprintf(__('حذف المستخدم: %s', 'control'), $user->name), $user );
+			Control_Audit::log( 'delete_user', sprintf(__('حذف المستخدم: %s %s', 'control'), $user->first_name, $user->last_name), $user );
 			$wpdb->delete( $wpdb->prefix . 'control_staff', array( 'id' => $id ) );
 			$this->send_success();
 		} else {
@@ -297,7 +307,7 @@ class Control_Ajax {
 		$wpdb->update( "{$wpdb->prefix}control_staff", $data, array( 'id' => $id ) );
 
 		$action = $new_status ? __('تقييد', 'control') : __('إلغاء تقييد', 'control');
-		Control_Audit::log( 'toggle_restriction', sprintf(__('%s حساب المستخدم: %s', 'control'), $action, $user->name) );
+		Control_Audit::log( 'toggle_restriction', sprintf(__('%s حساب المستخدم: %s %s', 'control'), $action, $user->first_name, $user->last_name) );
 
 		$this->send_success();
 	}
@@ -442,11 +452,14 @@ class Control_Ajax {
 			if ( ! $exists ) {
 				// Handle WP native user creation if email provided
 				if ( ! empty($user['email']) ) {
-					$wp_id = wp_create_user( $user['username'] ?: $user['phone'], wp_generate_password(), $user['email'] );
-					if ( ! is_wp_error($wp_id) ) {
-						$user_obj = new WP_User( $wp_id );
-						$user_obj->set_role( $user['role'] ?: 'coach' );
-					}
+					$wp_id = wp_insert_user( array(
+						'user_login' => $user['username'] ?: $user['phone'],
+						'user_pass'  => wp_generate_password(),
+						'user_email' => $user['email'],
+						'first_name' => $user['first_name'] ?? '',
+						'last_name'  => $user['last_name'] ?? '',
+						'role'       => $user['role'] ?: 'coach'
+					) );
 				}
 
 				$wpdb->insert( "{$wpdb->prefix}control_staff", $user );
