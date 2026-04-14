@@ -9,7 +9,9 @@ class Control_Ajax {
 		// Private actions (Logged-in only)
 		$private_actions = array(
 			'logout', 'add_user', 'save_user', 'delete_user', 'save_settings',
-			'undo_activity', 'delete_activity', 'toggle_user_restriction', 'export_data', 'import_data',
+			'undo_activity', 'delete_activity', 'toggle_user_restriction',
+			'bulk_delete_users', 'bulk_restrict_users',
+			'export_data', 'import_data',
 			'preview_import', 'create_backup', 'restore_backup', 'save_role', 'delete_role'
 		);
 
@@ -419,6 +421,45 @@ class Control_Ajax {
 		}
 
 		$this->send_error( 'Cannot undo this action' );
+	}
+
+	public function bulk_delete_users() {
+		check_ajax_referer( 'control_nonce', 'nonce' );
+		if ( ! Control_Auth::has_permission('users_delete') ) $this->send_error( 'Unauthorized', 403 );
+
+		$ids = array_map( 'intval', $_POST['ids'] ?? array() );
+		if ( empty($ids) ) $this->send_error( 'No users selected' );
+
+		global $wpdb;
+		$table = $wpdb->prefix . 'control_staff';
+
+		$placeholders = implode( ',', array_fill( 0, count( $ids ), '%d' ) );
+		$count = $wpdb->query( $wpdb->prepare( "DELETE FROM $table WHERE id IN ($placeholders) AND username != 'admin'", ...$ids ) );
+
+		Control_Audit::log( 'bulk_delete', sprintf(__('حذف جماعي لـ %d كادر', 'control'), $count) );
+		$this->send_success( sprintf(__('تم حذف %d كادر بنجاح.', 'control'), $count) );
+	}
+
+	public function bulk_restrict_users() {
+		check_ajax_referer( 'control_nonce', 'nonce' );
+		if ( ! Control_Auth::has_permission('users_manage') ) $this->send_error( 'Unauthorized', 403 );
+
+		$ids = array_map( 'intval', $_POST['ids'] ?? array() );
+		if ( empty($ids) ) $this->send_error( 'No users selected' );
+
+		global $wpdb;
+		$table = $wpdb->prefix . 'control_staff';
+
+		$reason = sanitize_text_field( $_POST['reason'] ?? 'Bulk action' );
+		$duration = intval( $_POST['duration'] ?? 30 );
+		$expiry = date( 'Y-m-d H:i:s', strtotime( "+$duration days" ) );
+
+		$placeholders = implode( ',', array_fill( 0, count( $ids ), '%d' ) );
+		$sql = $wpdb->prepare( "UPDATE $table SET is_restricted = 1, restriction_reason = %s, restriction_expiry = %s WHERE id IN ($placeholders) AND username != 'admin'", $reason, $expiry, ...$ids );
+		$count = $wpdb->query( $sql );
+
+		Control_Audit::log( 'bulk_restrict', sprintf(__('تقييد جماعي لـ %d كادر', 'control'), $count) );
+		$this->send_success( sprintf(__('تم تقييد %d كادر بنجاح.', 'control'), $count) );
 	}
 
 	public function delete_activity() {
