@@ -1,6 +1,6 @@
 <?php
 global $wpdb;
-$roles = $wpdb->get_results( "SELECT * FROM {$wpdb->prefix}control_roles" );
+$roles = $wpdb->get_results( "SELECT r.*, (SELECT COUNT(*) FROM {$wpdb->prefix}control_staff WHERE role = r.role_key) as user_count FROM {$wpdb->prefix}control_roles r" );
 $available_permissions = Control_Auth::get_permissions_registry();
 ?>
 
@@ -22,9 +22,15 @@ $available_permissions = Control_Auth::get_permissions_registry();
                     <h3 style="margin:0;"><?php echo esc_html($role->role_name); ?></h3>
                     <code style="font-size:0.7rem; color:var(--control-muted);"><?php echo esc_html($role->role_key); ?></code>
                 </div>
-                <?php if($role->is_system): ?>
-                    <span class="control-status-indicator indicator-accent" style="font-size:0.6rem;"><?php _e('أساسي', 'control'); ?></span>
-                <?php endif; ?>
+                <div style="display:flex; flex-direction:column; align-items:flex-end; gap:5px;">
+                    <div class="user-count-badge" title="<?php _e('عدد المستخدمين بهذا الدور', 'control'); ?>">
+                        <span class="dashicons dashicons-admin-users" style="font-size:12px; width:12px; height:12px; margin-left:3px;"></span>
+                        <?php echo number_format($role->user_count); ?>
+                    </div>
+                    <?php if($role->is_system): ?>
+                        <span class="control-status-indicator indicator-accent" style="font-size:0.6rem; padding:2px 6px;"><?php _e('أساسي', 'control'); ?></span>
+                    <?php endif; ?>
+                </div>
             </div>
 
             <div style="font-size:0.8rem; color:var(--control-text); margin-bottom:20px;">
@@ -108,6 +114,20 @@ $available_permissions = Control_Auth::get_permissions_registry();
         </form>
     </div>
 </div>
+
+<style>
+.user-count-badge {
+    background: #fdf2f8; /* Pastel Pink */
+    color: #9d174d;
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+}
+</style>
 
 <script>
 jQuery(document).ready(function($) {

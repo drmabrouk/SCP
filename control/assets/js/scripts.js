@@ -274,4 +274,55 @@ jQuery(document).ready(function($) {
     $(document).on('click', '.control-collapse-trigger', function() {
         $(this).next('.control-collapse-content').slideToggle(200);
     });
+
+    // Notifications Sidebar Toggles
+    $(document).on('click', '.tpl-nav-btn', function() {
+        $('.tpl-nav-btn').removeClass('active');
+        $(this).addClass('active');
+        const tpl = $(this).data('tpl');
+        $('.tpl-content-section').hide();
+        $(`#tpl-section-${tpl}`).fadeIn();
+    });
+
+    // Audit Log Actions
+    $(document).on('click', '.undo-action', function() {
+        const id = $(this).data('id');
+        $.post(control_ajax.ajax_url, { action: 'control_undo_activity', log_id: id, nonce: control_ajax.nonce }, (res) => {
+            if(res.success) location.reload();
+            else alert(res.data);
+        });
+    });
+
+    $(document).on('click', '.delete-log-entry', function() {
+        if(!confirm('هل أنت متأكد من حذف هذا السجل؟')) return;
+        const id = $(this).data('id');
+        $.post(control_ajax.ajax_url, { action: 'control_delete_activity', log_id: id, nonce: control_ajax.nonce }, () => location.reload());
+    });
+
+    $(document).on('click', '.view-log-info', function() {
+        const log = $(this).data('log');
+        let details = `
+            <div style="text-align:right; direction:rtl; font-family:Rubik, sans-serif;">
+                <p><strong>المسؤول:</strong> ${log.user_id}</p>
+                <p><strong>العملية:</strong> ${log.action_type}</p>
+                <p><strong>الوصف:</strong> ${log.description}</p>
+                <p><strong>الجهاز:</strong> ${log.device_type}</p>
+                <p><strong>المتصفح:</strong> ${log.device_info}</p>
+                <p><strong>IP:</strong> ${log.ip_address}</p>
+                <p><strong>التاريخ:</strong> ${log.action_date}</p>
+                <p><strong>البيانات الوصفية:</strong></p>
+                <pre style="background:#f1f5f9; padding:10px; border-radius:8px; font-size:0.7rem; overflow-x:auto;">${JSON.stringify(JSON.parse(log.meta_data || '{}'), null, 2)}</pre>
+            </div>
+        `;
+
+        // Simple overlay for log details
+        const overlay = $('<div style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:100000; display:flex; align-items:center; justify-content:center; backdrop-filter:blur(4px);"></div>');
+        const modal = $('<div class="control-card" style="width:90%; max-width:600px; padding:30px;"><h3>تفاصيل السجل</h3>' + details + '<button class="control-btn" style="width:100%; margin-top:20px;">إغلاق</button></div>');
+
+        overlay.append(modal);
+        $('body').append(overlay);
+
+        modal.find('button').on('click', () => overlay.remove());
+        overlay.on('click', (e) => { if(e.target === overlay[0]) overlay.remove(); });
+    });
 });

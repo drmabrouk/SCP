@@ -279,6 +279,27 @@ body, .control-dashboard {
 .indicator-warning { background: #fffbeb; color: #b45309; }
 .indicator-accent { background: #eff6ff; color: #1e40af; }
 
+.audit-action-btn {
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #fff;
+    border: 1px solid var(--control-border);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: var(--control-transition);
+    color: var(--control-muted);
+    padding: 0;
+}
+
+.audit-action-btn:hover {
+    background: var(--control-bg);
+    border-color: var(--control-accent);
+    color: var(--control-accent) !important;
+}
+
 /* Responsive Adjustments */
 @media (max-width: 1024px) {
     .control-sidebar { display: none !important; }
@@ -289,4 +310,54 @@ body, .control-dashboard {
 @media (max-width: 480px) {
     .control-metrics-grid { grid-template-columns: 1fr; }
     .control-auth-card { padding: 25px; }
+}
+
+/* Workforce Distribution Grid */
+.workforce-distribution-grid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 20px;
+}
+
+.workforce-card {
+    background: var(--control-bg);
+    padding: 20px;
+    border-radius: 16px;
+    text-align: center;
+    border: 1px solid var(--control-border);
+    transition: var(--control-transition);
+}
+
+.workforce-card:hover {
+    transform: translateY(-3px);
+    border-color: var(--control-accent);
+}
+
+.workforce-label {
+    font-size: 0.75rem;
+    color: var(--control-muted);
+    margin-bottom: 8px;
+    font-weight: 600;
+}
+
+.workforce-count {
+    font-size: 1.3rem;
+    font-weight: 800;
+    color: var(--control-text-dark);
+}
+
+@media (max-width: 1200px) {
+    .workforce-distribution-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (max-width: 640px) {
+    .workforce-distribution-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+    }
+    .workforce-card {
+        padding: 15px 10px;
+    }
 }
