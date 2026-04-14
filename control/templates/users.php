@@ -81,6 +81,11 @@ function control_get_time_ago($timestamp) {
                 </button>
             </div>
         <?php endif; ?>
+        <?php if(Control_Auth::has_permission('settings_manage')): ?>
+            <button class="control-btn" style="background:#fff; color:var(--control-text-dark) !important; border:1px solid var(--control-border); width:42px; padding:0;" onclick="jQuery('#auth-control-panel-modal').css('display', 'flex')">
+                <span class="dashicons dashicons-admin-generic" style="margin:0;"></span>
+            </button>
+        <?php endif; ?>
     </div>
 </div>
 
@@ -426,6 +431,111 @@ function control_get_time_ago($timestamp) {
                 <button onclick="jQuery('#control-details-modal').hide()" class="control-btn" style="min-width:150px; background:var(--control-bg); color:var(--control-text-dark) !important; border:none;"><?php _e('إغلاق النافذة', 'control'); ?></button>
             </div>
         </div>
+    </div>
+</div>
+
+<!-- Authentication & Registration Control Panel Modal -->
+<div id="auth-control-panel-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:10003; align-items:center; justify-content:center; backdrop-filter: blur(4px);">
+    <div class="control-card" style="width:100%; max-width:800px; padding:0; border-radius:20px; overflow:hidden; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);">
+        <div style="background:var(--control-primary); color:#fff; padding:20px 30px; display:flex; justify-content:space-between; align-items:center;">
+            <h3 style="color:#fff; margin:0; font-size:1.1rem;"><?php _e('لوحة التحكم في المصادقة والتسجيل', 'control'); ?></h3>
+            <button onclick="jQuery('#auth-control-panel-modal').hide()" style="background:none; border:none; color:#fff; cursor:pointer;"><span class="dashicons dashicons-no-alt"></span></button>
+        </div>
+
+        <form id="auth-control-form" style="padding:30px; max-height:75vh; overflow-y:auto;">
+            <?php
+            $auth_settings = $wpdb->get_results("SELECT setting_key, setting_value FROM {$wpdb->prefix}control_settings WHERE setting_key LIKE 'auth_%'", OBJECT_K);
+            $reg_fields = json_decode($auth_settings['auth_registration_fields']->setting_value ?? '[]', true);
+            ?>
+
+            <div class="control-grid" style="grid-template-columns: 1fr 1fr; gap:25px; margin-bottom:30px;">
+                <div style="background:var(--control-bg); padding:20px; border-radius:15px; border:1px solid var(--control-border);">
+                    <h4 style="margin:0 0 15px 0; color:var(--control-primary); font-size:0.9rem;"><?php _e('إعدادات الدخول (Login)', 'control'); ?></h4>
+                    <div style="display:flex; flex-direction:column; gap:12px;">
+                        <label style="display:flex; align-items:center; justify-content:space-between; cursor:pointer;">
+                            <span><?php _e('تفعيل تسجيل الدخول عالمياً', 'control'); ?></span>
+                            <input type="checkbox" name="auth_login_enabled" value="1" <?php checked($auth_settings['auth_login_enabled']->setting_value ?? '1', '1'); ?>>
+                        </label>
+                        <label style="display:flex; align-items:center; justify-content:space-between; cursor:pointer;">
+                            <span><?php _e('إظهار نموذج الدخول للعامة', 'control'); ?></span>
+                            <input type="checkbox" name="auth_login_form_visible" value="1" <?php checked($auth_settings['auth_login_form_visible']->setting_value ?? '1', '1'); ?>>
+                        </label>
+                    </div>
+                </div>
+
+                <div style="background:var(--control-bg); padding:20px; border-radius:15px; border:1px solid var(--control-border);">
+                    <h4 style="margin:0 0 15px 0; color:var(--control-primary); font-size:0.9rem;"><?php _e('إعدادات التسجيل (Registration)', 'control'); ?></h4>
+                    <div style="display:flex; flex-direction:column; gap:12px;">
+                        <label style="display:flex; align-items:center; justify-content:space-between; cursor:pointer;">
+                            <span><?php _e('تفعيل تسجيل الحسابات الجديدة', 'control'); ?></span>
+                            <input type="checkbox" name="auth_registration_enabled" value="1" <?php checked($auth_settings['auth_registration_enabled']->setting_value ?? '1', '1'); ?>>
+                        </label>
+                        <label style="display:flex; align-items:center; justify-content:space-between; cursor:pointer;">
+                            <span><?php _e('إظهار نموذج التسجيل للعامة', 'control'); ?></span>
+                            <input type="checkbox" name="auth_registration_form_visible" value="1" <?php checked($auth_settings['auth_registration_form_visible']->setting_value ?? '1', '1'); ?>>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <div style="background:#fff; border:1px solid var(--control-border); border-radius:15px; overflow:hidden;">
+                <div style="background:var(--control-primary-soft); color:#fff; padding:12px 20px; font-weight:700; font-size:0.85rem;">
+                    <?php _e('تخصيص حقول نموذج التسجيل', 'control'); ?>
+                </div>
+                <table class="control-table" style="font-size:0.8rem;">
+                    <thead>
+                        <tr style="background:#f8fafc;">
+                            <th style="width:50px;"></th>
+                            <th><?php _e('اسم الحقل', 'control'); ?></th>
+                            <th style="text-align:center;"><?php _e('مفعل', 'control'); ?></th>
+                            <th style="text-align:center;"><?php _e('إلزامي', 'control'); ?></th>
+                            <th style="width:80px; text-align:center;"><?php _e('الترتيب', 'control'); ?></th>
+                        </tr>
+                    </thead>
+                    <tbody id="reg-fields-config-body">
+                        <?php
+                        $fields_master = array(
+                            'first_name' => __('الاسم الأول', 'control'),
+                            'last_name'  => __('اسم العائلة', 'control'),
+                            'phone'      => __('رقم الهاتف', 'control'),
+                            'email'      => __('البريد الإلكتروني', 'control'),
+                            'password'   => __('كلمة المرور', 'control')
+                        );
+
+                        // Merge saved config with master to ensure all fields exist
+                        $final_fields = array();
+                        foreach($reg_fields as $f) {
+                            if (isset($fields_master[$f['id']])) {
+                                $final_fields[] = $f;
+                                unset($fields_master[$f['id']]);
+                            }
+                        }
+                        foreach($fields_master as $id => $label) {
+                            $final_fields[] = array('id' => $id, 'label' => $label, 'enabled' => true, 'required' => true);
+                        }
+
+                        foreach($final_fields as $index => $field): ?>
+                            <tr>
+                                <td style="text-align:center; cursor:move;"><span class="dashicons dashicons-menu" style="color:var(--control-muted);"></span></td>
+                                <td style="font-weight:700;"><?php echo $field['label']; ?></td>
+                                <td style="text-align:center;"><input type="checkbox" class="field-enabled" data-id="<?php echo $field['id']; ?>" <?php checked($field['enabled'] ?? true, true); ?>></td>
+                                <td style="text-align:center;"><input type="checkbox" class="field-required" data-id="<?php echo $field['id']; ?>" <?php checked($field['required'] ?? true, true); ?>></td>
+                                <td style="text-align:center;">
+                                    <input type="hidden" class="field-id" value="<?php echo $field['id']; ?>">
+                                    <input type="hidden" class="field-label" value="<?php echo $field['label']; ?>">
+                                    <span class="field-order-badge"><?php echo $index + 1; ?></span>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
+
+            <div style="margin-top:30px; display:flex; gap:15px; border-top:1px solid var(--control-border); padding-top:25px;">
+                <button type="submit" class="control-btn" style="flex:2; background:var(--control-accent); color:var(--control-primary) !important; border:none; font-weight:800;"><?php _e('حفظ وتطبيق الإعدادات', 'control'); ?></button>
+                <button type="button" onclick="jQuery('#auth-control-panel-modal').hide()" class="control-btn" style="flex:1; background:var(--control-bg); color:var(--control-text) !important; border:none;"><?php _e('إلغاء', 'control'); ?></button>
+            </div>
+        </form>
     </div>
 </div>
 

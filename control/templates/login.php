@@ -16,8 +16,16 @@
             <p style="color:#94a3b8; font-size: 1.1rem; font-weight:500;"><?php _e('نظام الإدارة المتكامل', 'control'); ?></p>
         </div>
 
+        <?php
+        $login_enabled = $wpdb->get_var("SELECT setting_value FROM {$wpdb->prefix}control_settings WHERE setting_key = 'auth_login_enabled'");
+        $login_visible = $wpdb->get_var("SELECT setting_value FROM {$wpdb->prefix}control_settings WHERE setting_key = 'auth_login_form_visible'");
+        $reg_enabled   = $wpdb->get_var("SELECT setting_value FROM {$wpdb->prefix}control_settings WHERE setting_key = 'auth_registration_enabled'");
+        $reg_visible   = $wpdb->get_var("SELECT setting_value FROM {$wpdb->prefix}control_settings WHERE setting_key = 'auth_registration_form_visible'");
+        $reg_fields    = json_decode($wpdb->get_var("SELECT setting_value FROM {$wpdb->prefix}control_settings WHERE setting_key = 'auth_registration_fields'"), true) ?: array();
+        ?>
+
         <!-- Login Form -->
-        <div id="control-login-container">
+        <div id="control-login-container" style="<?php echo ($login_visible === '0') ? 'display:none;' : ''; ?>">
             <form id="control-login-form">
                 <div class="control-form-group">
                     <label style="color:#cbd5e1; font-size:0.8rem; margin-bottom:8px; display:block;"><?php _e('رقم الهاتف', 'control'); ?></label>
@@ -48,64 +56,72 @@
                     <?php _e('تسجيل الدخول', 'control'); ?>
                 </button>
 
-                <div style="text-align:center; margin-top:35px; padding-top:25px; border-top: 1px solid #1a1a1a;">
-                    <p style="color:#64748b; margin-bottom:15px; font-size:0.9rem;"><?php _e('ليس لديك حساب بعد؟', 'control'); ?></p>
-                    <button type="button" id="switch-to-register" style="background:none; border:none; color:#D4AF37; font-weight:700; cursor:pointer; font-size:1rem; transition: 0.2s;">
-                        <?php _e('إنشاء حساب جديد كعضو', 'control'); ?>
-                    </button>
-                </div>
+                <?php if ($reg_visible !== '0') : ?>
+                    <div style="text-align:center; margin-top:35px; padding-top:25px; border-top: 1px solid #1a1a1a;">
+                        <p style="color:#64748b; margin-bottom:15px; font-size:0.9rem;"><?php _e('ليس لديك حساب بعد؟', 'control'); ?></p>
+                        <button type="button" id="switch-to-register" style="background:none; border:none; color:#D4AF37; font-weight:700; cursor:pointer; font-size:1rem; transition: 0.2s;">
+                            <?php _e('إنشاء حساب جديد كعضو', 'control'); ?>
+                        </button>
+                    </div>
+                <?php endif; ?>
             </form>
         </div>
 
-        <!-- Registration Form (Multi-step) -->
+        <?php if ($login_visible === '0' && $reg_visible === '0') : ?>
+            <div style="text-align:center; padding:40px 20px; background:rgba(255,255,255,0.05); border-radius:15px; border:1px dashed #333;">
+                <span class="dashicons dashicons-lock" style="font-size:40px; width:40px; height:40px; color:#64748b; margin-bottom:15px;"></span>
+                <p style="color:#cbd5e1; font-weight:700;"><?php _e('النظام في وضع الصيانة حالياً. الدخول والاشتراك معطلان.', 'control'); ?></p>
+            </div>
+        <?php endif; ?>
+
+        <!-- Registration Form (Dynamic) -->
         <div id="control-register-container" style="display:none;">
             <form id="control-register-form">
-                <div id="reg-step-1" class="reg-step">
-                    <div class="control-grid" style="grid-template-columns: 1fr 1fr; gap:15px; margin-bottom:20px;">
-                        <div class="control-form-group">
-                            <label style="color:#cbd5e1; font-size:0.8rem; margin-bottom:8px; display:block;"><?php _e('الاسم الأول', 'control'); ?></label>
-                            <input type="text" name="first_name" placeholder="John" required>
-                        </div>
-                        <div class="control-form-group">
-                            <label style="color:#cbd5e1; font-size:0.8rem; margin-bottom:8px; display:block;"><?php _e('اسم العائلة', 'control'); ?></label>
-                            <input type="text" name="last_name" placeholder="Doe" required>
-                        </div>
+                <?php
+                $step = 1;
+                foreach ($reg_fields as $field) :
+                    if (!($field['enabled'] ?? true)) continue;
+                    $req = ($field['required'] ?? true) ? 'required' : '';
+                    ?>
+                    <div id="reg-step-<?php echo $step; ?>" class="reg-step" style="<?php echo $step > 1 ? 'display:none;' : ''; ?>">
+                        <?php if ($field['id'] === 'first_name' || $field['id'] === 'last_name') :
+                            // Special case: Name fields often go together in UI but we'll respect step-per-field for simplicity or customize here
+                        ?>
+                            <div class="control-form-group">
+                                <label style="color:#cbd5e1; font-size:0.8rem; margin-bottom:8px; display:block;"><?php echo $field['label']; ?> <?php echo $req ? '*' : ''; ?></label>
+                                <input type="text" name="<?php echo $field['id']; ?>" placeholder="<?php echo $field['label']; ?>" <?php echo $req; ?>>
+                            </div>
+                        <?php elseif ($field['id'] === 'phone') : ?>
+                            <div class="control-form-group">
+                                <label style="color:#cbd5e1; font-size:0.8rem; margin-bottom:8px; display:block;"><?php echo $field['label']; ?> *</label>
+                                <div class="phone-input-group">
+                                    <span id="reg-flag" class="country-flag-inside">🇪🇬</span>
+                                    <select id="reg-country-code">
+                                        <option value="+20" data-flag="🇪🇬">+20</option>
+                                        <option value="+971" data-flag="🇦🇪">+971</option>
+                                        <option value="+966" data-flag="🇸🇦">+966</option>
+                                        <option value="+965" data-flag="🇰🇼">+965</option>
+                                        <option value="+974" data-flag="🇶🇦">+974</option>
+                                        <option value="+973" data-flag="🇧🇭">+973</option>
+                                        <option value="+968" data-flag="🇴🇲">+968</option>
+                                    </select>
+                                    <input type="tel" name="phone_body" id="reg-phone-body" placeholder="000 000 000" <?php echo $req; ?>>
+                                </div>
+                            </div>
+                        <?php elseif ($field['id'] === 'email') : ?>
+                            <div class="control-form-group">
+                                <label style="color:#cbd5e1; font-size:0.8rem; margin-bottom:8px; display:block;"><?php echo $field['label']; ?> <?php echo $req ? '*' : ''; ?></label>
+                                <input type="email" name="email" placeholder="email@example.com" <?php echo $req; ?>>
+                            </div>
+                        <?php elseif ($field['id'] === 'password') : ?>
+                            <div class="control-form-group">
+                                <label style="color:#cbd5e1; font-size:0.8rem; margin-bottom:8px; display:block;"><?php echo $field['label']; ?> *</label>
+                                <input type="password" name="password" id="reg-password" placeholder="••••••••" required>
+                                <small style="color:#64748b; font-size:0.7rem; margin-top:8px; display:block;"><?php _e('يجب أن تحتوي على 8 أحرف على الأقل.', 'control'); ?></small>
+                            </div>
+                        <?php endif; ?>
                     </div>
-                </div>
-
-                <div id="reg-step-2" class="reg-step" style="display:none;">
-                    <div class="control-form-group">
-                        <label style="color:#cbd5e1; font-size:0.8rem; margin-bottom:8px; display:block;"><?php _e('رقم الهاتف الجوال', 'control'); ?></label>
-                        <div class="phone-input-group">
-                            <span id="reg-flag" class="country-flag-inside">🇪🇬</span>
-                            <select id="reg-country-code">
-                                <option value="+20" data-flag="🇪🇬">+20</option>
-                                <option value="+971" data-flag="🇦🇪">+971</option>
-                                <option value="+966" data-flag="🇸🇦">+966</option>
-                                <option value="+965" data-flag="🇰🇼">+965</option>
-                                <option value="+974" data-flag="🇶🇦">+974</option>
-                                <option value="+973" data-flag="🇧🇭">+973</option>
-                                <option value="+968" data-flag="🇴🇲">+968</option>
-                            </select>
-                            <input type="tel" name="phone_body" id="reg-phone-body" placeholder="000 000 000" required>
-                        </div>
-                    </div>
-                </div>
-
-                <div id="reg-step-3" class="reg-step" style="display:none;">
-                    <div class="control-form-group">
-                        <label style="color:#cbd5e1; font-size:0.8rem; margin-bottom:8px; display:block;"><?php _e('البريد الإلكتروني (اختياري)', 'control'); ?></label>
-                        <input type="email" name="email" placeholder="email@example.com">
-                    </div>
-                </div>
-
-                <div id="reg-step-4" class="reg-step" style="display:none;">
-                    <div class="control-form-group">
-                        <label style="color:#cbd5e1; font-size:0.8rem; margin-bottom:8px; display:block;"><?php _e('كلمة المرور الجديدة', 'control'); ?></label>
-                        <input type="password" name="password" id="reg-password" placeholder="••••••••" required>
-                        <small style="color:#64748b; font-size:0.7rem; margin-top:8px; display:block;"><?php _e('يجب أن تحتوي على 8 أحرف على الأقل.', 'control'); ?></small>
-                    </div>
-                </div>
+                <?php $step++; endforeach; ?>
 
                 <div id="reg-error" style="display:none; padding:15px; background:rgba(239, 68, 68, 0.1); color:#ef4444; border:1px solid rgba(239, 68, 68, 0.2); border-radius:10px; margin-bottom:25px; font-size:0.9rem; text-align:center; font-weight:600;"></div>
 

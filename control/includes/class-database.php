@@ -177,6 +177,17 @@ class Control_Database {
 			'sender_name'         => 'Control System',
 			'sender_email'        => get_option('admin_email'),
 			'email_theme'         => 'modern',
+			'auth_registration_enabled'      => '1',
+			'auth_login_enabled'             => '1',
+			'auth_registration_form_visible' => '1',
+			'auth_login_form_visible'        => '1',
+			'auth_registration_fields'       => json_encode(array(
+				array('id' => 'first_name', 'label' => 'الاسم الأول', 'enabled' => true, 'required' => true),
+				array('id' => 'last_name', 'label' => 'اسم العائلة', 'enabled' => true, 'required' => true),
+				array('id' => 'phone', 'label' => 'رقم الهاتف', 'enabled' => true, 'required' => true),
+				array('id' => 'email', 'label' => 'البريد الإلكتروني', 'enabled' => true, 'required' => true),
+				array('id' => 'password', 'label' => 'كلمة المرور', 'enabled' => true, 'required' => true),
+			)),
 		);
 
 		foreach ( $defaults as $key => $value ) {
