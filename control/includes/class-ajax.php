@@ -707,15 +707,32 @@ class Control_Ajax {
 
 		global $wpdb;
 		$id = intval( $_POST['id'] );
+		$replacement_key = sanitize_key( $_POST['replacement_role_key'] ?? 'coach' );
+
 		$role = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$wpdb->prefix}control_roles WHERE id = %d", $id ) );
 
 		if ( ! $role ) $this->send_error( 'Role not found' );
 		if ( $role->is_system ) $this->send_error( 'Cannot delete system roles' );
 
-		$wpdb->delete( "{$wpdb->prefix}control_roles", array( 'id' => $id ) );
-		Control_Audit::log('delete_role', "Deleted role: {$role->role_name}");
+		// 1. Reassign staff members
+		$wpdb->update(
+			"{$wpdb->prefix}control_staff",
+			array( 'role' => $replacement_key ),
+			array( 'role' => $role->role_key )
+		);
 
-		// Re-sync WP roles
+		// 2. Reassign WP Users
+		$users = get_users( array( 'role' => $role->role_key ) );
+		foreach ( $users as $user ) {
+			$user->set_role( $replacement_key );
+		}
+
+		// 3. Delete from DB
+		$wpdb->delete( "{$wpdb->prefix}control_roles", array( 'id' => $id ) );
+
+		Control_Audit::log('delete_role', sprintf(__('حذف الدور: %s وإعادة تعيين المستخدمين إلى: %s', 'control'), $role->role_name, $replacement_key));
+
+		// 4. Re-sync WP roles
 		Control_Auth::sync_roles();
 		$this->send_success();
 	}

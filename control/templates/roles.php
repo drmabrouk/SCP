@@ -51,6 +51,33 @@ $available_permissions = Control_Auth::get_permissions_registry();
     <?php endforeach; ?>
 </div>
 
+<!-- Role Delete Confirmation Modal -->
+<div id="role-delete-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:100002; align-items:center; justify-content:center; backdrop-filter: blur(8px); direction: rtl;">
+    <div class="control-card" style="width:100%; max-width:450px; padding:35px; text-align:center; border-radius:24px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);">
+        <div style="width:80px; height:80px; background:#fef2f2; color:#ef4444; border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 25px;">
+            <span class="dashicons dashicons-trash" style="font-size:40px; width:40px; height:40px;"></span>
+        </div>
+        <h3 style="margin-bottom:15px; color:var(--control-text-dark);"><?php _e('حذف الدور والنظام', 'control'); ?></h3>
+        <p style="color:var(--control-muted); font-size:0.95rem; margin-bottom:25px; line-height:1.6;">
+            <?php _e('أنت على وشك حذف هذا الدور نهائياً. يرجى اختيار دور بديل للمستخدمين الحاليين المرتبطين بهذا الدور.', 'control'); ?>
+        </p>
+
+        <div class="control-form-group" style="text-align:right; margin-bottom:30px;">
+            <label style="font-weight:700; color:var(--control-text-dark);"><?php _e('الدور البديل للمستخدمين:', 'control'); ?></label>
+            <select id="replacement-role-select" style="height:48px;">
+                <?php foreach($roles as $r): ?>
+                    <option value="<?php echo $r->role_key; ?>"><?php echo $r->role_name; ?></option>
+                <?php endforeach; ?>
+            </select>
+        </div>
+
+        <div style="display:flex; gap:15px;">
+            <button id="confirm-role-delete-btn" class="control-btn" style="flex:1; background:#ef4444; border:none; height:48px; font-weight:800;"><?php _e('تأكيد الحذف النهائي', 'control'); ?></button>
+            <button type="button" onclick="jQuery('#role-delete-modal').hide()" class="control-btn" style="flex:1; background:var(--control-bg); color:var(--control-text-dark) !important; border:none; height:48px;"><?php _e('إلغاء', 'control'); ?></button>
+        </div>
+    </div>
+</div>
+
 <!-- Role Modal -->
 <div id="role-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:10001; align-items:center; justify-content:center; backdrop-filter: blur(4px);">
     <div class="control-card" style="width:100%; max-width:600px; padding:0; border-radius:20px; overflow:hidden;">
@@ -198,10 +225,43 @@ jQuery(document).ready(function($) {
         });
     });
 
+    let roleToDelete = null;
+    let roleKeyToDelete = null;
+
     $(document).on('click', '.delete-role-btn', function() {
-        if (!confirm('<?php _e("هل أنت متأكد من حذف هذا الدور؟ سيتم فقدان كافة الصلاحيات المرتبطة به.", "control"); ?>')) return;
-        const id = $(this).data('id');
-        $.post(control_ajax.ajax_url, { action: 'control_delete_role', id: id, nonce: control_ajax.nonce }, () => location.reload());
+        const card = $(this).closest('.role-card');
+        const role = card.data('role');
+        roleToDelete = role.id;
+        roleKeyToDelete = role.role_key;
+
+        // Populate replacement options excluding the role being deleted
+        $('#replacement-role-select option').show();
+        $(`#replacement-role-select option[value="${roleKeyToDelete}"]`).hide();
+
+        // Pick the first visible option as default
+        $('#replacement-role-select option:not([style*="display: none"])').first().prop('selected', true);
+
+        $('#role-delete-modal').css('display', 'flex');
+    });
+
+    $('#confirm-role-delete-btn').on('click', function() {
+        const replacement = $('#replacement-role-select').val();
+        const $btn = $(this);
+        $btn.prop('disabled', true).text('<?php _e("جاري الحذف...", "control"); ?>');
+
+        $.post(control_ajax.ajax_url, {
+            action: 'control_delete_role',
+            id: roleToDelete,
+            replacement_role_key: replacement,
+            nonce: control_ajax.nonce
+        }, function(res) {
+            if (res.success) {
+                location.reload();
+            } else {
+                alert(res.data || 'حدث خطأ');
+                $btn.prop('disabled', false).text('<?php _e("تأكيد الحذف النهائي", "control"); ?>');
+            }
+        });
     });
 });
 </script>
