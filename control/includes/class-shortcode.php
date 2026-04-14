@@ -7,6 +7,7 @@ class Control_Shortcode {
 
 	public function __construct() {
 		add_shortcode( 'control_system', array( $this, 'render_dashboard' ) );
+		add_shortcode( 'control_policies', array( $this, 'render_policies' ) );
 	}
 
 	public function render_dashboard() {
@@ -66,6 +67,26 @@ class Control_Shortcode {
 		}
 
 		include CONTROL_PATH . 'templates/footer.php';
+		return ob_get_clean();
+	}
+
+	public function render_policies() {
+		global $wpdb;
+		$policies = $wpdb->get_var( "SELECT setting_value FROM {$wpdb->prefix}control_settings WHERE setting_key = 'policies_content'" );
+
+		if ( empty($policies) ) return '';
+
+		ob_start();
+		?>
+		<div class="control-policies-display" style="direction: rtl; text-align: right; font-family: 'Rubik', sans-serif; line-height: 1.8; color: #334155; background: #fff; padding: 40px; border-radius: 20px; border: 1px solid #e2e8f0; box-shadow: 0 10px 30px rgba(0,0,0,0.05); max-width: 900px; margin: 40px auto;">
+			<div class="policies-content">
+				<?php echo wp_kses_post( $policies ); ?>
+			</div>
+			<div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #f1f5f9; text-align: center; color: #94a3b8; font-size: 0.8rem;">
+				<?php echo sprintf( __('آخر تحديث: %s', 'control'), date_i18n( get_option('date_format') ) ); ?>
+			</div>
+		</div>
+		<?php
 		return ob_get_clean();
 	}
 }

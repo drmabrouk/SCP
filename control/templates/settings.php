@@ -7,15 +7,39 @@ $settings = $wpdb->get_results( "SELECT * FROM {$wpdb->prefix}control_settings",
     <h2 style="font-weight:800; font-size:1.3rem; margin:0; color:var(--control-text-dark);"><?php _e('إعدادات النظام', 'control'); ?></h2>
 </div>
 
-<div class="control-settings-wrapper">
+<div class="control-settings-wrapper" style="display:grid; grid-template-columns: 200px 1fr; gap:30px; align-items: flex-start;">
 
-    <div class="control-tabs" style="display:flex; gap:8px; margin-bottom:20px; background:#fff; padding:6px; border-radius:var(--control-radius); border:1px solid var(--control-border); width:fit-content; box-shadow:var(--control-shadow-sm);">
-        <button class="control-tab-btn active" data-tab="tab-identity"><?php _e('هوية النظام', 'control'); ?></button>
-        <button class="control-tab-btn" data-tab="tab-design"><?php _e('تخصيص التصميم', 'control'); ?></button>
-        <button class="control-tab-btn" data-tab="tab-pwa"><?php _e('تطبيق الجوال', 'control'); ?></button>
-        <button class="control-tab-btn" data-tab="tab-notifications"><?php _e('التنبيهات والبريد', 'control'); ?></button>
-        <button class="control-tab-btn" data-tab="tab-backup"><?php _e('النسخ الاحتياطي', 'control'); ?></button>
-        <button class="control-tab-btn" data-tab="tab-audit"><?php _e('سجل النشاطات', 'control'); ?></button>
+    <div class="control-settings-sidebar" style="background:#fff; border:1px solid var(--control-border); border-radius:var(--control-radius); padding:10px; box-shadow:var(--control-shadow-sm); position:sticky; top:20px;">
+        <div class="settings-nav-group">
+            <button class="control-tab-btn active" data-tab="tab-identity">
+                <span class="dashicons dashicons-admin-appearance"></span>
+                <span><?php _e('هوية النظام', 'control'); ?></span>
+            </button>
+            <button class="control-tab-btn" data-tab="tab-design">
+                <span class="dashicons dashicons-art"></span>
+                <span><?php _e('تخصيص التصميم', 'control'); ?></span>
+            </button>
+            <button class="control-tab-btn" data-tab="tab-pwa">
+                <span class="dashicons dashicons-smartphone"></span>
+                <span><?php _e('تطبيق الجوال', 'control'); ?></span>
+            </button>
+            <button class="control-tab-btn" data-tab="tab-notifications">
+                <span class="dashicons dashicons-email-alt"></span>
+                <span><?php _e('التنبيهات والبريد', 'control'); ?></span>
+            </button>
+            <button class="control-tab-btn" data-tab="tab-policies">
+                <span class="dashicons dashicons-media-document"></span>
+                <span><?php _e('السياسات والشروط', 'control'); ?></span>
+            </button>
+            <button class="control-tab-btn" data-tab="tab-backup">
+                <span class="dashicons dashicons-database-export"></span>
+                <span><?php _e('النسخ الاحتياطي', 'control'); ?></span>
+            </button>
+            <button class="control-tab-btn" data-tab="tab-audit">
+                <span class="dashicons dashicons-list-view"></span>
+                <span><?php _e('سجل النشاطات', 'control'); ?></span>
+            </button>
+        </div>
     </div>
 
     <div class="control-tab-content-container">
@@ -549,6 +573,45 @@ $settings = $wpdb->get_results( "SELECT * FROM {$wpdb->prefix}control_settings",
                     <button id="confirm-destructive-btn" class="control-btn" style="flex:1; background:#ef4444; border:none; height:48px; font-weight:800;"><?php _e('نعم، تنفيذ الآن', 'control'); ?></button>
                     <button type="button" onclick="jQuery('#control-destructive-modal').hide()" class="control-btn" style="flex:1; background:var(--control-bg); color:var(--control-text-dark) !important; border:none; height:48px;"><?php _e('تراجع', 'control'); ?></button>
                 </div>
+            </div>
+        </div>
+
+        <!-- Section: Policies & Terms -->
+        <div id="tab-policies" class="control-tab-content" style="display:none;">
+            <div class="control-card" style="border-top: 4px solid var(--control-primary); padding: 25px;">
+                <div style="margin-bottom:25px; border-bottom:1px solid var(--control-bg); padding-bottom:15px;">
+                    <h3 style="margin:0; font-size:1.1rem; color:var(--control-text-dark);"><?php _e('إدارة السياسات والأحكام', 'control'); ?></h3>
+                    <div style="color:var(--control-muted); font-size:0.8rem; margin-top:5px;"><?php _e('تحرير النصوص القانونية، سياسة الخصوصية، وشروط الخدمة الخاصة بالمنصة.', 'control'); ?></div>
+                </div>
+
+                <form class="control-system-settings-form">
+                    <div class="control-form-group">
+                        <label><?php _e('محتوى السياسات (يدعم HTML)', 'control'); ?></label>
+                        <textarea name="policies_content" rows="15" style="font-family:monospace; line-height:1.6; font-size:0.9rem;"><?php echo esc_textarea($settings['policies_content']->setting_value ?? ''); ?></textarea>
+                    </div>
+
+                    <div style="background:var(--control-bg); padding:20px; border-radius:12px; border:1px solid var(--control-border); margin-top:20px;">
+                        <h4 style="margin:0 0 10px 0; font-size:0.9rem;"><?php _e('كود العرض (Shortcode)', 'control'); ?></h4>
+                        <div style="display:flex; align-items:center; gap:15px; background:#fff; padding:12px 15px; border:1px solid var(--control-border); border-radius:8px;">
+                            <code style="color:var(--control-primary); font-weight:800; font-size:1rem;">[control_policies]</code>
+                            <button type="button" class="control-btn" style="height:32px; padding:0 12px; font-size:0.75rem; background:var(--control-primary-soft);" onclick="navigator.clipboard.writeText('[control_policies]'); alert('تم النسخ');"><?php _e('نسخ الكود', 'control'); ?></button>
+                        </div>
+                        <p style="font-size:0.75rem; color:var(--control-muted); margin:10px 0 0 0;">
+                            <?php _e('يمكنك استخدام هذا الكود لعرض السياسات والأحكام بشكل ديناميكي في أي صفحة داخل الموقع.', 'control'); ?>
+                        </p>
+                    </div>
+
+                    <div style="margin-top:35px; border-top:1px solid var(--control-bg); padding-top:20px; display:flex; flex-direction:column; gap:20px;">
+                        <button type="submit" class="control-btn control-btn-accent" style="height:48px; border-radius:8px; font-weight:800; min-width:220px; align-self: flex-start;"><?php _e('حفظ نصوص السياسات', 'control'); ?></button>
+
+                        <div style="padding:15px; background:#eff6ff; border-radius:12px; display:flex; gap:15px; align-items:center; border:1px solid #dbeafe;">
+                            <span class="dashicons dashicons-info-outline" style="color:#3b82f6;"></span>
+                            <p style="margin:0; font-size:0.8rem; color:#1e40af; line-height:1.5;">
+                                <?php _e('ملاحظة: يمكنك استخدام الكود القصير (Shortcode) أعلاه لعرض السياسات والأحكام والشروط بشكل ديناميكي في أي صفحة داخل الموقع مع ضمان تصميم احترافي وموحد يعكس دائماً آخر التعديلات التي تقوم بها هنا.', 'control'); ?>
+                            </p>
+                        </div>
+                    </div>
+                </form>
             </div>
         </div>
 
