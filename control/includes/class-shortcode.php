@@ -22,31 +22,43 @@ class Control_Shortcode {
 
 		include CONTROL_PATH . 'templates/header.php';
 
+		$no_access_html = '
+		<div style="text-align:center; padding:100px 30px; background:#fff; border-radius:20px; border:1px solid #e2e8f0; max-width:600px; margin: 40px auto; box-shadow: 0 10px 25px rgba(0,0,0,0.05);">
+			<div style="width:100px; height:100px; background:#fef2f2; color:#ef4444; border-radius:50%; display:flex; align-items:center; justify-content:center; margin: 0 auto 30px;">
+				<span class="dashicons dashicons-shield-lock" style="font-size:50px; width:50px; height:50px;"></span>
+			</div>
+			<h2 style="font-weight:800; color:#1e293b; margin-bottom:15px;">' . __( 'مرحباً بك في نظام كنترول', 'control' ) . '</h2>
+			<p style="color:#64748b; font-size:1.1rem; line-height:1.6; margin-bottom:30px;">' . __( 'ليس لديك الصلاحيات الكافية للوصول إلى لوحة التحكم حالياً.', 'control' ) . '</p>
+			<div style="padding:15px; background:#f8fafc; border-radius:12px; border:1px dashed #cbd5e1; color:#475569; font-size:0.9rem;">
+				' . __( 'برجاء التواصل مع إدارة النظام أو الدعم الفني لطلب تفعيل صلاحيات الوصول الخاصة بحسابك.', 'control' ) . '
+			</div>
+		</div>';
+
 		switch ( $view ) {
 			case 'users':
 				if ( ! Control_Auth::has_permission('users_view') ) {
-					echo '<p>' . __( 'ليس لديك صلاحية للوصول لهذه الصفحة.', 'control' ) . '</p>';
+					echo $no_access_html;
 				} else {
 					include CONTROL_PATH . 'templates/users.php';
 				}
 				break;
 			case 'roles':
 				if ( ! Control_Auth::has_permission('roles_manage') ) {
-					echo '<p>' . __( 'ليس لديك صلاحية للوصول لهذه الصفحة.', 'control' ) . '</p>';
+					echo $no_access_html;
 				} else {
 					include CONTROL_PATH . 'templates/roles.php';
 				}
 				break;
 			case 'settings':
 				if ( ! Control_Auth::has_permission('settings_manage') ) {
-					echo '<p>' . __( 'ليس لديك صلاحية للوصول لهذه الصفحة.', 'control' ) . '</p>';
+					echo $no_access_html;
 				} else {
 					include CONTROL_PATH . 'templates/settings.php';
 				}
 				break;
 			default:
 				if ( ! Control_Auth::has_permission('dashboard') ) {
-					echo '<p>' . __( 'أهلاً بك في نظام كنترول. ليس لديك صلاحية لعرض لوحة المعلومات.', 'control' ) . '</p>';
+					echo $no_access_html;
 				} else {
 					include CONTROL_PATH . 'templates/dashboard-home.php';
 				}
