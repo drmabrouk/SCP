@@ -607,10 +607,21 @@ jQuery(document).ready(function($) {
     // Auth Control Panel Logic
     $('#auth-control-form').on('submit', function(e) {
         e.preventDefault();
-        const $btn = $(this).find('button[type="submit"]');
-        $btn.prop('disabled', true).text('جاري الحفظ...');
+        const $form = $(this);
+        const $btn = $form.find('button[type="submit"]');
+        const originalText = $btn.text();
 
-        // Collect fields configuration
+        $btn.prop('disabled', true).html('<span class="dashicons dashicons-update spin"></span> جاري الحفظ...');
+
+        // Manual collection of checkboxes to handle '0' values for unchecked states
+        let checkboxes = {};
+        $form.find('input[type="checkbox"]').each(function() {
+            if (this.name) {
+                checkboxes[this.name] = this.checked ? '1' : '0';
+            }
+        });
+
+        // Collect registration fields configuration
         let fields = [];
         $('#reg-fields-config-body tr').each(function() {
             fields.push({
@@ -623,15 +634,25 @@ jQuery(document).ready(function($) {
             });
         });
 
-        const formData = $(this).serialize() + '&action=control_save_settings&nonce=' + control_ajax.nonce + '&auth_registration_fields=' + encodeURIComponent(JSON.stringify(fields));
+        let formData = $form.serializeArray();
+
+        // Overwrite or append checkbox values
+        Object.keys(checkboxes).forEach(name => {
+            formData = formData.filter(item => item.name !== name);
+            formData.push({ name: name, value: checkboxes[name] });
+        });
+
+        formData.push({ name: 'action', value: 'control_save_settings' });
+        formData.push({ name: 'nonce', value: control_ajax.nonce });
+        formData.push({ name: 'auth_registration_fields', value: JSON.stringify(fields) });
 
         $.post(control_ajax.ajax_url, formData, function(res) {
             if (res.success) {
-                alert('تم تحديث إعدادات المصادقة بنجاح');
-                location.reload();
+                $btn.html('<span class="dashicons dashicons-yes"></span> تم الحفظ بنجاح');
+                setTimeout(() => location.reload(), 1000);
             } else {
-                alert(res.data || 'حدث خطأ');
-                $btn.prop('disabled', false).text('حفظ وتطبيق الإعدادات');
+                alert(res.data.message || 'حدث خطأ أثناء الحفظ');
+                $btn.prop('disabled', false).text(originalText);
             }
         });
     });
