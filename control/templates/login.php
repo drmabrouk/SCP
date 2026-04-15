@@ -144,8 +144,9 @@
                             $req = ($field['required'] ?? true) ? 'required' : '';
                             $id = $field['id'];
                             $label = $field['label'];
+                            $width_class = ($field['width'] ?? 'full') === 'half' ? 'field-width-half' : 'field-width-full';
                         ?>
-                            <div class="control-form-group field-<?php echo $id; ?> <?php echo ($id === 'phone' ? 'phone-group' : ''); ?>">
+                            <div class="control-form-group field-<?php echo $id; ?> <?php echo $width_class; ?> <?php echo ($id === 'phone' ? 'phone-group' : ''); ?>">
                                 <?php if ($id === 'phone') : ?>
                                     <div class="integrated-phone-field">
                                         <div class="country-selector">
@@ -179,6 +180,8 @@
                                 <?php elseif ($id === 'password') : ?>
                                     <input type="password" name="password" id="reg-password" placeholder="<?php echo $label; ?>" required>
                                     <small class="field-hint"><?php _e('يجب أن تحتوي على 8 أحرف على الأقل.', 'control'); ?></small>
+                                <?php elseif ($id === 'confirm_password') : ?>
+                                    <input type="password" name="confirm_password" id="reg-confirm-password" placeholder="<?php echo $label; ?>" required>
                                 <?php elseif ($id === 'address') : ?>
                                     <textarea name="address" placeholder="<?php echo $label; ?>" <?php echo $req; ?> rows="2"></textarea>
                                 <?php else : ?>

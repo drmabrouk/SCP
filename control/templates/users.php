@@ -488,7 +488,8 @@ function control_get_time_ago($timestamp) {
                         <tr style="background:#f8fafc;">
                             <th style="width:50px;"></th>
                             <th><?php _e('اسم الحقل', 'control'); ?></th>
-                            <th style="text-align:center;"><?php _e('المرحلة (Step)', 'control'); ?></th>
+                            <th style="text-align:center;"><?php _e('المرحلة', 'control'); ?></th>
+                            <th style="text-align:center;"><?php _e('العرض', 'control'); ?></th>
                             <th style="text-align:center;"><?php _e('مفعل', 'control'); ?></th>
                             <th style="text-align:center;"><?php _e('إلزامي', 'control'); ?></th>
                             <th style="width:80px; text-align:center;"><?php _e('الترتيب', 'control'); ?></th>
@@ -513,7 +514,8 @@ function control_get_time_ago($timestamp) {
                             'home_country' => __('بلد الإقامة', 'control'),
                             'state' => __('الولاية/المحافظة', 'control'),
                             'address' => __('العنوان بالتفصيل', 'control'),
-                            'password'   => __('كلمة المرور', 'control')
+                            'password'   => __('كلمة المرور', 'control'),
+                            'confirm_password' => __('تأكيد كلمة المرور', 'control')
                         );
 
                         // Merge saved config with master to ensure all fields exist
@@ -533,10 +535,16 @@ function control_get_time_ago($timestamp) {
                                 <td style="text-align:center; cursor:move;"><span class="dashicons dashicons-menu" style="color:var(--control-muted);"></span></td>
                                 <td style="font-weight:700;"><?php echo $field['label']; ?></td>
                                 <td style="text-align:center;">
-                                    <select class="field-step" style="width:70px; padding:2px;">
+                                    <select class="field-step" style="width:60px; padding:2px;">
                                         <?php for($i=1; $i<=5; $i++): ?>
                                             <option value="<?php echo $i; ?>" <?php selected($field['step'] ?? 1, $i); ?>><?php echo $i; ?></option>
                                         <?php endfor; ?>
+                                    </select>
+                                </td>
+                                <td style="text-align:center;">
+                                    <select class="field-width" style="width:100px; padding:2px; font-size:0.75rem;">
+                                        <option value="full" <?php selected($field['width'] ?? 'full', 'full'); ?>><?php _e('كامل (100%)', 'control'); ?></option>
+                                        <option value="half" <?php selected($field['width'] ?? 'full', 'half'); ?>><?php _e('نصف (50%)', 'control'); ?></option>
                                     </select>
                                 </td>
                                 <td style="text-align:center;"><input type="checkbox" class="field-enabled" data-id="<?php echo $field['id']; ?>" <?php checked($field['enabled'] ?? true, true); ?>></td>

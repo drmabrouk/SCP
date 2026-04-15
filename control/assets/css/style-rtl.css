@@ -559,8 +559,25 @@ body, .control-dashboard {
 
 .fields-group {
     display: flex;
-    flex-direction: column;
-    gap: 5px;
+    flex-wrap: wrap;
+    gap: 20px 15px;
+}
+
+.control-form-group.field-width-full {
+    flex: 0 0 100%;
+}
+
+.control-form-group.field-width-half {
+    flex: 0 0 calc(50% - 8px);
+}
+
+@media (max-width: 768px) {
+    .control-form-group.field-width-half {
+        flex: 0 0 100%;
+    }
+    .fields-group {
+        gap: 15px;
+    }
 }
 
 /* OTP Input Styling */
