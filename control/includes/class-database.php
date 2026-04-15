@@ -15,6 +15,7 @@ class Control_Database {
 		$table_roles        = $wpdb->prefix . 'control_roles';
 		$table_activity_logs = $wpdb->prefix . 'control_activity_logs';
 		$table_email_templates = $wpdb->prefix . 'control_email_templates';
+		$table_policies     = $wpdb->prefix . 'control_policies';
 
 		$sql = "CREATE TABLE $table_staff (
 			id mediumint(9) NOT NULL AUTO_INCREMENT,
@@ -95,6 +96,14 @@ class Control_Database {
 			content longtext NOT NULL,
 			last_updated datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 			PRIMARY KEY  (template_key)
+		) $charset_collate;
+
+		CREATE TABLE $table_policies (
+			id mediumint(9) NOT NULL AUTO_INCREMENT,
+			title varchar(255) NOT NULL,
+			content longtext NOT NULL,
+			last_updated datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+			PRIMARY KEY  (id)
 		) $charset_collate;";
 
 		if ( file_exists( ABSPATH . 'wp-admin/includes/upgrade.php' ) ) {
@@ -113,6 +122,7 @@ class Control_Database {
 		$table_settings = $wpdb->prefix . 'control_settings';
 		$table_roles    = $wpdb->prefix . 'control_roles';
 		$table_email_templates = $wpdb->prefix . 'control_email_templates';
+		$table_policies = $wpdb->prefix . 'control_policies';
 
 		// Seed initial roles
 		$initial_roles = array(
@@ -213,6 +223,23 @@ class Control_Database {
 			}
 		}
 
+		// Migrate/Seed Policies
+		$policy_count = $wpdb->get_var("SELECT COUNT(*) FROM $table_policies");
+		if ($policy_count == 0) {
+			$existing_policy = $wpdb->get_var("SELECT setting_value FROM $table_settings WHERE setting_key = 'policies_content'");
+			if ($existing_policy) {
+				$wpdb->insert($table_policies, array(
+					'title' => 'الشروط والأحكام العامة',
+					'content' => $existing_policy
+				));
+			} else {
+				$wpdb->insert($table_policies, array(
+					'title' => 'سياسة الخصوصية',
+					'content' => '<h2>سياسة الخصوصية</h2><p>نحن نحترم خصوصيتك ونلتزم بحماية بياناتك الشخصية.</p>'
+				));
+			}
+		}
+
 		// Seed Email Templates
 		$templates = array(
 			'welcome_email' => array(
@@ -222,6 +249,18 @@ class Control_Database {
 			'engagement_reminder' => array(
 				'subject' => 'نفتقد وجودك في {system_name}',
 				'content' => '<h1>أهلاً {user_name}،</h1><p>لاحظنا غيابك عن المنصة لفترة من الوقت. نود تذكيرك بأن هناك تحديثات وأدوات جديدة بانتظارك.</p><p>ندعوك لتسجيل الدخول الآن والاطلاع على آخر المستجدات في لوحة التحكم الخاصة بك.</p>'
+			),
+			'password_reset' => array(
+				'subject' => 'طلب استعادة كلمة المرور - {system_name}',
+				'content' => '<h1>أهلاً {user_name}،</h1><p>لقد تلقينا طلباً لإعادة تعيين كلمة المرور الخاصة بحسابك.</p><div style="background:#f1f5f9; padding:20px; border-radius:8px; margin:20px 0;">كلمة المرور المؤقتة الجديدة هي: <strong style="color:var(--control-primary); font-size:1.2rem;">{new_password}</strong></div><p>يرجى تسجيل الدخول وتغيير كلمة المرور فوراً من إعدادات ملفك الشخصي لضمان أمان حسابك.</p>'
+			),
+			'account_restriction' => array(
+				'subject' => 'تنبيه: تم تقييد حسابك في {system_name}',
+				'content' => '<h1>عذراً {user_name}،</h1><p>نود إبلاغك بأنه تم تقييد وصولك إلى المنصة مؤقتاً.</p><div style="background:#fff1f2; color:#9f1239; padding:20px; border-radius:8px; margin:20px 0;"><strong>السبب:</strong> {restriction_reason}<br><strong>ينتهي في:</strong> {expiry_date}</div><p>إذا كنت تعتقد أن هذا الإجراء تم بالخطأ، يرجى التواصل مع الدعم الفني أو مدير النظام.</p>'
+			),
+			'new_login_alert' => array(
+				'subject' => 'تنبيه أمني: دخول جديد لحسابك في {system_name}',
+				'content' => '<h1>تنبيه أمني</h1><p>أهلاً {user_name}، لقد تم رصد عملية دخول جديدة لحسابك الآن.</p><div style="background:#f8fafc; padding:20px; border-radius:8px; margin:20px 0;"><strong>الوقت:</strong> {login_time}<br><strong>الجهاز:</strong> {device_type}<br><strong>عنوان IP:</strong> {ip_address}</div><p>إذا لم تكن أنت من قام بهذه العملية، يرجى تغيير كلمة المرور فوراً والتواصل مع الإدارة.</p>'
 			)
 		);
 

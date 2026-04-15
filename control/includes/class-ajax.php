@@ -14,7 +14,8 @@ class Control_Ajax {
 			'export_data', 'import_data',
 			'preview_import', 'create_backup', 'restore_backup',
 			'export_user_package', 'bulk_delete_all_users', 'system_data_reset',
-			'save_role', 'delete_role'
+			'save_role', 'delete_role',
+			'save_policy', 'delete_policy'
 		);
 
 		foreach ( $private_actions as $action ) {
@@ -82,7 +83,10 @@ class Control_Ajax {
 
 		$data = array();
 		foreach ($reg_fields as $field) {
-			if (!($field['enabled'] ?? true)) continue;
+			// Strict synchronization: Ignore fields disabled in settings
+			if (isset($field['enabled']) && ($field['enabled'] === false || $field['enabled'] === 'false' || $field['enabled'] === 0)) {
+				continue;
+			}
 
 			$val = $_POST[$field['id']] ?? '';
 			if ($field['id'] === 'email') $val = sanitize_email($val);
@@ -813,6 +817,44 @@ class Control_Ajax {
 
 		// 4. Re-sync WP roles
 		Control_Auth::sync_roles();
+		$this->send_success();
+	}
+
+	public function save_policy() {
+		check_ajax_referer( 'control_nonce', 'nonce' );
+		if ( ! Control_Auth::has_permission('settings_manage') ) $this->send_error( 'Unauthorized', 403 );
+
+		global $wpdb;
+		$id = intval( $_POST['id'] ?? 0 );
+		$title = sanitize_text_field( $_POST['title'] );
+		$content = $_POST['content']; // Allow HTML
+
+		if ( empty($title) ) $this->send_error( __('عنوان السياسة مطلوب', 'control') );
+
+		$data = array(
+			'title' => $title,
+			'content' => $content
+		);
+
+		if ( $id ) {
+			$wpdb->update( "{$wpdb->prefix}control_policies", $data, array( 'id' => $id ) );
+			Control_Audit::log('edit_policy', "Updated policy: $title");
+		} else {
+			$wpdb->insert( "{$wpdb->prefix}control_policies", $data );
+			Control_Audit::log('add_policy', "Added new policy: $title");
+		}
+
+		$this->send_success();
+	}
+
+	public function delete_policy() {
+		check_ajax_referer( 'control_nonce', 'nonce' );
+		if ( ! Control_Auth::has_permission('settings_manage') ) $this->send_error( 'Unauthorized', 403 );
+
+		global $wpdb;
+		$id = intval( $_POST['id'] );
+		$wpdb->delete( "{$wpdb->prefix}control_policies", array( 'id' => $id ) );
+		Control_Audit::log('delete_policy', "Deleted policy ID: $id");
 		$this->send_success();
 	}
 }

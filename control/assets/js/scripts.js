@@ -544,4 +544,47 @@ jQuery(document).ready(function($) {
             }
         });
     });
+
+    // --- Policies & Terms Management ---
+
+    $(document).on('click', '#add-new-policy-btn', function() {
+        $('#policy-modal-title').text('إضافة سياسة جديدة');
+        $('#control-policy-form')[0].reset();
+        $('#policy-id').val('0');
+        $('#control-policy-modal').css('display', 'flex');
+    });
+
+    $(document).on('click', '.edit-policy-btn', function() {
+        const policy = $(this).data('policy');
+        $('#policy-modal-title').text('تحرير السياسة: ' + policy.title);
+        $('#policy-id').val(policy.id);
+        $('#policy-title').val(policy.title);
+        $('#policy-content').val(policy.content);
+        $('#control-policy-modal').css('display', 'flex');
+    });
+
+    $(document).on('click', '.delete-policy-btn', function() {
+        if (!confirm('هل أنت متأكد من حذف هذه السياسة؟ لا يمكن التراجع عن هذا الإجراء.')) return;
+        const id = $(this).data('id');
+        $.post(control_ajax.ajax_url, { action: 'control_delete_policy', id: id, nonce: control_ajax.nonce }, function(res) {
+            if (res.success) location.reload();
+            else alert(res.data);
+        });
+    });
+
+    $('#control-policy-form').on('submit', function(e) {
+        e.preventDefault();
+        const $btn = $(this).find('button[type="submit"]');
+        $btn.prop('disabled', true).text('جاري الحفظ...');
+
+        $.post(control_ajax.ajax_url, $(this).serialize() + '&action=control_save_policy&nonce=' + control_ajax.nonce, function(res) {
+            if (res.success) {
+                alert('تم حفظ السياسة بنجاح');
+                location.reload();
+            } else {
+                alert(res.data || 'حدث خطأ أثناء الحفظ');
+                $btn.prop('disabled', false).text('حفظ السياسة');
+            }
+        });
+    });
 });

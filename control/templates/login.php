@@ -118,9 +118,16 @@
             </div>
             <form id="control-register-form">
                 <?php
+                // Build field registry from actual settings
+                $reg_fields_raw = $wpdb->get_var("SELECT setting_value FROM {$wpdb->prefix}control_settings WHERE setting_key = 'auth_registration_fields'");
+                $reg_fields_conf = json_decode($reg_fields_raw, true) ?: array();
+
                 $grouped_fields = array();
-                foreach ($reg_fields as $f) {
-                    if (!($f['enabled'] ?? true)) continue;
+                foreach ($reg_fields_conf as $f) {
+                    // Strict synchronization: Only render if explicitly enabled in settings
+                    if (isset($f['enabled']) && ($f['enabled'] === false || $f['enabled'] === 'false' || $f['enabled'] === 0)) {
+                        continue;
+                    }
                     $s = $f['step'] ?? 1;
                     $grouped_fields[$s][] = $f;
                 }
