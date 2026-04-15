@@ -23,7 +23,7 @@ class Control_Ajax {
 		}
 
 		// Public actions (Non-logged-in)
-		$public_actions = array( 'login', 'register', 'forgot_password' );
+		$public_actions = array( 'login', 'register', 'forgot_password', 'send_otp', 'verify_otp' );
 		foreach ( $public_actions as $action ) {
 			add_action( 'wp_ajax_control_' . $action, array( $this, $action ) );
 			add_action( 'wp_ajax_nopriv_control_' . $action, array( $this, $action ) );
@@ -103,6 +103,17 @@ class Control_Ajax {
 			$this->send_error(__('بيانات التسجيل الأساسية ناقصة.', 'control'));
 		}
 
+		// OTP Verification Guard
+		if ( ! empty($data['email']) ) {
+			$is_verified = $wpdb->get_var($wpdb->prepare(
+				"SELECT is_verified FROM {$wpdb->prefix}control_otps WHERE email = %s AND is_verified = 1 ORDER BY id DESC LIMIT 1",
+				$data['email']
+			));
+			if (!$is_verified) {
+				$this->send_error(__('يرجى التحقق من بريدك الإلكتروني أولاً.', 'control'));
+			}
+		}
+
 		if ( ! preg_match('/^\+(20|971|966|965|974|973|968)[0-9]{7,12}$/', $data['phone']) ) {
 			$this->send_error( __( 'تنسيق رقم الهاتف غير صالح لهذه الدولة.', 'control' ) );
 		}
@@ -124,6 +135,65 @@ class Control_Ajax {
 
 		Control_Audit::log('registration', "New user registered: {$data['phone']}");
 		$this->send_success( __('تم إنشاء الحساب بنجاح. جاري تسجيل دخولك...', 'control') );
+	}
+
+	public function send_otp() {
+		check_ajax_referer( 'control_nonce', 'nonce' );
+		global $wpdb;
+
+		$email = sanitize_email( $_POST['email'] ?? '' );
+		if ( ! is_email( $email ) ) {
+			$this->send_error( __('البريد الإلكتروني غير صحيح.', 'control') );
+		}
+
+		// Cooldown check (60 seconds)
+		$last_otp = $wpdb->get_row($wpdb->prepare(
+			"SELECT created_at FROM {$wpdb->prefix}control_otps WHERE email = %s ORDER BY created_at DESC LIMIT 1",
+			$email
+		));
+		if ($last_otp && (time() - strtotime($last_otp->created_at) < 60)) {
+			$this->send_error(__('يرجى الانتظار دقيقة قبل طلب رمز جديد.', 'control'));
+		}
+
+		$otp = str_pad(mt_rand(0, 999999), 6, '0', STR_PAD_LEFT);
+		$expiry = date('Y-m-d H:i:s', strtotime('+10 minutes'));
+
+		// Invalidate previous unverified OTPs for this email
+		$wpdb->update("{$wpdb->prefix}control_otps", array('expiry' => current_time('mysql')), array('email' => $email, 'is_verified' => 0));
+
+		$wpdb->insert("{$wpdb->prefix}control_otps", array(
+			'email' => $email,
+			'otp' => $otp,
+			'expiry' => $expiry
+		));
+
+		$sent = Control_Notifications::send('email_verification_otp', $email, array('{otp_code}' => $otp));
+
+		if ($sent) {
+			$this->send_success(__('تم إرسال رمز التحقق إلى بريدك الإلكتروني.', 'control'));
+		} else {
+			$this->send_error(__('فشل إرسال البريد الإلكتروني. يرجى التأكد من إعدادات SMTP.', 'control'));
+		}
+	}
+
+	public function verify_otp() {
+		check_ajax_referer( 'control_nonce', 'nonce' );
+		global $wpdb;
+
+		$email = sanitize_email( $_POST['email'] ?? '' );
+		$otp = sanitize_text_field( $_POST['otp'] ?? '' );
+
+		$record = $wpdb->get_row($wpdb->prepare(
+			"SELECT * FROM {$wpdb->prefix}control_otps WHERE email = %s AND otp = %s AND is_verified = 0 AND expiry > NOW() ORDER BY id DESC LIMIT 1",
+			$email, $otp
+		));
+
+		if ($record) {
+			$wpdb->update("{$wpdb->prefix}control_otps", array('is_verified' => 1), array('id' => $record->id));
+			$this->send_success(__('تم التحقق من البريد الإلكتروني بنجاح.', 'control'));
+		} else {
+			$this->send_error(__('رمز التحقق غير صحيح أو انتهت صلاحيته.', 'control'));
+		}
 	}
 
 	public function forgot_password() {

@@ -74,8 +74,17 @@ jQuery(document).ready(function($) {
     }
 
     $('#reg-next').on('click', function() {
+        const $current = $(`#reg-step-${regCurrentStep}`);
+
         if (validateRegStep(regCurrentStep)) {
-            $(`#reg-step-${regCurrentStep}`).hide();
+            // Check if this step has email and needs OTP
+            const email = $current.find('.reg-email-input').val();
+            if (email && !$current.hasClass('email-verified')) {
+                sendOTP(email);
+                return;
+            }
+
+            $current.hide();
             regCurrentStep++;
             $(`#reg-step-${regCurrentStep}`).fadeIn(300);
             updateRegUI();
@@ -83,21 +92,118 @@ jQuery(document).ready(function($) {
     });
 
     $('#reg-prev').on('click', function() {
-        $(`#reg-step-${regCurrentStep}`).hide();
-        regCurrentStep--;
-        $(`#reg-step-${regCurrentStep}`).fadeIn(300);
+        if ($('#reg-step-otp').is(':visible')) {
+            $('#reg-step-otp').hide();
+            $(`#reg-step-${regCurrentStep}`).fadeIn(300);
+        } else {
+            $(`#reg-step-${regCurrentStep}`).hide();
+            regCurrentStep--;
+            $(`#reg-step-${regCurrentStep}`).fadeIn(300);
+        }
         updateRegUI();
     });
 
     function updateRegUI() {
         const total = getRegTotalSteps();
-        $('#reg-prev').toggle(regCurrentStep > 1);
-        $('#reg-next').toggle(regCurrentStep < total);
-        $('#reg-submit').toggle(regCurrentStep === total);
+        const isOTP = $('#reg-step-otp').is(':visible');
+
+        $('#reg-prev').toggle(regCurrentStep > 1 || isOTP);
+        $('#reg-next').toggle(regCurrentStep < total && !isOTP);
+        $('#reg-submit').toggle(regCurrentStep === total && !isOTP);
 
         $('.step-dot').removeClass('active');
-        $(`.step-dot[data-step="${regCurrentStep}"]`).addClass('active');
+        if (!isOTP) {
+            $(`.step-dot[data-step="${regCurrentStep}"]`).addClass('active');
+        }
     }
+
+    // OTP Logic
+    let otpTimer = 0;
+    function sendOTP(email) {
+        $('#reg-error').hide();
+        $.post(control_ajax.ajax_url, {
+            action: 'control_send_otp',
+            email: email,
+            nonce: control_ajax.nonce
+        }, function(res) {
+            if (res.success) {
+                $(`#reg-step-${regCurrentStep}`).hide();
+                $('#reg-step-otp').fadeIn(300);
+                updateRegUI();
+                startOTPTimer();
+                $('.otp-digit').first().focus();
+            } else {
+                $('#reg-error').html('<span class="dashicons dashicons-warning"></span> ' + res.data.message).addClass('error').fadeIn();
+            }
+        });
+    }
+
+    function startOTPTimer() {
+        otpTimer = 60;
+        $('#resend-otp-btn').prop('disabled', true).css('opacity', '0.5');
+        const interval = setInterval(() => {
+            otpTimer--;
+            $('#otp-cooldown').text(`(${otpTimer}s)`);
+            if (otpTimer <= 0) {
+                clearInterval(interval);
+                $('#resend-otp-btn').prop('disabled', false).css('opacity', '1');
+                $('#otp-cooldown').text('');
+            }
+        }, 1000);
+    }
+
+    $('.otp-digit').on('input', function() {
+        const val = $(this).val();
+        if (val && $(this).data('index') < 5) {
+            $(this).next('.otp-digit').focus();
+        }
+        checkFullOTP();
+    });
+
+    $('.otp-digit').on('keydown', function(e) {
+        if (e.key === 'Backspace' && !$(this).val() && $(this).data('index') > 0) {
+            $(this).prev('.otp-digit').focus();
+        }
+    });
+
+    function checkFullOTP() {
+        let otp = '';
+        $('.otp-digit').each(function() { otp += $(this).val(); });
+        if (otp.length === 6) {
+            verifyOTP(otp);
+        }
+    }
+
+    function verifyOTP(otp) {
+        const email = $(`.reg-step:visible`).prevAll('.reg-step').find('.reg-email-input').val() || $(`.reg-step`).find('.reg-email-input').val();
+        $('#otp-feedback').hide().removeClass('error success');
+
+        $.post(control_ajax.ajax_url, {
+            action: 'control_verify_otp',
+            email: email,
+            otp: otp,
+            nonce: control_ajax.nonce
+        }, function(res) {
+            if (res.success) {
+                $('#otp-feedback').html('<span class="dashicons dashicons-yes"></span> ' + res.data).addClass('success').fadeIn();
+                $(`#reg-step-${regCurrentStep}`).addClass('email-verified');
+                setTimeout(() => {
+                    $('#reg-step-otp').hide();
+                    regCurrentStep++;
+                    $(`#reg-step-${regCurrentStep}`).fadeIn(300);
+                    updateRegUI();
+                }, 1000);
+            } else {
+                $('#otp-feedback').html('<span class="dashicons dashicons-warning"></span> ' + res.data.message).addClass('error').fadeIn();
+                $('.otp-digit').val('').first().focus();
+            }
+        });
+    }
+
+    $('#resend-otp-btn').on('click', function() {
+        const email = $('.reg-email-input').val();
+        sendOTP(email);
+    });
 
     function validateRegStep(step) {
         let valid = true;

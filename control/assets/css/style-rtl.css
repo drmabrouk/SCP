@@ -554,6 +554,37 @@ body, .control-dashboard {
     gap: 5px;
 }
 
+/* OTP Input Styling */
+.otp-input-container {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin: 25px 0;
+    direction: ltr;
+}
+
+.otp-digit {
+    width: 50px !important;
+    height: 60px !important;
+    text-align: center !important;
+    font-size: 1.5rem !important;
+    font-weight: 800 !important;
+    border-radius: 12px !important;
+    background: var(--auth-input-bg, rgba(255, 255, 255, 0.05)) !important;
+    border: 2px solid var(--auth-input-border, rgba(255, 255, 255, 0.15)) !important;
+    color: var(--auth-input-text, #ffffff) !important;
+    transition: var(--control-transition) !important;
+    padding: 0 !important;
+}
+
+.otp-digit:focus {
+    border-color: var(--auth-input-focus, var(--control-accent)) !important;
+    background: rgba(255, 255, 255, 0.1) !important;
+    box-shadow: 0 0 15px var(--control-accent-soft) !important;
+    transform: scale(1.05);
+    outline: none;
+}
+
 /* Tabs (Global) */
 .control-tab-btn {
     background: none;
