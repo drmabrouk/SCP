@@ -11,6 +11,7 @@ class Control_Shortcode {
 	}
 
 	public function render_dashboard() {
+		global $wpdb;
 		ob_start();
 
 		if ( ! Control_Auth::is_logged_in() ) {

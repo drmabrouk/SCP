@@ -665,6 +665,7 @@ $settings = $wpdb->get_results( "SELECT * FROM {$wpdb->prefix}control_settings",
                         <div style="border-top:1px solid #e2e8f0; padding-top:15px;">
                             <h5 style="margin:0 0 10px 0; font-size:0.8rem; color:var(--control-primary); font-weight:700;"><?php _e('سجل التحديثات الأخير (Update Log):', 'control'); ?></h5>
                             <ul style="margin:0; padding-right:20px; font-size:0.7rem; color:var(--control-muted); line-height:1.6;">
+                                <li><?php _e('تحديث v2.3.0: معالجة الأخطاء الحرجة في واجهة الدخول وضمان استقرار النظام.', 'control'); ?></li>
                                 <li><?php _e('تحديث v2.2.0: تفعيل نظام التحقق التلقائي من الإصدار وتحديث قاعدة البيانات.', 'control'); ?></li>
                                 <li><?php _e('تحديث v2.1.0: تحسين واجهة الدخول والتسجيل بالكامل وإضافة خيارات التخصيص.', 'control'); ?></li>
                                 <li><?php _e('تحديث v2.0.0: ترقية هيكلية النظام وإضافة نظام التنبيهات المتقدم.', 'control'); ?></li>

@@ -1,9 +1,9 @@
+<?php global $wpdb; ?>
 <div class="control-auth-wrapper">
     <div class="control-auth-card">
 
         <div class="control-auth-header" style="<?php echo ($wpdb->get_var("SELECT setting_value FROM {$wpdb->prefix}control_settings WHERE setting_key = 'auth_logo_visible'") === '0') ? 'display:none;' : ''; ?>">
             <?php
-                global $wpdb;
                 $logo_url = $wpdb->get_var("SELECT setting_value FROM {$wpdb->prefix}control_settings WHERE setting_key = 'company_logo'");
                 $system_name = $wpdb->get_var("SELECT setting_value FROM {$wpdb->prefix}control_settings WHERE setting_key = 'system_name'") ?: 'Control';
 
