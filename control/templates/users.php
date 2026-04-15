@@ -179,8 +179,12 @@ function control_get_time_ago($timestamp) {
                         <div style="width:64px; height:64px; background:var(--control-bg); border-radius:16px; overflow:hidden; border:1px solid var(--control-border); display:flex; align-items:center; justify-content:center;">
                             <?php if($u->profile_image): ?>
                                 <img src="<?php echo esc_url($u->profile_image); ?>" style="width:100%; height:100%; object-fit:cover;">
-                            <?php else: ?>
-                                <span style="font-size:1.6rem; font-weight:800; color:var(--control-muted);"><?php echo strtoupper(substr($u->first_name, 0, 1)); ?></span>
+                            <?php else:
+                                $avatar_class = ($u->gender === 'female') ? 'avatar-female' : 'avatar-male';
+                            ?>
+                                <div class="avatar-placeholder <?php echo $avatar_class; ?>">
+                                    <?php echo strtoupper(substr($u->first_name, 0, 1)); ?>
+                                </div>
                             <?php endif; ?>
                         </div>
                         <?php if(!$u->is_restricted): ?>
@@ -388,8 +392,9 @@ function control_get_time_ago($timestamp) {
         <div style="padding:30px;">
             <div style="display:flex; gap:25px; align-items:center; margin-bottom:30px; padding-bottom:20px; border-bottom:1px solid var(--control-border);">
                 <div id="detail-avatar" style="width:80px; height:80px; background:var(--control-bg); border-radius:15px; display:flex; align-items:center; justify-content:center; overflow:hidden; border:1px solid var(--control-border);">
-                    <span class="dashicons dashicons-admin-users" style="font-size:40px; color:var(--control-muted);"></span>
+                    <div class="avatar-placeholder" style="display:none;"></div>
                     <img src="" style="display:none; width:100%; height:100%; object-fit:cover;">
+                    <span class="dashicons dashicons-admin-users" style="font-size:40px; color:var(--control-muted);"></span>
                 </div>
                 <div>
                     <h2 id="detail-name" style="margin:0 0 5px 0; font-size:1.3rem; color:var(--control-text-dark);"></h2>
@@ -423,6 +428,14 @@ function control_get_time_ago($timestamp) {
                     <div id="detail-last-activity" style="font-weight:600; color:var(--control-text-dark);"></div>
                 </div>
                 <div class="info-group">
+                    <label style="display:block; font-size:0.75rem; color:var(--control-muted); margin-bottom:5px; font-weight:700;"><?php _e('الموقع الأخير (IP)', 'control'); ?></label>
+                    <div id="detail-last-ip" style="font-weight:600; color:var(--control-text-dark);"></div>
+                </div>
+                <div class="info-group" style="grid-column: span 2;">
+                    <label style="display:block; font-size:0.75rem; color:var(--control-muted); margin-bottom:5px; font-weight:700;"><?php _e('رؤى الجهاز والنشاط', 'control'); ?></label>
+                    <div id="detail-device-insights" style="font-weight:600; color:var(--control-primary); font-size:0.85rem;"></div>
+                </div>
+                <div class="info-group" style="grid-column: span 2;">
                     <label style="display:block; font-size:0.75rem; color:var(--control-muted); margin-bottom:5px; font-weight:700;"><?php _e('كلمة المرور (للمدير)', 'control'); ?></label>
                     <div id="detail-password" style="font-weight:800; color:#ef4444; font-family:monospace; font-size:1rem;"></div>
                 </div>
@@ -883,10 +896,12 @@ jQuery(document).ready(function($) {
         // Avatar
         if (u.profile_image) {
             $('#detail-avatar img').attr('src', u.profile_image).show();
-            $('#detail-avatar span').hide();
+            $('#detail-avatar .avatar-placeholder, #detail-avatar span').hide();
         } else {
-            $('#detail-avatar img').hide();
-            $('#detail-avatar span').show();
+            $('#detail-avatar img, #detail-avatar span').hide();
+            const avatarClass = (u.gender === 'female') ? 'avatar-female' : 'avatar-male';
+            const firstLetter = (u.first_name || '?').charAt(0).toUpperCase();
+            $('#detail-avatar .avatar-placeholder').attr('class', 'avatar-placeholder ' + avatarClass).text(firstLetter).show();
         }
 
         // Detect Country
@@ -898,6 +913,24 @@ jQuery(document).ready(function($) {
             }
         }
         $('#detail-country').text(countryName);
+
+        // Fetch Advanced Insights
+        $('#detail-last-ip').text('...');
+        $('#detail-device-insights').text('<?php _e("جاري تحميل الرؤى...", "control"); ?>');
+
+        $.post(control_ajax.ajax_url, {
+            action: 'control_get_user_insights',
+            user_id: u.id,
+            nonce: control_ajax.nonce
+        }, function(res) {
+            if (res.success) {
+                $('#detail-last-ip').text(res.data.ip + ' (' + res.data.location + ')');
+                $('#detail-device-insights').text(res.data.device);
+            } else {
+                $('#detail-last-ip').text('N/A');
+                $('#detail-device-insights').text('N/A');
+            }
+        });
 
         $('#control-details-modal').css('display', 'flex');
     });
@@ -1104,6 +1137,15 @@ jQuery(document).ready(function($) {
 
     $('#confirm-delete-btn').on('click', function() {
         if (!userToDelete) return;
+
+        // Self-deletion check
+        const currentUserId = '<?php echo Control_Auth::current_user()->id; ?>';
+        if (userToDelete == currentUserId) {
+            if (!confirm('<?php _e("تحذير: أنت على وشك حذف حسابك الحالي! سيتم تسجيل خروجك فوراً ولن تتمكن من الدخول مجدداً. هل أنت متأكد تماماً؟", "control"); ?>')) {
+                return;
+            }
+        }
+
         const $btn = $(this);
         $btn.prop('disabled', true).text('<?php _e("جاري الحذف...", "control"); ?>');
 

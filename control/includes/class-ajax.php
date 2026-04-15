@@ -15,7 +15,8 @@ class Control_Ajax {
 			'preview_import', 'create_backup', 'restore_backup',
 			'export_user_package', 'bulk_delete_all_users', 'system_data_reset',
 			'save_role', 'delete_role',
-			'save_policy', 'delete_policy'
+			'save_policy', 'delete_policy',
+			'get_user_insights'
 		);
 
 		foreach ( $private_actions as $action ) {
@@ -232,8 +233,9 @@ class Control_Ajax {
 		$table = $wpdb->prefix . 'control_staff';
 		$phone = sanitize_text_field( $_POST['phone'] );
 
-		$exists = $wpdb->get_var( $wpdb->prepare( "SELECT id FROM $table WHERE phone = %s", $phone ) );
-		if ( $exists ) $this->send_error( 'Phone already registered' );
+		$email = sanitize_email( $_POST['email'] );
+		$exists = $wpdb->get_var( $wpdb->prepare( "SELECT id FROM $table WHERE phone = %s OR (email != '' AND email = %s)", $phone, $email ) );
+		if ( $exists ) $this->send_error( __('رقم الهاتف أو البريد الإلكتروني مسجل بالفعل.', 'control') );
 
 		$password = $_POST['password'];
 		$data = array(
@@ -351,6 +353,10 @@ class Control_Ajax {
 		global $wpdb;
 		$id = intval( $_POST['id'] );
 		$phone = sanitize_text_field( $_POST['phone'] );
+		$email = sanitize_email( $_POST['email'] );
+
+		$exists = $wpdb->get_var( $wpdb->prepare( "SELECT id FROM {$wpdb->prefix}control_staff WHERE (phone = %s OR (email != '' AND email = %s)) AND id != %d", $phone, $email, $id ) );
+		if ( $exists ) $this->send_error( __('رقم الهاتف أو البريد الإلكتروني مسجل لمستخدم آخر.', 'control') );
 
 		$data = array(
 			'username' => sanitize_text_field( $_POST['username'] ),
@@ -413,7 +419,9 @@ class Control_Ajax {
 		$id = intval( $_POST['id'] );
 		global $wpdb;
 		$user = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$wpdb->prefix}control_staff WHERE id = %d", $id ) );
-		if ( $user && ($user->username === 'admin' || $user->phone === '1234567890')) $this->send_error( 'Cannot delete admin' );
+
+		// Protection for the hardcoded 'admin' account
+		if ( $user && $user->username === 'admin' ) $this->send_error( __('لا يمكن حذف حساب المدير الرئيسي.', 'control') );
 
 		if ( $user ) {
 			Control_Audit::log( 'delete_user', sprintf(__('حذف المستخدم: %s %s', 'control'), $user->first_name, $user->last_name), $user );
@@ -936,6 +944,44 @@ class Control_Ajax {
 		$wpdb->delete( "{$wpdb->prefix}control_policies", array( 'id' => $id ) );
 		Control_Audit::log('delete_policy', "Deleted policy ID: $id");
 		$this->send_success();
+	}
+
+	public function get_user_insights() {
+		check_ajax_referer( 'control_nonce', 'nonce' );
+		if ( ! Control_Auth::has_permission('users_view') ) $this->send_error( 'Unauthorized', 403 );
+
+		global $wpdb;
+		$user_id = sanitize_text_field( $_POST['user_id'] ?? '' );
+
+		if ( empty($user_id) ) $this->send_error( 'Missing user ID' );
+
+		// Get latest login/activity log for this user
+		$latest_log = $wpdb->get_row( $wpdb->prepare(
+			"SELECT ip_address, device_type FROM {$wpdb->prefix}control_activity_logs
+			 WHERE user_id = %s
+			 ORDER BY action_date DESC LIMIT 1",
+			$user_id
+		));
+
+		$ip = $latest_log->ip_address ?? 'N/A';
+		$device = $latest_log->device_type ?? 'N/A';
+		$location = 'Unknown';
+
+		if ( $ip !== 'N/A' && $ip !== '127.0.0.1' && $ip !== '::1' ) {
+			$response = wp_remote_get( "https://ipapi.co/{$ip}/json/" );
+			if ( ! is_wp_error( $response ) ) {
+				$body = json_decode( wp_remote_retrieve_body( $response ), true );
+				if ( ! empty($body['country_name']) ) {
+					$location = $body['city'] . ', ' . $body['country_name'];
+				}
+			}
+		}
+
+		$this->send_success( array(
+			'ip' => $ip,
+			'device' => $device,
+			'location' => $location
+		) );
 	}
 }
 

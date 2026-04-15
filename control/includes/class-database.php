@@ -59,7 +59,8 @@ class Control_Database {
 			job_title varchar(255),
 
 			PRIMARY KEY  (id),
-			UNIQUE KEY phone (phone)
+			UNIQUE KEY phone (phone),
+			UNIQUE KEY email (email)
 		) $charset_collate;
 
 		CREATE TABLE $table_settings (
@@ -222,6 +223,11 @@ class Control_Database {
 			'auth_input_bg'          => 'transparent',
 			'auth_input_border'      => 'rgba(255,255,255,0.2)',
 			'auth_input_focus'       => '#D4AF37',
+			'auth_heading_text'      => 'مرحباً بك في نظام الإدارة',
+			'auth_subtitle_text'     => 'نظام الإدارة المتكامل والأكثر تطوراً',
+			'auth_layout_template'   => 'centered',
+			'auth_title_visible'     => '1',
+			'auth_subtitle_visible'  => '1',
 			'policies_content'       => '<h2>الشروط والأحكام</h2><p>هنا تدرج سياسات النظام والشروط القانونية المنظمة للعمل.</p>',
 		);
 
