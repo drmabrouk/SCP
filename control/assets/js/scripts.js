@@ -260,10 +260,25 @@ jQuery(document).ready(function($) {
     $(document).ajaxStop(function() { hideSync(); });
 
     $('#control-refresh-btn, #control-mobile-refresh-btn').on('click', function() {
-        showSync('جاري مسح التخزين المؤقت وتحديث البيانات...');
+        showSync('جاري مسح التخزين المؤقت وتحديث ملفات النظام...');
+
+        // Clear Application State
         localStorage.clear();
         sessionStorage.clear();
-        setTimeout(() => { window.location.reload(true); }, 500);
+
+        // Unregister Service Workers if any
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.getRegistrations().then(function(registrations) {
+                for(let registration of registrations) {
+                    registration.unregister();
+                }
+            });
+        }
+
+        // Hard Reload
+        setTimeout(() => {
+            window.location.href = window.location.origin + window.location.pathname + '?v=' + new Date().getTime();
+        }, 800);
     });
 
 

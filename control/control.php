@@ -2,10 +2,13 @@
 /**
  * Plugin Name: Control
  * Description: Professional system for administrative and user management.
- * Version: 1.0.0
+ * Version: 2.0.0
  * Author: Control Team
  * Text Domain: control
  * Domain Path: /languages
+ * Requires at least: 6.0
+ * Tested up to: 6.4
+ * Requires PHP: 7.4
  * Official Email: info@control.online
  * Official Website: https://control.online
  */
@@ -15,7 +18,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Define constants
-define( 'CONTROL_VERSION', time() ); // Use time() to force immediate file updates by bypassing cache
+define( 'CONTROL_VERSION', '2.0.0' );
 define( 'CONTROL_PATH', plugin_dir_path( __FILE__ ) );
 define( 'CONTROL_URL', plugin_dir_url( __FILE__ ) );
 
@@ -72,11 +75,17 @@ class Control_System {
 	}
 
 	public function send_nocache_headers() {
-		if ( (isset( $_GET['page'] ) && strpos( $_GET['page'], 'control' ) !== false) || isset( $_GET['control_view'] ) ) {
+		$is_control_page = (isset( $_GET['page'] ) && strpos( $_GET['page'], 'control' ) !== false) || isset( $_GET['control_view'] );
+		$is_control_ajax = defined( 'DOING_AJAX' ) && DOING_AJAX && isset( $_REQUEST['action'] ) && strpos( $_REQUEST['action'], 'control_' ) === 0;
+
+		if ( $is_control_page || $is_control_ajax ) {
 			nocache_headers();
-		}
-		if ( defined( 'DOING_AJAX' ) && DOING_AJAX && isset( $_REQUEST['action'] ) && strpos( $_REQUEST['action'], 'control_' ) === 0 ) {
-			nocache_headers();
+
+			// Aggressive Cache Prevention
+			header( "Cache-Control: no-store, no-cache, must-revalidate, max-age=0" );
+			header( "Cache-Control: post-check=0, pre-check=0", false );
+			header( "Pragma: no-cache" );
+			header( "Expires: Wed, 11 Jan 1984 05:00:00 GMT" );
 		}
 	}
 
