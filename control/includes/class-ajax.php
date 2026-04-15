@@ -122,6 +122,11 @@ class Control_Ajax {
 			$this->send_error( __( 'كلمة المرور يجب أن لا تقل عن 8 أحرف.', 'control' ) );
 		}
 
+		// Validate Password Confirmation if present
+		if ( isset($_POST['confirm_password']) && $_POST['confirm_password'] !== $data['password'] ) {
+			$this->send_error( __( 'كلمة المرور غير متطابقة.', 'control' ) );
+		}
+
 		$result = Control_Auth::register_user( $data );
 
 		if ( is_wp_error( $result ) ) {

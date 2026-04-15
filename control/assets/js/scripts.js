@@ -264,6 +264,18 @@ jQuery(document).ready(function($) {
                         valid = false;
                     }
                 }
+
+                // Specific Validation: Password Matching
+                if ($field.attr('id') === 'reg-confirm-password') {
+                    const pass = $('#reg-password').val();
+                    if (val !== pass) {
+                        $field.css('border-color', errorColor);
+                        if (!$container.find('.error-msg').length) {
+                            $container.append(`<div class="error-msg" style="color:${errorColor}; font-size:0.7rem; margin-top:4px; font-weight:700;">كلمة المرور غير متطابقة</div>`);
+                        }
+                        valid = false;
+                    }
+                }
             }
         });
         return valid;
@@ -605,6 +617,7 @@ jQuery(document).ready(function($) {
                 id: $(this).find('.field-id').val(),
                 label: $(this).find('.field-label').val(),
                 step: parseInt($(this).find('.field-step').val()),
+                width: $(this).find('.field-width').val(),
                 enabled: $(this).find('.field-enabled').is(':checked'),
                 required: $(this).find('.field-required').is(':checked')
             });
