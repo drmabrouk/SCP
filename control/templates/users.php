@@ -597,35 +597,38 @@ function control_get_time_ago($timestamp) {
 
                 <div class="control-grid" style="grid-template-columns: 1fr 1fr; gap: 20px;">
                     <div class="control-form-group">
+                        <input type="text" name="first_name" id="user-first-name" required placeholder="<?php _e('الاسم الأول', 'control'); ?>">
                         <label><?php _e('الاسم الأول', 'control'); ?> *</label>
-                        <input type="text" name="first_name" id="user-first-name" required placeholder="أحمد">
                     </div>
                     <div class="control-form-group">
+                        <input type="text" name="last_name" id="user-last-name" required placeholder="<?php _e('اسم العائلة', 'control'); ?>">
                         <label><?php _e('اسم العائلة', 'control'); ?> *</label>
-                        <input type="text" name="last_name" id="user-last-name" required placeholder="علي">
                     </div>
                 </div>
                 <div class="control-grid" style="grid-template-columns: 1fr; gap: 20px;">
                     <div class="control-form-group">
-                        <label><?php _e('الجنس', 'control'); ?></label>
                         <select name="gender" id="user-gender">
                             <option value="male"><?php _e('ذكر', 'control'); ?></option>
                             <option value="female"><?php _e('أنثى', 'control'); ?></option>
                         </select>
+                        <label><?php _e('الجنس', 'control'); ?></label>
                     </div>
                 </div>
 
-                <div class="control-form-group">
-                    <label><?php _e('رقم الهاتف للتواصل', 'control'); ?> *</label>
-                    <div style="display:flex; direction:ltr;">
-                        <select id="user-phone-country" style="width:110px; border-radius:8px 0 0 8px; border-right:none; background:#f8fafc;">
-                            <?php foreach($countries as $code => $data): ?>
-                                <option value="<?php echo $code; ?>"><?php echo $data['flag'] . ' ' . $code; ?></option>
-                            <?php endforeach; ?>
-                        </select>
-                        <input type="tel" id="user-phone-body" required style="border-radius:0 8px 8px 0; flex:1;" placeholder="000 000 000">
+                <div class="control-form-group phone-group">
+                    <div class="integrated-phone-field" style="direction: ltr;">
+                        <div class="country-selector">
+                            <span class="selected-flag">🇪🇬</span>
+                            <select id="user-phone-country" class="country-code-select">
+                                <?php foreach($countries as $code => $data): ?>
+                                    <option value="<?php echo $code; ?>" data-flag="<?php echo $data['flag']; ?>"><?php echo $code; ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                        <input type="tel" id="user-phone-body" required placeholder="<?php _e('رقم الهاتف', 'control'); ?>" style="border:none !important;">
                         <input type="hidden" name="phone" id="user-phone">
                     </div>
+                    <label><?php _e('رقم الهاتف للتواصل', 'control'); ?> *</label>
                 </div>
 
                 <div class="control-form-group">
@@ -639,39 +642,39 @@ function control_get_time_ago($timestamp) {
             <div id="user-step-2" class="user-wizard-step" style="display:none;">
                 <div class="control-grid" style="grid-template-columns: 1fr 1fr; gap: 20px;">
                     <div class="control-form-group">
-                        <label><?php _e('الدرجة العلمية', 'control'); ?></label>
                         <select name="degree" id="user-degree">
                             <option value="diploma"><?php _e('دبلوم', 'control'); ?></option>
                             <option value="bachelor"><?php _e('بكالوريوس', 'control'); ?></option>
                             <option value="master"><?php _e('ماجستير', 'control'); ?></option>
                             <option value="phd"><?php _e('دكتوراه', 'control'); ?></option>
                         </select>
+                        <label><?php _e('الدرجة العلمية', 'control'); ?></label>
                     </div>
                     <div class="control-form-group">
+                        <input type="text" name="specialization" id="user-specialization" placeholder="<?php _e('التخصص الأكاديمي', 'control'); ?>">
                         <label><?php _e('التخصص الأكاديمي', 'control'); ?></label>
-                        <input type="text" name="specialization" id="user-specialization" placeholder="مثال: تربية رياضية">
                     </div>
                 </div>
 
                 <div class="control-grid" style="grid-template-columns: 1.5fr 1fr; gap: 20px;">
                     <div class="control-form-group">
+                        <input type="text" name="institution" id="user-institution" placeholder="<?php _e('الجامعة / المؤسسة المانحة', 'control'); ?>">
                         <label><?php _e('الجامعة / المؤسسة المانحة', 'control'); ?></label>
-                        <input type="text" name="institution" id="user-institution" placeholder="مثال: جامعة القاهرة">
                     </div>
                     <div class="control-form-group">
-                        <label><?php _e('دولة المؤسسة', 'control'); ?></label>
                         <select name="institution_country" id="user-institution-country">
                             <option value=""><?php _e('اختر الدولة...', 'control'); ?></option>
                             <?php foreach($countries as $code => $data): ?>
                                 <option value="<?php echo $data['name']; ?>"><?php echo $data['name']; ?></option>
                             <?php endforeach; ?>
                         </select>
+                        <label><?php _e('دولة المؤسسة', 'control'); ?></label>
                     </div>
                 </div>
 
                 <div class="control-form-group">
-                    <label><?php _e('سنة التخرج', 'control'); ?></label>
                     <input type="text" name="graduation_year" id="user-graduation-year" placeholder="YYYY">
+                    <label><?php _e('سنة التخرج', 'control'); ?></label>
                 </div>
             </div>
 
@@ -690,33 +693,33 @@ function control_get_time_ago($timestamp) {
 
                 <div class="control-grid" style="grid-template-columns: 1fr 1fr; gap: 20px;">
                     <div class="control-form-group">
+                        <input type="text" name="employer_name" id="user-employer" placeholder="<?php _e('جهة العمل الحالية', 'control'); ?>">
                         <label><?php _e('جهة العمل الحالية', 'control'); ?></label>
-                        <input type="text" name="employer_name" id="user-employer" placeholder="اسم النادي أو المؤسسة">
                     </div>
                     <div class="control-form-group">
+                        <input type="text" name="job_title" id="user-job-title" placeholder="<?php _e('المسمى الوظيفي', 'control'); ?>">
                         <label><?php _e('المسمى الوظيفي', 'control'); ?></label>
-                        <input type="text" name="job_title" id="user-job-title" placeholder="المسمى الحالي">
                     </div>
                 </div>
 
                 <div class="control-form-group">
-                    <label><?php _e('دولة المقر الوظيفي', 'control'); ?></label>
                     <select name="employer_country" id="user-employer-country">
                         <option value=""><?php _e('اختر دولة المقر...', 'control'); ?></option>
                         <?php foreach($countries as $code => $data): ?>
                             <option value="<?php echo $data['name']; ?>"><?php echo $data['name']; ?></option>
                         <?php endforeach; ?>
                     </select>
+                    <label><?php _e('دولة المقر الوظيفي', 'control'); ?></label>
                 </div>
 
                 <div class="control-grid" style="grid-template-columns: 1fr 1.5fr; gap: 20px;">
                     <div class="control-form-group">
+                        <input type="text" name="work_phone" id="user-work-phone" placeholder="<?php _e('رقم هاتف العمل', 'control'); ?>">
                         <label><?php _e('رقم هاتف العمل', 'control'); ?></label>
-                        <input type="text" name="work_phone" id="user-work-phone">
                     </div>
                     <div class="control-form-group">
+                        <input type="email" name="work_email" id="user-work-email" placeholder="<?php _e('البريد الإلكتروني المهني', 'control'); ?>">
                         <label><?php _e('البريد الإلكتروني المهني', 'control'); ?></label>
-                        <input type="email" name="work_email" id="user-work-email">
                     </div>
                 </div>
             </div>
@@ -725,22 +728,22 @@ function control_get_time_ago($timestamp) {
             <div id="user-step-4" class="user-wizard-step" style="display:none;">
                 <div class="control-grid" style="grid-template-columns: 1fr 1fr; gap: 20px;">
                     <div class="control-form-group">
-                        <label><?php _e('بلد الإقامة', 'control'); ?></label>
                         <select name="home_country" id="user-home-country">
                             <option value=""><?php _e('اختر الدولة...', 'control'); ?></option>
                             <?php foreach($countries as $code => $data): ?>
                                 <option value="<?php echo $data['name']; ?>"><?php echo $data['name']; ?></option>
                             <?php endforeach; ?>
                         </select>
+                        <label><?php _e('بلد الإقامة', 'control'); ?></label>
                     </div>
                     <div class="control-form-group">
+                        <input type="text" name="state" id="user-state" placeholder="<?php _e('الولاية / المحافظة', 'control'); ?>">
                         <label><?php _e('الولاية / المحافظة', 'control'); ?></label>
-                        <input type="text" name="state" id="user-state">
                     </div>
                 </div>
                 <div class="control-form-group">
+                    <textarea name="address" id="user-address" rows="3" placeholder="<?php _e('العنوان بالتفصيل', 'control'); ?>"></textarea>
                     <label><?php _e('العنوان بالتفصيل', 'control'); ?></label>
-                    <textarea name="address" id="user-address" rows="3"></textarea>
                 </div>
             </div>
 
@@ -748,27 +751,27 @@ function control_get_time_ago($timestamp) {
             <div id="user-step-5" class="user-wizard-step" style="display:none;">
                 <div class="control-grid" style="grid-template-columns: 1.5fr 1fr; gap: 20px;">
                     <div class="control-form-group">
-                        <label><?php _e('البريد الإلكتروني', 'control'); ?></label>
                         <input type="email" name="email" id="user-email" placeholder="email@example.com">
+                        <label><?php _e('البريد الإلكتروني', 'control'); ?></label>
                     </div>
                     <div class="control-form-group">
-                        <label><?php _e('اسم المستخدم', 'control'); ?></label>
                         <input type="text" name="username" id="user-username" placeholder="username">
+                        <label><?php _e('اسم المستخدم', 'control'); ?></label>
                     </div>
                 </div>
 
                 <div class="control-form-group">
-                    <label><?php _e('نوع الحساب (الصلاحية)', 'control'); ?> *</label>
                     <select name="role" id="user-role" required style="background:var(--control-accent-soft); font-weight:700;">
                         <?php foreach($role_labels as $val => $label): ?>
                             <option value="<?php echo $val; ?>"><?php echo $label; ?></option>
                         <?php endforeach; ?>
                     </select>
+                    <label><?php _e('نوع الحساب (الصلاحية)', 'control'); ?> *</label>
                 </div>
 
                 <div class="control-form-group" style="margin-top:15px; padding:20px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px;">
-                    <label style="color:var(--control-primary); font-weight:800;"><?php _e('تعديل كلمة المرور', 'control'); ?></label>
                     <input type="text" name="password" id="user-password" placeholder="••••••••" style="background:#fff; font-family:monospace; font-size:1.1rem; letter-spacing:2px;">
+                    <label style="color:var(--control-primary); font-weight:800;"><?php _e('تعديل كلمة المرور', 'control'); ?></label>
                     <small style="color:var(--control-muted); font-size:0.7rem; margin-top:8px; display:block;"><?php _e('اتركها فارغة في حال التعديل لعدم تغيير كلمة المرور الحالية.', 'control'); ?></small>
                 </div>
             </div>
@@ -790,7 +793,9 @@ jQuery(document).ready(function($) {
 
     function showStep(step) {
         $('.user-wizard-step').hide();
-        $(`#user-step-${step}`).fadeIn(300);
+        $(`#user-step-${step}`).fadeIn(300, function() {
+            if (typeof updateFloatingLabels === 'function') updateFloatingLabels();
+        });
 
         $('#wizard-dots .dot').removeClass('active');
         $(`#wizard-dots .dot[data-step="${step}"]`).addClass('active');
