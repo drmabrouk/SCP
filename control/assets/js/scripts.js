@@ -101,12 +101,16 @@ jQuery(document).ready(function($) {
 
     function validateRegStep(step) {
         let valid = true;
-        $(`#reg-step-${step} input[required]`).each(function() {
+        const root = document.documentElement;
+        const errorColor = '#ef4444';
+        const normalColor = getComputedStyle(root).getPropertyValue('--auth-input-border') || 'rgba(255,255,255,0.15)';
+
+        $(`#reg-step-${step} [required]`).each(function() {
             if (!$(this).val()) {
-                $(this).css('border-color', '#ef4444');
+                $(this).closest('.control-form-group').find('input, select, textarea, .integrated-phone-field').css('border-color', errorColor);
                 valid = false;
             } else {
-                $(this).css('border-color', '#333');
+                $(this).closest('.control-form-group').find('input, select, textarea, .integrated-phone-field').css('border-color', '');
             }
         });
         return valid;
@@ -120,16 +124,16 @@ jQuery(document).ready(function($) {
         const phoneFull = $('#login-country-code').val() + $('#login-phone-body').val();
         $('#login-phone-full').val(phoneFull);
 
-        $btn.prop('disabled', true).text('جاري الدخول...');
+        $btn.prop('disabled', true).html('<span class="dashicons dashicons-update spin"></span> جاري التحقق...');
         $('#login-error').hide().removeClass('error success');
 
         $.post(control_ajax.ajax_url, $(this).serialize() + '&action=control_login&nonce=' + control_ajax.nonce, function(res) {
             if (res.success) {
-                $('#login-error').text(res.data).addClass('success').show();
+                $('#login-error').html('<span class="dashicons dashicons-yes"></span> ' + res.data).addClass('success').fadeIn();
                 setTimeout(() => window.location.reload(), 1000);
             } else {
                 $btn.prop('disabled', false).text('تسجيل الدخول للنظام');
-                $('#login-error').text(res.data.message || 'حدث خطأ').addClass('error').show();
+                $('#login-error').html('<span class="dashicons dashicons-warning"></span> ' + (res.data.message || 'بيانات الدخول غير صحيحة')).addClass('error').fadeIn();
             }
         });
     });
@@ -140,11 +144,11 @@ jQuery(document).ready(function($) {
         const phoneFull = $('#reg-country-code').val() + $('#reg-phone-body').val();
 
         if ($('#reg-password').val().length < 8) {
-            $('#reg-error').text('كلمة المرور يجب أن لا تقل عن 8 أحرف').addClass('error').show();
+            $('#reg-error').html('<span class="dashicons dashicons-warning"></span> كلمة المرور يجب أن لا تقل عن 8 أحرف').addClass('error').fadeIn();
             return;
         }
 
-        $btn.prop('disabled', true).text('جاري التسجيل...');
+        $btn.prop('disabled', true).html('<span class="dashicons dashicons-update spin"></span> جاري معالجة طلبك...');
         $('#reg-error').hide().removeClass('error success');
 
         const formData = $(this).serializeArray();
@@ -154,11 +158,11 @@ jQuery(document).ready(function($) {
 
         $.post(control_ajax.ajax_url, formData, function(res) {
             if (res.success) {
-                $('#reg-error').text('تم التسجيل بنجاح! جاري تحويلك...').addClass('success').show();
+                $('#reg-error').html('<span class="dashicons dashicons-yes"></span> ' + 'تم التسجيل بنجاح! جاري تحويلك...').addClass('success').fadeIn();
                 setTimeout(() => window.location.reload(), 1500);
             } else {
                 $btn.prop('disabled', false).text('إتمام التسجيل');
-                $('#reg-error').text(res.data.message || 'حدث خطأ').addClass('error').show();
+                $('#reg-error').html('<span class="dashicons dashicons-warning"></span> ' + (res.data.message || 'حدث خطأ أثناء التسجيل')).addClass('error').fadeIn();
             }
         });
     });
@@ -168,7 +172,7 @@ jQuery(document).ready(function($) {
         const $btn = $(this).find('button[type="submit"]');
         const phoneFull = $('#forgot-country-code').val() + $('#forgot-phone-body').val();
 
-        $btn.prop('disabled', true).text('جاري الإرسال...');
+        $btn.prop('disabled', true).html('<span class="dashicons dashicons-update spin"></span> جاري الإرسال...');
         $('#forgot-feedback').hide().removeClass('error success');
 
         $.post(control_ajax.ajax_url, {
@@ -178,16 +182,16 @@ jQuery(document).ready(function($) {
         }, function(res) {
             $btn.prop('disabled', false).text('إرسال طلب الاستعادة');
             if (res.success) {
-                $('#forgot-feedback').text(res.data).addClass('success').fadeIn();
+                $('#forgot-feedback').html('<span class="dashicons dashicons-yes"></span> ' + res.data).addClass('success').fadeIn();
             } else {
-                $('#forgot-feedback').text(res.data.message || 'رقم الهاتف غير مسجل لدينا.').addClass('error').fadeIn();
+                $('#forgot-feedback').html('<span class="dashicons dashicons-warning"></span> ' + (res.data.message || 'رقم الهاتف غير مسجل لدينا.')).addClass('error').fadeIn();
             }
         });
     });
 
     // --- Settings System & Real-time Design Preview ---
 
-    $('#control-design-form input, #control-design-form select').on('input change', function() {
+    $('#control-design-form input, #control-design-form select, #control-identity-form input, #control-identity-form select').on('input change', function() {
         const name = $(this).attr('name');
         const val = $(this).val();
         const root = document.documentElement;
@@ -214,6 +218,9 @@ jQuery(document).ready(function($) {
             case 'auth_border_color': root.style.setProperty('--auth-border-color', val); break;
             case 'auth_border_radius': root.style.setProperty('--auth-border-radius', val + 'px'); break;
             case 'auth_input_border': root.style.setProperty('--auth-input-border', val); break;
+            case 'auth_input_bg': root.style.setProperty('--auth-input-bg', val); break;
+            case 'auth_input_text': root.style.setProperty('--auth-input-text', val); break;
+            case 'auth_label_color': root.style.setProperty('--auth-label-color', val); break;
             case 'auth_input_focus': root.style.setProperty('--auth-input-focus', val); break;
         }
     });

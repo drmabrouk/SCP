@@ -160,6 +160,20 @@ $settings = $wpdb->get_results( "SELECT * FROM {$wpdb->prefix}control_settings",
                                     <input type="color" name="auth_input_focus" value="<?php echo esc_attr($settings['auth_input_focus']->setting_value ?? '#D4AF37'); ?>">
                                 </div>
                             </div>
+                            <div class="control-grid" style="grid-template-columns: 1fr 1fr; gap:10px;">
+                                <div class="control-form-group">
+                                    <label><?php _e('خلفية الحقول', 'control'); ?></label>
+                                    <input type="text" name="auth_input_bg" value="<?php echo esc_attr($settings['auth_input_bg']->setting_value ?? 'rgba(255,255,255,0.05)'); ?>">
+                                </div>
+                                <div class="control-form-group">
+                                    <label><?php _e('لون نص الحقول', 'control'); ?></label>
+                                    <input type="color" name="auth_input_text" value="<?php echo esc_attr($settings['auth_input_text']->setting_value ?? '#ffffff'); ?>">
+                                </div>
+                            </div>
+                            <div class="control-form-group">
+                                <label><?php _e('لون التسميات (Labels)', 'control'); ?></label>
+                                <input type="color" name="auth_label_color" value="<?php echo esc_attr($settings['auth_label_color']->setting_value ?? '#94a3b8'); ?>">
+                            </div>
                             <div class="control-form-group">
                                 <label><?php _e('ظهور شعار النظام', 'control'); ?></label>
                                 <select name="auth_logo_visible">
