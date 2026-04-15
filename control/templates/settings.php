@@ -174,12 +174,49 @@ $settings = $wpdb->get_results( "SELECT * FROM {$wpdb->prefix}control_settings",
                                 <label><?php _e('لون التسميات (Labels)', 'control'); ?></label>
                                 <input type="color" name="auth_label_color" value="<?php echo esc_attr($settings['auth_label_color']->setting_value ?? '#94a3b8'); ?>">
                             </div>
-                            <div class="control-form-group">
-                                <label><?php _e('ظهور شعار النظام', 'control'); ?></label>
-                                <select name="auth_logo_visible">
-                                    <option value="1" <?php selected($settings['auth_logo_visible']->setting_value ?? '1', '1'); ?>><?php _e('إظهار', 'control'); ?></option>
-                                    <option value="0" <?php selected($settings['auth_logo_visible']->setting_value ?? '1', '0'); ?>><?php _e('إخفاء', 'control'); ?></option>
-                                </select>
+                            <div class="control-grid" style="grid-template-columns: 1fr 1fr; gap:10px;">
+                                <div class="control-form-group">
+                                    <label><?php _e('ظهور الشعار', 'control'); ?></label>
+                                    <select name="auth_logo_visible">
+                                        <option value="1" <?php selected($settings['auth_logo_visible']->setting_value ?? '1', '1'); ?>><?php _e('إظهار', 'control'); ?></option>
+                                        <option value="0" <?php selected($settings['auth_logo_visible']->setting_value ?? '1', '0'); ?>><?php _e('إخفاء', 'control'); ?></option>
+                                    </select>
+                                </div>
+                                <div class="control-form-group">
+                                    <label><?php _e('نمط التصميم (Layout)', 'control'); ?></label>
+                                    <select name="auth_layout_template">
+                                        <option value="centered" <?php selected($settings['auth_layout_template']->setting_value ?? 'centered', 'centered'); ?>><?php _e('مركز كامل (Centered)', 'control'); ?></option>
+                                        <option value="split" <?php selected($settings['auth_layout_template']->setting_value ?? 'centered', 'split'); ?>><?php _e('شاشة مقسمة (Split Screen)', 'control'); ?></option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="control-grid" style="grid-template-columns: 1fr 1fr; gap:10px;">
+                                <div class="control-form-group">
+                                    <label><?php _e('العنوان الرئيسي (Heading)', 'control'); ?></label>
+                                    <input type="text" name="auth_heading_text" value="<?php echo esc_attr($settings['auth_heading_text']->setting_value ?? ''); ?>" placeholder="<?php _e('مرحباً بك...', 'control'); ?>">
+                                </div>
+                                <div class="control-form-group">
+                                    <label><?php _e('ظهور العنوان', 'control'); ?></label>
+                                    <select name="auth_title_visible">
+                                        <option value="1" <?php selected($settings['auth_title_visible']->setting_value ?? '1', '1'); ?>><?php _e('إظهار', 'control'); ?></option>
+                                        <option value="0" <?php selected($settings['auth_title_visible']->setting_value ?? '1', '0'); ?>><?php _e('إخفاء', 'control'); ?></option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="control-grid" style="grid-template-columns: 1fr 1fr; gap:10px;">
+                                <div class="control-form-group">
+                                    <label><?php _e('النص الفرعي (Subtitle)', 'control'); ?></label>
+                                    <input type="text" name="auth_subtitle_text" value="<?php echo esc_attr($settings['auth_subtitle_text']->setting_value ?? ''); ?>" placeholder="<?php _e('وصف بسيط...', 'control'); ?>">
+                                </div>
+                                <div class="control-form-group">
+                                    <label><?php _e('ظهور النص الفرعي', 'control'); ?></label>
+                                    <select name="auth_subtitle_visible">
+                                        <option value="1" <?php selected($settings['auth_subtitle_visible']->setting_value ?? '1', '1'); ?>><?php _e('إظهار', 'control'); ?></option>
+                                        <option value="0" <?php selected($settings['auth_subtitle_visible']->setting_value ?? '1', '0'); ?>><?php _e('إخفاء', 'control'); ?></option>
+                                    </select>
+                                </div>
                             </div>
                         </div>
                     </div>

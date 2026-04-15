@@ -41,8 +41,12 @@
                     <div id="self-profile-preview" style="width:90px; height:90px; background:#fff; border:2px dashed var(--control-border); border-radius:50%; display:flex; align-items:center; justify-content:center; overflow:hidden; cursor:pointer; position:relative; flex-shrink:0;">
                         <?php if(!empty($user_data->profile_image)): ?>
                             <img src="<?php echo esc_url($user_data->profile_image); ?>" style="width:100%; height:100%; object-fit:cover;">
-                        <?php else: ?>
-                            <span class="dashicons dashicons-camera" style="font-size:32px; color:var(--control-muted);"></span>
+                        <?php else:
+                            $avatar_class = ($user_data->gender === 'female') ? 'avatar-female' : 'avatar-male';
+                        ?>
+                            <div class="avatar-placeholder <?php echo $avatar_class; ?>">
+                                <?php echo strtoupper(substr($user_data->first_name, 0, 1)); ?>
+                            </div>
                         <?php endif; ?>
                     </div>
                     <div style="flex:1;">

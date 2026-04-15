@@ -1,23 +1,34 @@
-<?php global $wpdb; ?>
-<div class="control-auth-wrapper">
+<?php
+global $wpdb;
+$auth_settings = $wpdb->get_results("SELECT setting_key, setting_value FROM {$wpdb->prefix}control_settings WHERE setting_key LIKE 'auth_%'", OBJECT_K);
+$layout = $auth_settings['auth_layout_template']->setting_value ?? 'centered';
+$heading = $auth_settings['auth_heading_text']->setting_value ?? __('مرحباً بك في نظام الإدارة', 'control');
+$sub_text = $auth_settings['auth_subtitle_text']->setting_value ?? __('نظام الإدارة المتكامل والأكثر تطوراً', 'control');
+?>
+<div class="control-auth-wrapper layout-<?php echo esc_attr($layout); ?>">
     <div class="control-auth-card">
 
-        <div class="control-auth-header" style="<?php echo ($wpdb->get_var("SELECT setting_value FROM {$wpdb->prefix}control_settings WHERE setting_key = 'auth_logo_visible'") === '0') ? 'display:none;' : ''; ?>">
+        <div class="control-auth-header">
             <?php
                 $logo_url = $wpdb->get_var("SELECT setting_value FROM {$wpdb->prefix}control_settings WHERE setting_key = 'company_logo'");
                 $system_name = $wpdb->get_var("SELECT setting_value FROM {$wpdb->prefix}control_settings WHERE setting_key = 'system_name'") ?: 'Control';
 
-                if ( $logo_url ) : ?>
+                if ( $logo_url && ($auth_settings['auth_logo_visible']->setting_value ?? '1') === '1' ) : ?>
                     <img src="<?php echo esc_url($logo_url); ?>" alt="<?php echo esc_attr($system_name); ?>" class="auth-logo">
-                <?php else : ?>
-                    <h2 class="auth-system-name"><?php echo esc_html($system_name); ?></h2>
+                <?php endif;
+
+                if ( ($auth_settings['auth_title_visible']->setting_value ?? '1') === '1' ) : ?>
+                    <h2 class="auth-system-name"><?php echo esc_html($heading); ?></h2>
+                <?php endif;
+
+                if ( ($auth_settings['auth_subtitle_visible']->setting_value ?? '1') === '1' ) : ?>
+                    <p class="auth-subtitle"><?php echo esc_html($sub_text); ?></p>
                 <?php endif;
             ?>
-            <p class="auth-subtitle"><?php _e('نظام الإدارة المتكامل', 'control'); ?></p>
         </div>
 
         <?php
-        $login_enabled = $wpdb->get_var("SELECT setting_value FROM {$wpdb->prefix}control_settings WHERE setting_key = 'auth_login_enabled'");
+        $login_enabled = $auth_settings['auth_login_enabled']->setting_value ?? '1';
         $login_visible = $wpdb->get_var("SELECT setting_value FROM {$wpdb->prefix}control_settings WHERE setting_key = 'auth_login_form_visible'");
         $reg_enabled   = $wpdb->get_var("SELECT setting_value FROM {$wpdb->prefix}control_settings WHERE setting_key = 'auth_registration_enabled'");
         $reg_visible   = $wpdb->get_var("SELECT setting_value FROM {$wpdb->prefix}control_settings WHERE setting_key = 'auth_registration_form_visible'");
