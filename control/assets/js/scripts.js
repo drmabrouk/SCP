@@ -448,7 +448,10 @@ jQuery(document).ready(function($) {
 
 
     $('#control-logout-btn, #control-mobile-logout-btn').on('click', function() {
-        $.post(control_ajax.ajax_url, { action: 'control_logout', nonce: control_ajax.nonce }, () => location.reload());
+        showSync('جاري تسجيل الخروج...');
+        $.post(control_ajax.ajax_url, { action: 'control_logout', nonce: control_ajax.nonce }, () => {
+            window.location.href = control_ajax.home_url;
+        });
     });
 
     $(document).on('click', '.control-upload-btn', function(e) {

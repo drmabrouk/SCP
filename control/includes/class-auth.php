@@ -224,6 +224,9 @@ class Control_Auth {
 		unset( $_SESSION['control_user_role'] );
 		unset( $_SESSION['control_user_first_name'] );
 		unset( $_SESSION['control_user_last_name'] );
+
+		// Clear native WordPress session and cookies
+		wp_logout();
 	}
 
 	public static function is_logged_in() {
