@@ -73,18 +73,23 @@ class Control_Shortcode {
 
 	public function render_policies() {
 		global $wpdb;
-		$policies = $wpdb->get_var( "SELECT setting_value FROM {$wpdb->prefix}control_settings WHERE setting_key = 'policies_content'" );
+		$policies = $wpdb->get_results( "SELECT * FROM {$wpdb->prefix}control_policies ORDER BY id ASC" );
 
 		if ( empty($policies) ) return '';
 
 		ob_start();
 		?>
 		<div class="control-policies-display" style="direction: rtl; text-align: right; font-family: 'Rubik', sans-serif; line-height: 1.8; color: #334155; background: #fff; padding: 40px; border-radius: 20px; border: 1px solid #e2e8f0; box-shadow: 0 10px 30px rgba(0,0,0,0.05); max-width: 900px; margin: 40px auto;">
-			<div class="policies-content">
-				<?php echo wp_kses_post( $policies ); ?>
-			</div>
+			<?php foreach($policies as $policy): ?>
+				<div class="policy-item" style="margin-bottom: 40px;">
+					<h2 style="color:var(--control-primary); font-weight:800; border-bottom: 2px solid var(--control-bg); padding-bottom:10px; margin-bottom:20px;"><?php echo esc_html($policy->title); ?></h2>
+					<div class="policy-content">
+						<?php echo wp_kses_post( $policy->content ); ?>
+					</div>
+				</div>
+			<?php endforeach; ?>
 			<div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #f1f5f9; text-align: center; color: #94a3b8; font-size: 0.8rem;">
-				<?php echo sprintf( __('آخر تحديث: %s', 'control'), date_i18n( get_option('date_format') ) ); ?>
+				<?php echo sprintf( __('تم تحديث كافة السياسات في: %s', 'control'), date_i18n( get_option('date_format') ) ); ?>
 			</div>
 		</div>
 		<?php

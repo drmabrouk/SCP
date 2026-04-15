@@ -359,8 +359,20 @@ $settings = $wpdb->get_results( "SELECT * FROM {$wpdb->prefix}control_settings",
                         <div style="background:var(--control-bg); padding:20px; border-radius:12px; border:1px solid var(--control-border); height: fit-content;">
                             <h4 style="margin:0 0 15px 0; font-size:0.9rem; color:var(--control-primary);"><?php _e('قوالب البريد', 'control'); ?></h4>
                             <div style="display:flex; flex-direction:column; gap:8px;">
-                                <button type="button" class="tpl-nav-btn active" data-tpl="welcome_email"><?php _e('رسالة الترحيب', 'control'); ?></button>
-                                <button type="button" class="tpl-nav-btn" data-tpl="engagement_reminder"><?php _e('تذكير التفاعل', 'control'); ?></button>
+                                <?php
+                                $all_tpls = $wpdb->get_results("SELECT template_key FROM {$wpdb->prefix}control_email_templates");
+                                $tpl_labels_map = array(
+                                    'welcome_email' => __('رسالة الترحيب', 'control'),
+                                    'engagement_reminder' => __('تذكير التفاعل', 'control'),
+                                    'password_reset' => __('استعادة كلمة المرور', 'control'),
+                                    'account_restriction' => __('تنبيه التقييد', 'control'),
+                                    'new_login_alert' => __('تنبيه دخول جديد', 'control')
+                                );
+                                foreach($all_tpls as $i => $t): ?>
+                                    <button type="button" class="tpl-nav-btn <?php echo $i === 0 ? 'active' : ''; ?>" data-tpl="<?php echo $t->template_key; ?>">
+                                        <?php echo $tpl_labels_map[$t->template_key] ?? $t->template_key; ?>
+                                    </button>
+                                <?php endforeach; ?>
                             </div>
 
                             <h4 style="margin:25px 0 15px 0; font-size:0.9rem; color:var(--control-primary);"><?php _e('سمة البريد (Theme)', 'control'); ?></h4>
@@ -434,14 +446,10 @@ $settings = $wpdb->get_results( "SELECT * FROM {$wpdb->prefix}control_settings",
 
                         <?php
                         $templates_data = $wpdb->get_results("SELECT * FROM {$wpdb->prefix}control_email_templates", OBJECT_K);
-                        $tpl_labels = array(
-                            'welcome_email' => array('label' => __('رسالة الترحيب', 'control')),
-                            'engagement_reminder' => array('label' => __('تذكير التفاعل', 'control'))
-                        );
-                        foreach($tpl_labels as $key => $info):
-                            $tpl = $templates_data[$key] ?? (object) array('subject' => '', 'content' => '');
+                        $first_tpl = array_key_first($templates_data);
+                        foreach($templates_data as $key => $tpl):
                         ?>
-                            <div id="tpl-section-<?php echo $key; ?>" class="tpl-content-section" style="<?php echo $key === 'welcome_email' ? '' : 'display:none;'; ?>">
+                            <div id="tpl-section-<?php echo $key; ?>" class="tpl-content-section" style="<?php echo $key === $first_tpl ? '' : 'display:none;'; ?>">
                                 <div class="control-form-group">
                                     <label><?php _e('عنوان البريد (Subject)', 'control'); ?></label>
                                     <input type="text" name="tpl_subject_<?php echo $key; ?>" value="<?php echo esc_attr($tpl->subject); ?>" style="font-weight:700;">
@@ -450,10 +458,20 @@ $settings = $wpdb->get_results( "SELECT * FROM {$wpdb->prefix}control_settings",
                                     <label><?php _e('هيكل ومحتوى الرسالة (HTML/CSS Editor)', 'control'); ?></label>
                                     <textarea name="tpl_content_<?php echo $key; ?>" rows="12" style="font-family:monospace; font-size:0.85rem; line-height:1.5; background:#1e293b; color:#cbd5e1; border:none; padding:15px;"><?php echo esc_textarea($tpl->content); ?></textarea>
                                     <div style="margin-top:10px; display:flex; gap:10px; flex-wrap:wrap;">
-                                        <small style="color:var(--control-muted);"><?php _e('المتغيرات:', 'control'); ?></small>
+                                        <small style="color:var(--control-muted);"><?php _e('المتغيرات المتاحة:', 'control'); ?></small>
                                         <code class="tpl-tag">{user_name}</code>
                                         <code class="tpl-tag">{system_name}</code>
                                         <code class="tpl-tag">{site_url}</code>
+                                        <?php if($key === 'password_reset'): ?><code class="tpl-tag">{new_password}</code><?php endif; ?>
+                                        <?php if($key === 'account_restriction'): ?>
+                                            <code class="tpl-tag">{restriction_reason}</code>
+                                            <code class="tpl-tag">{expiry_date}</code>
+                                        <?php endif; ?>
+                                        <?php if($key === 'new_login_alert'): ?>
+                                            <code class="tpl-tag">{login_time}</code>
+                                            <code class="tpl-tag">{device_type}</code>
+                                            <code class="tpl-tag">{ip_address}</code>
+                                        <?php endif; ?>
                                     </div>
                                 </div>
                             </div>
@@ -592,38 +610,77 @@ $settings = $wpdb->get_results( "SELECT * FROM {$wpdb->prefix}control_settings",
 
         <!-- Section: Policies & Terms -->
         <div id="tab-policies" class="control-tab-content" style="display:none;">
-            <div class="control-card" style="border-top: 4px solid var(--control-primary); padding: 25px;">
-                <div style="margin-bottom:25px; border-bottom:1px solid var(--control-bg); padding-bottom:15px;">
+            <div class="control-header-flex" style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <div>
                     <h3 style="margin:0; font-size:1.1rem; color:var(--control-text-dark);"><?php _e('إدارة السياسات والأحكام', 'control'); ?></h3>
-                    <div style="color:var(--control-muted); font-size:0.8rem; margin-top:5px;"><?php _e('تحرير النصوص القانونية، سياسة الخصوصية، وشروط الخدمة الخاصة بالمنصة.', 'control'); ?></div>
+                    <div style="color:var(--control-muted); font-size:0.8rem; margin-top:5px;"><?php _e('تحرير النصوص القانونية، سياسة الخصوصية، وشروط الخدمة.', 'control'); ?></div>
                 </div>
+                <button id="add-new-policy-btn" class="control-btn control-btn-accent" style="height:40px; padding:0 20px; font-weight:800;">
+                    <span class="dashicons dashicons-plus-alt" style="margin-left:8px;"></span><?php _e('إضافة سياسة جديدة', 'control'); ?>
+                </button>
+            </div>
 
-                <form class="control-system-settings-form">
+            <div class="control-policies-grid" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap:20px;">
+                <?php
+                $policies = $wpdb->get_results("SELECT * FROM {$wpdb->prefix}control_policies ORDER BY last_updated DESC");
+                if ($policies):
+                    foreach($policies as $policy): ?>
+                    <div class="control-card policy-card" style="padding:20px; border-top: 3px solid var(--control-primary);">
+                        <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:15px;">
+                            <h4 style="margin:0; font-weight:800; color:var(--control-text-dark);"><?php echo esc_html($policy->title); ?></h4>
+                            <div style="font-size:0.65rem; color:var(--control-muted);"><?php echo date('Y/m/d', strtotime($policy->last_updated)); ?></div>
+                        </div>
+                        <div style="font-size:0.8rem; color:var(--control-muted); line-height:1.5; height:60px; overflow:hidden; mask-image: linear-gradient(to bottom, black 50%, transparent 100%);">
+                            <?php echo wp_strip_all_tags($policy->content); ?>
+                        </div>
+                        <div style="margin-top:20px; display:flex; gap:10px; border-top:1px solid var(--control-border); padding-top:15px;">
+                            <button class="control-btn edit-policy-btn" style="flex:1; background:var(--control-bg); color:var(--control-text-dark) !important; font-size:0.75rem;" data-policy='<?php echo json_encode($policy, JSON_UNESCAPED_UNICODE); ?>'><?php _e('تعديل', 'control'); ?></button>
+                            <button class="control-btn delete-policy-btn" style="background:#fee2e2; color:#ef4444 !important; width:40px; padding:0;" data-id="<?php echo $policy->id; ?>"><span class="dashicons dashicons-trash"></span></button>
+                        </div>
+                    </div>
+                <?php endforeach;
+                else: ?>
+                    <div class="control-card" style="grid-column: 1 / -1; padding:40px; text-align:center;">
+                        <span class="dashicons dashicons-info" style="font-size:48px; width:48px; height:48px; color:var(--control-muted);"></span>
+                        <p style="color:var(--control-muted); margin-top:15px;"><?php _e('لم يتم العثور على أي سياسات حالياً.', 'control'); ?></p>
+                    </div>
+                <?php endif; ?>
+            </div>
+
+            <div class="control-card" style="margin-top:30px; background:#eff6ff; border:1px solid #dbeafe;">
+                <div style="display:flex; align-items:center; gap:15px; padding:20px;">
+                    <div style="width:40px; height:40px; background:#fff; border-radius:10px; display:flex; align-items:center; justify-content:center; color:#3b82f6; box-shadow:var(--control-shadow-sm);">
+                        <span class="dashicons dashicons-shortcode"></span>
+                    </div>
+                    <div style="flex:1;">
+                        <h4 style="margin:0; font-size:0.9rem; color:#1e40af; font-weight:800;"><?php _e('تضمين السياسات برمجياً', 'control'); ?></h4>
+                        <p style="margin:5px 0 0 0; font-size:0.75rem; color:#1e40af; opacity:0.8;"><?php _e('استخدم الكود القصير أدناه لعرض كافة السياسات المفعله في أي صفحة.', 'control'); ?></p>
+                    </div>
+                    <div style="display:flex; align-items:center; gap:10px; background:#fff; padding:8px 15px; border-radius:8px; border:1px solid #dbeafe;">
+                        <code style="color:#2563eb; font-weight:800;">[control_policies]</code>
+                        <button type="button" class="control-btn" style="height:28px; padding:0 10px; font-size:0.7rem; background:#2563eb;" onclick="navigator.clipboard.writeText('[control_policies]'); alert('تم النسخ');"><?php _e('نسخ', 'control'); ?></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Policy Edit Modal -->
+        <div id="control-policy-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0, 0, 0, 0.7); z-index:100002; align-items:center; justify-content:center; backdrop-filter: blur(8px); direction: rtl;">
+            <div class="control-card" style="width:100%; max-width:800px; padding:35px; border-radius:24px;">
+                <h3 id="policy-modal-title" style="margin-bottom:25px; color:var(--control-text-dark); font-weight:800;"><?php _e('تحرير السياسة', 'control'); ?></h3>
+                <form id="control-policy-form">
+                    <input type="hidden" name="id" id="policy-id">
                     <div class="control-form-group">
-                        <label><?php _e('محتوى السياسات (يدعم HTML)', 'control'); ?></label>
-                        <textarea name="policies_content" rows="15" style="font-family:monospace; line-height:1.6; font-size:0.9rem;"><?php echo esc_textarea($settings['policies_content']->setting_value ?? ''); ?></textarea>
+                        <label><?php _e('عنوان السياسة / البند', 'control'); ?></label>
+                        <input type="text" name="title" id="policy-title" required placeholder="<?php _e('مثلاً: سياسة الخصوصية', 'control'); ?>">
                     </div>
-
-                    <div style="background:var(--control-bg); padding:20px; border-radius:12px; border:1px solid var(--control-border); margin-top:20px;">
-                        <h4 style="margin:0 0 10px 0; font-size:0.9rem;"><?php _e('كود العرض (Shortcode)', 'control'); ?></h4>
-                        <div style="display:flex; align-items:center; gap:15px; background:#fff; padding:12px 15px; border:1px solid var(--control-border); border-radius:8px;">
-                            <code style="color:var(--control-primary); font-weight:800; font-size:1rem;">[control_policies]</code>
-                            <button type="button" class="control-btn" style="height:32px; padding:0 12px; font-size:0.75rem; background:var(--control-primary-soft);" onclick="navigator.clipboard.writeText('[control_policies]'); alert('تم النسخ');"><?php _e('نسخ الكود', 'control'); ?></button>
-                        </div>
-                        <p style="font-size:0.75rem; color:var(--control-muted); margin:10px 0 0 0;">
-                            <?php _e('يمكنك استخدام هذا الكود لعرض السياسات والأحكام بشكل ديناميكي في أي صفحة داخل الموقع.', 'control'); ?>
-                        </p>
+                    <div class="control-form-group">
+                        <label><?php _e('المحتوى التفصيلي (يدعم HTML)', 'control'); ?></label>
+                        <textarea name="content" id="policy-content" rows="12" style="font-family:monospace; line-height:1.6;"></textarea>
                     </div>
-
-                    <div style="margin-top:35px; border-top:1px solid var(--control-bg); padding-top:20px; display:flex; flex-direction:column; gap:20px;">
-                        <button type="submit" class="control-btn control-btn-accent" style="height:48px; border-radius:8px; font-weight:800; min-width:220px; align-self: flex-start;"><?php _e('حفظ نصوص السياسات', 'control'); ?></button>
-
-                        <div style="padding:15px; background:#eff6ff; border-radius:12px; display:flex; gap:15px; align-items:center; border:1px solid #dbeafe;">
-                            <span class="dashicons dashicons-info-outline" style="color:#3b82f6;"></span>
-                            <p style="margin:0; font-size:0.8rem; color:#1e40af; line-height:1.5;">
-                                <?php _e('ملاحظة: يمكنك استخدام الكود القصير (Shortcode) أعلاه لعرض السياسات والأحكام والشروط بشكل ديناميكي في أي صفحة داخل الموقع مع ضمان تصميم احترافي وموحد يعكس دائماً آخر التعديلات التي تقوم بها هنا.', 'control'); ?>
-                            </p>
-                        </div>
+                    <div style="display:flex; gap:15px; margin-top:30px;">
+                        <button type="submit" class="control-btn control-btn-accent" style="flex:2; height:48px; font-weight:800;"><?php _e('حفظ السياسة', 'control'); ?></button>
+                        <button type="button" onclick="jQuery('#control-policy-modal').hide()" class="control-btn" style="flex:1; background:var(--control-bg); color:var(--control-text-dark) !important; height:48px;"><?php _e('إلغاء', 'control'); ?></button>
                     </div>
                 </form>
             </div>
