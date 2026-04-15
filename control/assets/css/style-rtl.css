@@ -200,7 +200,6 @@ body, .control-dashboard {
 /* Form Styles */
 .control-form-group {
     margin-bottom: 15px;
-    width: 100%;
 }
 
 .control-form-group label {
@@ -560,15 +559,18 @@ body, .control-dashboard {
 .fields-group {
     display: flex;
     flex-wrap: wrap;
-    gap: 20px 15px;
+    gap: 20px 16px;
+    width: 100%;
 }
 
 .control-form-group.field-width-full {
     flex: 0 0 100%;
+    width: 100%;
 }
 
 .control-form-group.field-width-half {
     flex: 0 0 calc(50% - 8px);
+    width: calc(50% - 8px);
 }
 
 @media (max-width: 768px) {

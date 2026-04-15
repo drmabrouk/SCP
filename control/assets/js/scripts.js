@@ -615,7 +615,7 @@ jQuery(document).ready(function($) {
 
         // Manual collection of checkboxes to handle '0' values for unchecked states
         let checkboxes = {};
-        $form.find('input[type="checkbox"]').each(function() {
+        $form.find('input[type="checkbox"]:not(.field-enabled):not(.field-required)').each(function() {
             if (this.name) {
                 checkboxes[this.name] = this.checked ? '1' : '0';
             }
@@ -628,7 +628,7 @@ jQuery(document).ready(function($) {
                 id: $(this).find('.field-id').val(),
                 label: $(this).find('.field-label').val(),
                 step: parseInt($(this).find('.field-step').val()),
-                width: $(this).find('.field-width').val(),
+                width: $(this).find('.field-width').val() || 'full',
                 enabled: $(this).find('.field-enabled').is(':checked'),
                 required: $(this).find('.field-required').is(':checked')
             });
@@ -636,9 +636,11 @@ jQuery(document).ready(function($) {
 
         let formData = $form.serializeArray();
 
-        // Overwrite or append checkbox values
+        // Remove existing items that we are going to manually add or that shouldn't be there
+        formData = formData.filter(item => !checkboxes.hasOwnProperty(item.name) && item.name !== 'auth_registration_fields');
+
+        // Append manual checkbox values
         Object.keys(checkboxes).forEach(name => {
-            formData = formData.filter(item => item.name !== name);
             formData.push({ name: name, value: checkboxes[name] });
         });
 
