@@ -630,6 +630,43 @@ $settings = $wpdb->get_results( "SELECT * FROM {$wpdb->prefix}control_settings",
         </div>
 
         <!-- Section 4: Activity Audit Log -->
+        <!-- Section 6: System Maintenance -->
+        <div id="tab-maintenance" class="control-tab-content" style="display:none;">
+            <div class="control-card" style="border-top: 4px solid #64748b; padding: 25px;">
+                <div style="margin-bottom:25px; border-bottom:1px solid var(--control-bg); padding-bottom:15px;">
+                    <h3 style="margin:0; font-size:1.1rem; color:var(--control-text-dark);"><?php _e('صيانة وتحديث النظام', 'control'); ?></h3>
+                    <div style="color:var(--control-muted); font-size:0.8rem; margin-top:5px;"><?php _e('أدوات لضمان تشغيل النظام بأحدث نسخة وتجاوز مشاكل التخزين المؤقت.', 'control'); ?></div>
+                </div>
+
+                <div class="control-grid" style="grid-template-columns: 1fr 1fr; gap:25px;">
+                    <!-- Version Info -->
+                    <div style="background:#f8fafc; border:1px solid #e2e8f0; padding:25px; border-radius:16px;">
+                        <h4 style="margin:0 0 15px 0; color:#475569; font-size:0.95rem; font-weight:700;"><?php _e('معلومات الإصدار الحالي', 'control'); ?></h4>
+                        <div style="display:flex; align-items:center; gap:15px; margin-bottom:10px;">
+                            <div style="font-size:2rem; font-weight:800; color:var(--control-primary);">v<?php echo CONTROL_VERSION; ?></div>
+                            <span class="control-status-indicator indicator-success"><?php _e('نظام مستقر', 'control'); ?></span>
+                        </div>
+                        <p style="font-size:0.75rem; color:var(--control-muted); line-height:1.6; margin:0;">
+                            <?php _e('هذا هو الإصدار النشط حالياً في بيئة العمل. يتم تحميل كافة ملفات التنسيق والبرمجة بناءً على هذا الرقم لضمان التحديث الفوري.', 'control'); ?>
+                        </p>
+                    </div>
+
+                    <!-- Cache Clearing -->
+                    <div style="background:#f0f9ff; border:1px solid #e0f2fe; padding:25px; border-radius:16px; display:flex; flex-direction:column; justify-content:space-between;">
+                        <div>
+                            <h4 style="margin:0 0 10px 0; color:#0369a1; font-size:0.95rem; font-weight:700;"><?php _e('تحديث ملفات النظام (Clear Cache)', 'control'); ?></h4>
+                            <p style="font-size:0.75rem; color:#075985; line-height:1.6; margin-bottom:20px;">
+                                <?php _e('إذا واجهت أي مشاكل في عرض التحديثات الجديدة، استخدم هذا الزر لمسح بيانات التخزين المؤقت للمتصفح وإعادة تحميل النظام كلياً.', 'control'); ?>
+                            </p>
+                        </div>
+                        <button id="control-refresh-btn" class="control-btn" style="background:#0284c7; border:none; width:100%; height:44px; font-weight:700;">
+                            <span class="dashicons dashicons-update" style="margin-left:8px;"></span><?php _e('تحديث فوري للنظام', 'control'); ?>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div id="tab-audit" class="control-tab-content" style="display:none;">
             <div class="control-card" style="border-top: 4px solid var(--control-text-dark); padding:0; overflow:hidden;">
                 <div style="display:flex; justify-content: space-between; align-items: center; padding:20px 25px; background:#f8fafc; border-bottom:1px solid var(--control-border);">
