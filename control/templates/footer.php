@@ -140,6 +140,7 @@
     </div>
 </div>
 
-<footer class="control-footer">
-    &copy; 2026 Control Team - control.online
+<footer class="control-footer" style="display:flex; justify-content:space-between; align-items:center; padding:15px 25px; font-size:0.75rem; color:var(--control-muted); border-top:1px solid var(--control-border); margin-top:20px;">
+    <div>&copy; 2026 Control Team - control.online</div>
+    <div style="font-weight:700; opacity:0.6;">System Version: v<?php echo CONTROL_VERSION; ?></div>
 </footer>

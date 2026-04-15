@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Control
  * Description: Professional system for administrative and user management.
- * Version: 2.0.0
+ * Version: 2.2.0
  * Author: Control Team
  * Text Domain: control
  * Domain Path: /languages
@@ -18,7 +18,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Define constants
-define( 'CONTROL_VERSION', '2.0.0' );
+define( 'CONTROL_VERSION', '2.2.0' );
 define( 'CONTROL_PATH', plugin_dir_path( __FILE__ ) );
 define( 'CONTROL_URL', plugin_dir_url( __FILE__ ) );
 
@@ -40,6 +40,15 @@ class Control_System {
 		$this->define_constants();
 		$this->includes();
 		$this->init_hooks();
+		$this->version_check();
+	}
+
+	private function version_check() {
+		$installed_ver = get_option( 'control_system_version' );
+		if ( $installed_ver !== CONTROL_VERSION ) {
+			Control_Database::create_tables();
+			update_option( 'control_system_version', CONTROL_VERSION );
+		}
 	}
 
 	private function define_constants() {

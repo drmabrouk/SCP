@@ -640,15 +640,36 @@ $settings = $wpdb->get_results( "SELECT * FROM {$wpdb->prefix}control_settings",
 
                 <div class="control-grid" style="grid-template-columns: 1fr 1fr; gap:25px;">
                     <!-- Version Info -->
-                    <div style="background:#f8fafc; border:1px solid #e2e8f0; padding:25px; border-radius:16px;">
-                        <h4 style="margin:0 0 15px 0; color:#475569; font-size:0.95rem; font-weight:700;"><?php _e('معلومات الإصدار الحالي', 'control'); ?></h4>
-                        <div style="display:flex; align-items:center; gap:15px; margin-bottom:10px;">
-                            <div style="font-size:2rem; font-weight:800; color:var(--control-primary);">v<?php echo CONTROL_VERSION; ?></div>
-                            <span class="control-status-indicator indicator-success"><?php _e('نظام مستقر', 'control'); ?></span>
+                    <div style="background:#f8fafc; border:1px solid #e2e8f0; padding:25px; border-radius:16px; display:flex; flex-direction:column; gap:15px;">
+                        <div>
+                            <h4 style="margin:0 0 15px 0; color:#475569; font-size:0.95rem; font-weight:700;"><?php _e('معلومات الإصدار الحالي', 'control'); ?></h4>
+                            <div style="display:flex; align-items:center; gap:15px; margin-bottom:10px;">
+                                <div style="font-size:2rem; font-weight:800; color:var(--control-primary);">v<?php echo CONTROL_VERSION; ?></div>
+                                <span class="control-status-indicator indicator-success"><?php _e('نظام مستقر', 'control'); ?></span>
+                            </div>
+                            <p style="font-size:0.75rem; color:var(--control-muted); line-height:1.6; margin:0;">
+                                <?php _e('هذا هو الإصدار النشط حالياً. يتم تحميل كافة ملفات التنسيق والبرمجة بناءً على هذا الرقم لضمان التحديث الفوري.', 'control'); ?>
+                            </p>
                         </div>
-                        <p style="font-size:0.75rem; color:var(--control-muted); line-height:1.6; margin:0;">
-                            <?php _e('هذا هو الإصدار النشط حالياً في بيئة العمل. يتم تحميل كافة ملفات التنسيق والبرمجة بناءً على هذا الرقم لضمان التحديث الفوري.', 'control'); ?>
-                        </p>
+
+                        <div style="border-top:1px solid #e2e8f0; padding-top:15px; margin-bottom:15px;">
+                            <h5 style="margin:0 0 10px 0; font-size:0.8rem; color:var(--control-primary); font-weight:700;"><?php _e('حالة البيئة (Environment Status):', 'control'); ?></h5>
+                            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; font-size:0.7rem; color:var(--control-muted);">
+                                <div><?php _e('نسخة WordPress:', 'control'); ?> <strong><?php echo get_bloginfo('version'); ?></strong></div>
+                                <div><?php _e('نسخة PHP:', 'control'); ?> <strong><?php echo phpversion(); ?></strong></div>
+                                <div><?php _e('وضع التصحيح:', 'control'); ?> <strong><?php echo (defined('WP_DEBUG') && WP_DEBUG) ? __('مفعل', 'control') : __('معطل', 'control'); ?></strong></div>
+                                <div><?php _e('الذاكرة المتاحة:', 'control'); ?> <strong><?php echo ini_get('memory_limit'); ?></strong></div>
+                            </div>
+                        </div>
+
+                        <div style="border-top:1px solid #e2e8f0; padding-top:15px;">
+                            <h5 style="margin:0 0 10px 0; font-size:0.8rem; color:var(--control-primary); font-weight:700;"><?php _e('سجل التحديثات الأخير (Update Log):', 'control'); ?></h5>
+                            <ul style="margin:0; padding-right:20px; font-size:0.7rem; color:var(--control-muted); line-height:1.6;">
+                                <li><?php _e('تحديث v2.2.0: تفعيل نظام التحقق التلقائي من الإصدار وتحديث قاعدة البيانات.', 'control'); ?></li>
+                                <li><?php _e('تحديث v2.1.0: تحسين واجهة الدخول والتسجيل بالكامل وإضافة خيارات التخصيص.', 'control'); ?></li>
+                                <li><?php _e('تحديث v2.0.0: ترقية هيكلية النظام وإضافة نظام التنبيهات المتقدم.', 'control'); ?></li>
+                            </ul>
+                        </div>
                     </div>
 
                     <!-- Cache Clearing -->
