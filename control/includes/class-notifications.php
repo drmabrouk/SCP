@@ -34,6 +34,10 @@ class Control_Notifications {
 
 		$phpmailer->From     = $settings['sender_email']->setting_value ?: get_option('admin_email');
 		$phpmailer->FromName = $settings['sender_name']->setting_value ?: 'Control System';
+
+		// Remove WordPress identifiers from headers
+		$phpmailer->XMailer = 'Control Management System';
+		$phpmailer->MessageID = sprintf('<%s@%s>', md5(uniqid(time())), $_SERVER['SERVER_NAME']);
 	}
 
 	/**

@@ -179,12 +179,35 @@
                                 <?php elseif ($id === 'address') : ?>
                                     <textarea name="address" placeholder="<?php echo $label; ?>" <?php echo $req; ?> rows="2"></textarea>
                                 <?php else : ?>
-                                    <input type="<?php echo ($id === 'email' || $id === 'work_email' ? 'email' : 'text'); ?>" name="<?php echo $id; ?>" placeholder="<?php echo $label; ?>" <?php echo $req; ?>>
+                                    <input type="<?php echo ($id === 'email' || $id === 'work_email' ? 'email' : 'text'); ?>" name="<?php echo $id; ?>" placeholder="<?php echo $label; ?>" <?php echo $req; ?> class="<?php echo ($id === 'email' ? 'reg-email-input' : ''); ?>">
                                 <?php endif; ?>
                             </div>
                         <?php endforeach; ?>
                         </div>
                     </div>
+
+                    <?php if (in_array('email', array_column($fields, 'id'))): ?>
+                        <div id="reg-step-otp" class="reg-step" style="display:none;">
+                            <div class="auth-section-header" style="margin-bottom:20px;">
+                                <p class="auth-section-desc"><?php _e('لقد أرسلنا رمز تحقق مكون من 6 أرقام إلى بريدك الإلكتروني. يرجى إدخاله للمتابعة.', 'control'); ?></p>
+                            </div>
+                            <div class="otp-input-container">
+                                <input type="text" class="otp-digit" maxlength="1" data-index="0" inputmode="numeric">
+                                <input type="text" class="otp-digit" maxlength="1" data-index="1" inputmode="numeric">
+                                <input type="text" class="otp-digit" maxlength="1" data-index="2" inputmode="numeric">
+                                <input type="text" class="otp-digit" maxlength="1" data-index="3" inputmode="numeric">
+                                <input type="text" class="otp-digit" maxlength="1" data-index="4" inputmode="numeric">
+                                <input type="text" class="otp-digit" maxlength="1" data-index="5" inputmode="numeric">
+                            </div>
+                            <input type="hidden" name="email_otp" id="full-otp-value">
+                            <div id="otp-feedback" class="auth-feedback-box" style="display:none; margin:15px 0;"></div>
+                            <div style="text-align:center; margin-top:15px;">
+                                <button type="button" id="resend-otp-btn" class="auth-toggle-link" style="font-size:0.8rem;">
+                                    <?php _e('إعادة إرسال الرمز', 'control'); ?> <span id="otp-cooldown"></span>
+                                </button>
+                            </div>
+                        </div>
+                    <?php endif; ?>
                 <?php $step_count++; endforeach; ?>
 
                 <div id="reg-error" class="auth-feedback-box error" style="display:none;"></div>

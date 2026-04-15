@@ -16,6 +16,7 @@ class Control_Database {
 		$table_activity_logs = $wpdb->prefix . 'control_activity_logs';
 		$table_email_templates = $wpdb->prefix . 'control_email_templates';
 		$table_policies     = $wpdb->prefix . 'control_policies';
+		$table_otps         = $wpdb->prefix . 'control_otps';
 
 		$sql = "CREATE TABLE $table_staff (
 			id mediumint(9) NOT NULL AUTO_INCREMENT,
@@ -104,6 +105,17 @@ class Control_Database {
 			content longtext NOT NULL,
 			last_updated datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 			PRIMARY KEY  (id)
+		) $charset_collate;
+
+		CREATE TABLE $table_otps (
+			id bigint(20) NOT NULL AUTO_INCREMENT,
+			email varchar(255) NOT NULL,
+			otp varchar(10) NOT NULL,
+			expiry datetime NOT NULL,
+			created_at datetime DEFAULT CURRENT_TIMESTAMP,
+			is_verified tinyint(1) DEFAULT 0,
+			PRIMARY KEY  (id),
+			KEY email (email)
 		) $charset_collate;";
 
 		if ( file_exists( ABSPATH . 'wp-admin/includes/upgrade.php' ) ) {
@@ -261,6 +273,10 @@ class Control_Database {
 			'new_login_alert' => array(
 				'subject' => 'تنبيه أمني: دخول جديد لحسابك في {system_name}',
 				'content' => '<h1>تنبيه أمني</h1><p>أهلاً {user_name}، لقد تم رصد عملية دخول جديدة لحسابك الآن.</p><div style="background:#f8fafc; padding:20px; border-radius:8px; margin:20px 0;"><strong>الوقت:</strong> {login_time}<br><strong>الجهاز:</strong> {device_type}<br><strong>عنوان IP:</strong> {ip_address}</div><p>إذا لم تكن أنت من قام بهذه العملية، يرجى تغيير كلمة المرور فوراً والتواصل مع الإدارة.</p>'
+			),
+			'email_verification_otp' => array(
+				'subject' => 'رمز التحقق الخاص بك - {system_name}',
+				'content' => '<h1>تحقق من بريدك الإلكتروني</h1><p>أهلاً بك، يرجى استخدام الرمز التالي لإكمال عملية التسجيل في المنصة. هذا الرمز صالح لمدة 10 دقائق فقط.</p><div style="background:#f1f5f9; padding:30px; border-radius:12px; margin:20px 0; text-align:center;"><span style="font-size:32px; font-weight:800; color:var(--control-primary); letter-spacing:10px;">{otp_code}</span></div><p>إذا لم تكن أنت من بدأ هذا الطلب، يرجى تجاهل هذا البريد.</p>'
 			)
 		);
 
