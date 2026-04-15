@@ -59,6 +59,7 @@
                     <h2><?php echo esc_html($system_name); ?></h2>
                 <?php endif;
             ?>
+            <div style="margin-top:10px;"><span style="background:var(--control-accent); color:var(--control-primary-soft); padding:3px 10px; border-radius:30px; font-size:0.65rem; font-weight:800; letter-spacing:0.5px;">v<?php echo CONTROL_VERSION; ?></span></div>
         </div>
         <nav class="control-sidebar-nav">
             <?php if ( Control_Auth::has_permission('dashboard') ) : ?>
