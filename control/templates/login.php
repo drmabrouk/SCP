@@ -146,7 +146,7 @@
                             $label = $field['label'];
                             $width_class = ($field['width'] ?? 'full') === 'half' ? 'field-width-half' : 'field-width-full';
                         ?>
-                            <div class="control-form-group field-<?php echo $id; ?> <?php echo $width_class; ?> <?php echo ($id === 'phone' ? 'phone-group' : ''); ?>">
+                            <div class="control-form-group field-<?php echo $id; ?> <?php echo $width_class; ?> <?php echo ($id === 'phone' || $id === 'password' || $id === 'confirm_password' ? 'phone-group' : ''); ?>">
                                 <?php if ($id === 'phone') : ?>
                                     <div class="integrated-phone-field">
                                         <div class="country-selector">
