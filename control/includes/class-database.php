@@ -200,6 +200,7 @@ class Control_Database {
 			'auth_input_bg'          => 'transparent',
 			'auth_input_border'      => 'rgba(255,255,255,0.2)',
 			'auth_input_focus'       => '#D4AF37',
+			'policies_content'       => '<h2>الشروط والأحكام</h2><p>هنا تدرج سياسات النظام والشروط القانونية المنظمة للعمل.</p>',
 		);
 
 		foreach ( $defaults as $key => $value ) {
