@@ -1,5 +1,9 @@
 jQuery(document).ready(function($) {
 
+    // Initializations
+    updateFloatingLabels();
+    $('.country-code-select').trigger('change');
+
     // --- Backup & Restore System ---
 
     $(document).on('click', '#control-generate-backup', function() {
@@ -58,10 +62,10 @@ jQuery(document).ready(function($) {
         });
     }
 
-    $('#switch-to-register').on('click', function() { switchAuthView('#control-login-container', '#control-register-container'); initRegDots(); });
-    $('#switch-to-login-from-reg').on('click', function() { switchAuthView('#control-register-container', '#control-login-container'); });
-    $('#switch-to-forgot').on('click', function() { switchAuthView('#control-login-container', '#control-forgot-container'); });
-    $('#switch-to-login-from-forgot').on('click', function() { switchAuthView('#control-forgot-container', '#control-login-container'); });
+    $('#switch-to-register').on('click', function() { switchAuthView('#control-login-container', '#control-register-container'); initRegDots(); setTimeout(updateFloatingLabels, 300); });
+    $('#switch-to-login-from-reg').on('click', function() { switchAuthView('#control-register-container', '#control-login-container'); setTimeout(updateFloatingLabels, 300); });
+    $('#switch-to-forgot').on('click', function() { switchAuthView('#control-login-container', '#control-forgot-container'); setTimeout(updateFloatingLabels, 300); });
+    $('#switch-to-login-from-forgot').on('click', function() { switchAuthView('#control-forgot-container', '#control-login-container'); setTimeout(updateFloatingLabels, 300); });
 
     let regCurrentStep = 1;
     function getRegTotalSteps() { return $('.reg-step').length; }
@@ -166,6 +170,31 @@ jQuery(document).ready(function($) {
         }
     });
 
+    // Helper for floating labels
+    function updateFloatingLabels() {
+        $('.control-form-group input, .control-form-group select, .control-form-group textarea').each(function() {
+            if ($(this).val()) {
+                $(this).closest('.control-form-group').addClass('has-value');
+            } else {
+                $(this).closest('.control-form-group').removeClass('has-value');
+            }
+        });
+    }
+
+    $(document).on('focus blur change input', '.control-form-group input, .control-form-group select, .control-form-group textarea', function() {
+        if ($(this).val()) {
+            $(this).closest('.control-form-group').addClass('has-value');
+        } else {
+            $(this).closest('.control-form-group').removeClass('has-value');
+        }
+    });
+
+    // Country Code Flag Switcher
+    $(document).on('change', '.country-code-select', function() {
+        const flag = $(this).find(':selected').data('flag');
+        $(this).siblings('.selected-flag').text(flag);
+    });
+
     function checkFullOTP() {
         let otp = '';
         $('.otp-digit').each(function() { otp += $(this).val(); });
@@ -209,14 +238,32 @@ jQuery(document).ready(function($) {
         let valid = true;
         const root = document.documentElement;
         const errorColor = '#ef4444';
-        const normalColor = getComputedStyle(root).getPropertyValue('--auth-input-border') || 'rgba(255,255,255,0.15)';
 
         $(`#reg-step-${step} [required]`).each(function() {
-            if (!$(this).val()) {
-                $(this).closest('.control-form-group').find('input, select, textarea, .integrated-phone-field').css('border-color', errorColor);
+            const $field = $(this);
+            const $container = $field.closest('.control-form-group');
+            const val = $field.val();
+
+            if (!val || (val && val.trim() === '')) {
+                $container.find('input, select, textarea, .integrated-phone-field').css('border-color', errorColor);
+                if (!$container.find('.error-msg').length) {
+                    $container.append(`<div class="error-msg" style="color:${errorColor}; font-size:0.7rem; margin-top:4px; font-weight:700;">هذا الحقل مطلوب</div>`);
+                }
                 valid = false;
             } else {
-                $(this).closest('.control-form-group').find('input, select, textarea, .integrated-phone-field').css('border-color', '');
+                $container.find('input, select, textarea, .integrated-phone-field').css('border-color', '');
+                $container.find('.error-msg').remove();
+
+                // Specific Validation: Phone
+                if ($field.attr('id') === 'reg-phone-body') {
+                    if (val.length < 7) {
+                        $container.find('.integrated-phone-field').css('border-color', errorColor);
+                        if (!$container.find('.error-msg').length) {
+                            $container.append(`<div class="error-msg" style="color:${errorColor}; font-size:0.7rem; margin-top:4px; font-weight:700;">رقم الهاتف غير صالح</div>`);
+                        }
+                        valid = false;
+                    }
+                }
             }
         });
         return valid;

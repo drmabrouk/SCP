@@ -463,6 +463,8 @@ class Control_Ajax {
 		foreach ( $_POST as $key => $value ) {
 			if ( strpos( $key, 'control_' ) === false && $key !== 'action' && $key !== 'nonce' ) {
 
+				$value = wp_unslash( $value );
+
 				// Handle email template fields
 				if ( strpos( $key, 'tpl_subject_' ) === 0 ) {
 					$tpl_key = str_replace( 'tpl_subject_', '', $key );
@@ -475,9 +477,12 @@ class Control_Ajax {
 					continue;
 				}
 
+				// Selective Sanitization to prevent data corruption (JSON/HTML)
+				$sanitized_value = ( $key === 'auth_registration_fields' || strpos($key, 'policies_') !== false ) ? $value : sanitize_text_field( $value );
+
 				$wpdb->replace( $table, array(
 					'setting_key'   => sanitize_key( $key ),
-					'setting_value' => sanitize_text_field( $value )
+					'setting_value' => $sanitized_value
 				) );
 			}
 		}

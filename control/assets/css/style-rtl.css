@@ -389,6 +389,15 @@ body, .control-dashboard {
 
 .integrated-phone-field .country-selector {
     border-right: 1px solid var(--auth-input-border, rgba(255, 255, 255, 0.15));
+    display: flex;
+    align-items: center;
+    padding: 0 10px;
+    gap: 8px;
+    background: rgba(0,0,0,0.05);
+}
+
+.selected-flag {
+    font-size: 1.2rem;
 }
 
 .integrated-phone-field select {
@@ -733,6 +742,60 @@ body, .control-dashboard {
 @media (max-width: 480px) {
     .control-metrics-grid { grid-template-columns: 1fr; }
     .control-auth-card { padding: 25px; }
+}
+
+/* Floating Labels Implementation */
+.control-form-group {
+    position: relative;
+    margin-bottom: 25px !important;
+}
+
+.control-form-group label {
+    position: absolute;
+    top: 50%;
+    right: 18px;
+    transform: translateY(-50%);
+    background: transparent;
+    padding: 0 5px;
+    color: var(--auth-label-color, #94a3b8);
+    font-size: 0.95rem;
+    pointer-events: none;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 10;
+}
+
+.control-form-group.has-value label,
+.control-form-group:focus-within label,
+.control-form-group input:focus ~ label,
+.control-form-group select:focus ~ label,
+.control-form-group textarea:focus ~ label {
+    top: 0;
+    right: 12px;
+    font-size: 0.75rem;
+    font-weight: 800;
+    color: var(--auth-input-focus, var(--control-accent));
+    background: var(--control-bg-main, #f8fafc);
+    border-radius: 4px;
+}
+
+/* Auth Specific Floating Labels */
+.control-auth-card .control-form-group.has-value label,
+.control-auth-card .control-form-group input:focus ~ label,
+.control-auth-card .control-form-group select:focus ~ label,
+.control-auth-card .control-form-group textarea:focus ~ label {
+    background: var(--auth-container-bg, #000);
+}
+
+.control-form-group input::placeholder,
+.control-form-group textarea::placeholder {
+    color: transparent !important;
+    transition: color 0.2s;
+}
+
+.control-form-group input:focus::placeholder,
+.control-form-group textarea:focus::placeholder {
+    color: var(--auth-label-color, #94a3b8) !important;
+    opacity: 0.5;
 }
 
 /* Workforce Distribution Grid */

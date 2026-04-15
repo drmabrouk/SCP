@@ -27,11 +27,11 @@
         <!-- Login Form -->
         <div id="control-login-container" class="auth-container" style="<?php echo ($login_visible === '0') ? 'display:none;' : ''; ?>">
             <form id="control-login-form">
-                <div class="control-form-group">
-                    <label><?php _e('رقم الهاتف', 'control'); ?></label>
+                <div class="control-form-group phone-group">
                     <div class="integrated-phone-field">
                         <div class="country-selector">
-                            <select id="login-country-code">
+                            <span class="selected-flag">🇪🇬</span>
+                            <select id="login-country-code" class="country-code-select">
                                 <option value="+20" data-flag="🇪🇬">+20</option>
                                 <option value="+971" data-flag="🇦🇪">+971</option>
                                 <option value="+966" data-flag="🇸🇦">+966</option>
@@ -41,18 +41,19 @@
                                 <option value="+968" data-flag="🇴🇲">+968</option>
                             </select>
                         </div>
-                        <input type="tel" name="phone_body" id="login-phone-body" placeholder="000 000 000" required>
+                        <input type="tel" name="phone_body" id="login-phone-body" placeholder="<?php _e('رقم الهاتف', 'control'); ?>" required>
                         <input type="hidden" name="phone" id="login-phone-full">
                     </div>
+                    <label><?php _e('رقم الهاتف', 'control'); ?></label>
                 </div>
 
                 <div class="control-form-group">
-                    <div class="label-row">
-                        <label><?php _e('كلمة المرور', 'control'); ?></label>
-                        <button type="button" id="switch-to-forgot" class="forgot-password-link"><?php _e('نسيت كلمة المرور؟', 'control'); ?></button>
-                    </div>
                     <div class="password-input-wrapper">
-                        <input type="password" name="password" required placeholder="••••••••">
+                        <input type="password" name="password" required placeholder="<?php _e('كلمة المرور', 'control'); ?>">
+                        <label><?php _e('كلمة المرور', 'control'); ?></label>
+                    </div>
+                    <div style="text-align: left; margin-top: -15px; margin-bottom: 10px;">
+                        <button type="button" id="switch-to-forgot" class="forgot-password-link"><?php _e('نسيت كلمة المرور؟', 'control'); ?></button>
                     </div>
                 </div>
 
@@ -78,11 +79,11 @@
                 <p class="auth-section-desc"><?php _e('أدخل رقم هاتفك المسجل وسنقوم بإرسال تعليمات الاستعادة.', 'control'); ?></p>
             </div>
             <form id="control-forgot-form">
-                <div class="control-form-group">
-                    <label><?php _e('رقم الهاتف', 'control'); ?></label>
+                <div class="control-form-group phone-group">
                     <div class="integrated-phone-field">
                         <div class="country-selector">
-                            <select id="forgot-country-code">
+                            <span class="selected-flag">🇪🇬</span>
+                            <select id="forgot-country-code" class="country-code-select">
                                 <option value="+20" data-flag="🇪🇬">+20</option>
                                 <option value="+971" data-flag="🇦🇪">+971</option>
                                 <option value="+966" data-flag="🇸🇦">+966</option>
@@ -92,8 +93,9 @@
                                 <option value="+968" data-flag="🇴🇲">+968</option>
                             </select>
                         </div>
-                        <input type="tel" name="phone_body" id="forgot-phone-body" placeholder="000 000 000" required>
+                        <input type="tel" name="phone_body" id="forgot-phone-body" placeholder="<?php _e('رقم الهاتف', 'control'); ?>" required>
                     </div>
+                    <label><?php _e('رقم الهاتف', 'control'); ?></label>
                 </div>
                 <div id="forgot-feedback" class="auth-feedback-box" style="display:none;"></div>
                 <button type="submit" class="control-btn control-btn-accent auth-submit-btn"><?php _e('إرسال طلب الاستعادة', 'control'); ?></button>
@@ -143,13 +145,12 @@
                             $id = $field['id'];
                             $label = $field['label'];
                         ?>
-                            <div class="control-form-group field-<?php echo $id; ?>">
-                                <label><?php echo $label; ?> <?php echo $req ? '*' : ''; ?></label>
-
+                            <div class="control-form-group field-<?php echo $id; ?> <?php echo ($id === 'phone' ? 'phone-group' : ''); ?>">
                                 <?php if ($id === 'phone') : ?>
                                     <div class="integrated-phone-field">
                                         <div class="country-selector">
-                                            <select id="reg-country-code">
+                                            <span class="selected-flag">🇪🇬</span>
+                                            <select id="reg-country-code" class="country-code-select">
                                                 <option value="+20" data-flag="🇪🇬">+20</option>
                                                 <option value="+971" data-flag="🇦🇪">+971</option>
                                                 <option value="+966" data-flag="🇸🇦">+966</option>
@@ -159,28 +160,31 @@
                                                 <option value="+968" data-flag="🇴🇲">+968</option>
                                             </select>
                                         </div>
-                                        <input type="tel" name="phone_body" id="reg-phone-body" placeholder="000 000 000" <?php echo $req; ?>>
+                                        <input type="tel" name="phone_body" id="reg-phone-body" placeholder="<?php echo $label; ?>" <?php echo $req; ?>>
                                     </div>
                                 <?php elseif ($id === 'gender') : ?>
                                     <select name="gender" <?php echo $req; ?>>
+                                        <option value=""><?php _e('اختر الجنس', 'control'); ?></option>
                                         <option value="male"><?php _e('ذكر', 'control'); ?></option>
                                         <option value="female"><?php _e('أنثى', 'control'); ?></option>
                                     </select>
                                 <?php elseif ($id === 'degree') : ?>
                                     <select name="degree" <?php echo $req; ?>>
+                                        <option value=""><?php _e('الدرجة العلمية', 'control'); ?></option>
                                         <option value="diploma"><?php _e('دبلوم', 'control'); ?></option>
                                         <option value="bachelor"><?php _e('بكالوريوس', 'control'); ?></option>
                                         <option value="master"><?php _e('ماجستير', 'control'); ?></option>
                                         <option value="phd"><?php _e('دكتوراه', 'control'); ?></option>
                                     </select>
                                 <?php elseif ($id === 'password') : ?>
-                                    <input type="password" name="password" id="reg-password" placeholder="••••••••" required>
+                                    <input type="password" name="password" id="reg-password" placeholder="<?php echo $label; ?>" required>
                                     <small class="field-hint"><?php _e('يجب أن تحتوي على 8 أحرف على الأقل.', 'control'); ?></small>
                                 <?php elseif ($id === 'address') : ?>
                                     <textarea name="address" placeholder="<?php echo $label; ?>" <?php echo $req; ?> rows="2"></textarea>
                                 <?php else : ?>
                                     <input type="<?php echo ($id === 'email' || $id === 'work_email' ? 'email' : 'text'); ?>" name="<?php echo $id; ?>" placeholder="<?php echo $label; ?>" <?php echo $req; ?> class="<?php echo ($id === 'email' ? 'reg-email-input' : ''); ?>">
                                 <?php endif; ?>
+                                <label><?php echo $label; ?> <?php echo $req ? '*' : ''; ?></label>
                             </div>
                         <?php endforeach; ?>
                         </div>
