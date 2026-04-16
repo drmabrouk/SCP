@@ -299,6 +299,10 @@ class Control_Database {
 			'password_reset_link' => array(
 				'subject' => 'استعادة كلمة المرور - {system_name}',
 				'content' => '<h1>أهلاً {user_name}،</h1><p>لقد تلقينا طلباً لإعادة تعيين كلمة المرور الخاصة بحسابك. يمكنك القيام بذلك من خلال الضغط على الزر أدناه:</p><div style="text-align:center; margin:30px 0;"><a href="{reset_url}" style="background:var(--control-primary); color:#fff; padding:15px 30px; border-radius:8px; text-decoration:none; font-weight:bold; display:inline-block;">تعيين كلمة مرور جديدة</a></div><p>هذا الرابط صالح لمدة 24 ساعة فقط. إذا لم تطلب استعادة كلمة المرور، يرجى تجاهل هذا البريد.</p>'
+			),
+			'password_recovery_otp' => array(
+				'subject' => 'رمز استعادة كلمة المرور - {system_name}',
+				'content' => '<h1>استعادة كلمة المرور</h1><p>أهلاً بك، يرجى استخدام رمز التحقق التالي لاستكمال عملية استعادة كلمة المرور الخاصة بحسابك. هذا الرمز صالح لمدة 10 دقائق فقط.</p><div style="background:#f1f5f9; padding:30px; border-radius:12px; margin:20px 0; text-align:center;"><span style="font-size:32px; font-weight:800; color:var(--control-primary); letter-spacing:10px;">{otp_code}</span></div><p>إذا لم تطلب استعادة كلمة المرور، يرجى تجاهل هذا البريد وتأمين حسابك.</p>'
 			)
 		);
 

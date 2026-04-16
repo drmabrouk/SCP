@@ -104,26 +104,58 @@ $sub_text = $auth_settings['auth_subtitle_text']->setting_value ?? __('نظام 
                 <p class="auth-section-desc"><?php _e('أدخل رقم هاتفك المسجل وسنقوم بإرسال تعليمات الاستعادة.', 'control'); ?></p>
             </div>
             <form id="control-forgot-form">
-                <div class="control-form-group phone-group">
-                    <div class="integrated-phone-field">
-                        <div class="country-selector">
-                            <span class="selected-flag">🇪🇬</span>
-                            <select id="forgot-country-code" class="country-code-select">
-                                <option value="+20" data-flag="🇪🇬">+20</option>
-                                <option value="+971" data-flag="🇦🇪">+971</option>
-                                <option value="+966" data-flag="🇸🇦">+966</option>
-                                <option value="+965" data-flag="🇰🇼">+965</option>
-                                <option value="+974" data-flag="🇶🇦">+974</option>
-                                <option value="+973" data-flag="🇧🇭">+973</option>
-                                <option value="+968" data-flag="🇴🇲">+968</option>
-                            </select>
+                <!-- Step 1: Phone Input -->
+                <div id="forgot-step-1">
+                    <div class="control-form-group phone-group">
+                        <div class="integrated-phone-field">
+                            <div class="country-selector">
+                                <span class="selected-flag">🇪🇬</span>
+                                <select id="forgot-country-code" class="country-code-select">
+                                    <option value="+20" data-flag="🇪🇬">+20</option>
+                                    <option value="+971" data-flag="🇦🇪">+971</option>
+                                    <option value="+966" data-flag="🇸🇦">+966</option>
+                                    <option value="+965" data-flag="🇰🇼">+965</option>
+                                    <option value="+974" data-flag="🇶🇦">+974</option>
+                                    <option value="+973" data-flag="🇧🇭">+973</option>
+                                    <option value="+968" data-flag="🇴🇲">+968</option>
+                                </select>
+                            </div>
+                            <input type="tel" name="phone_body" id="forgot-phone-body" placeholder="<?php _e('رقم الهاتف', 'control'); ?>" required>
                         </div>
-                        <input type="tel" name="phone_body" id="forgot-phone-body" placeholder="<?php _e('رقم الهاتف', 'control'); ?>" required>
+                        <label><?php _e('رقم الهاتف', 'control'); ?></label>
                     </div>
-                    <label><?php _e('رقم الهاتف', 'control'); ?></label>
+                    <button type="submit" class="control-btn control-btn-accent auth-submit-btn"><?php _e('إرسال رمز التحقق', 'control'); ?></button>
                 </div>
-                <div id="forgot-feedback" class="auth-feedback-box" style="display:none;"></div>
-                <button type="submit" class="control-btn control-btn-accent auth-submit-btn"><?php _e('إرسال طلب الاستعادة', 'control'); ?></button>
+
+                <!-- Step 2: OTP Verification -->
+                <div id="forgot-step-2" style="display:none;">
+                    <p class="auth-section-desc" style="text-align:center; margin-bottom:20px;"><?php _e('أدخل الرمز المكون من 6 أرقام المرسل لبريدك الإلكتروني.', 'control'); ?></p>
+                    <div class="otp-input-container">
+                        <input type="text" class="otp-digit recovery-otp" maxlength="1" data-index="0" inputmode="numeric">
+                        <input type="text" class="otp-digit recovery-otp" maxlength="1" data-index="1" inputmode="numeric">
+                        <input type="text" class="otp-digit recovery-otp" maxlength="1" data-index="2" inputmode="numeric">
+                        <input type="text" class="otp-digit recovery-otp" maxlength="1" data-index="3" inputmode="numeric">
+                        <input type="text" class="otp-digit recovery-otp" maxlength="1" data-index="4" inputmode="numeric">
+                        <input type="text" class="otp-digit recovery-otp" maxlength="1" data-index="5" inputmode="numeric">
+                    </div>
+                    <button type="button" id="verify-recovery-otp-btn" class="control-btn control-btn-accent auth-submit-btn"><?php _e('تحقق من الرمز', 'control'); ?></button>
+                </div>
+
+                <!-- Step 3: New Password -->
+                <div id="forgot-step-3" style="display:none;">
+                    <div class="control-form-group">
+                        <input type="password" id="recovery-new-password" placeholder="<?php _e('كلمة المرور الجديدة', 'control'); ?>" required>
+                        <label><?php _e('كلمة المرور الجديدة', 'control'); ?></label>
+                    </div>
+                    <div class="control-form-group">
+                        <input type="password" id="recovery-confirm-password" placeholder="<?php _e('تأكيد كلمة المرور', 'control'); ?>" required>
+                        <label><?php _e('تأكيد كلمة المرور', 'control'); ?></label>
+                    </div>
+                    <button type="button" id="reset-recovery-pass-btn" class="control-btn control-btn-accent auth-submit-btn"><?php _e('تحديث كلمة المرور والدخول', 'control'); ?></button>
+                </div>
+
+                <div id="forgot-feedback" class="auth-feedback-box" style="display:none; margin-top:15px;"></div>
+
                 <div class="auth-footer-toggle">
                     <button type="button" id="switch-to-login-from-forgot" class="auth-toggle-link"><?php _e('العودة لتسجيل الدخول', 'control'); ?></button>
                 </div>
