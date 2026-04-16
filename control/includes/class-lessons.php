@@ -91,8 +91,27 @@ class Control_Lessons {
 			wp_send_json_error( 'Access Denied' );
 		}
 
+		$creator_info = array();
+		if ( strpos($lesson->creator_id, 'wp_') === 0 ) {
+			$wp_uid = str_replace('wp_', '', $lesson->creator_id);
+			$wp_u = get_userdata($wp_uid);
+			$creator_info = array(
+				'first_name' => $wp_u->first_name ?: $wp_u->display_name,
+				'last_name'  => $wp_u->last_name,
+				'job_title'  => 'Administrator',
+				'employer_name' => get_bloginfo('name'),
+				'home_country'  => '',
+				'org_logo' => $wpdb->get_var("SELECT setting_value FROM {$wpdb->prefix}control_settings WHERE setting_key = 'company_logo'"),
+			);
+		} else {
+			$staff = $wpdb->get_row( $wpdb->prepare( "SELECT first_name, last_name, job_title, employer_name, home_country, org_logo FROM {$wpdb->prefix}control_staff WHERE id = %d", $lesson->creator_id ), ARRAY_A );
+			if ( $staff ) $creator_info = $staff;
+		}
+
 		$lesson->lesson_data = json_decode( $lesson->lesson_data, true );
-		wp_send_json_success( $lesson );
+		$response = (object) array_merge( (array) $lesson, $creator_info );
+
+		wp_send_json_success( $response );
 	}
 
 	public static function save_lesson_suggestion() {
@@ -100,10 +119,27 @@ class Control_Lessons {
 		if ( ! Control_Auth::is_admin() ) wp_send_json_error( 'Unauthorized' );
 
 		global $wpdb;
+		$id = intval( $_POST['id'] ?? 0 );
 		$topic = sanitize_text_field( $_POST['topic'] );
+		$category = sanitize_text_field( $_POST['category'] ?? 'general' );
+		$content = wp_kses_post( $_POST['content'] ?? '' );
+		$tags = sanitize_text_field( $_POST['tags'] ?? '' );
+
 		if ( empty($topic) ) wp_send_json_error( 'Topic is required' );
 
-		$wpdb->insert( "{$wpdb->prefix}control_lesson_suggestions", array( 'topic' => $topic ) );
+		$data = array(
+			'topic'    => $topic,
+			'category' => $category,
+			'content'  => $content,
+			'tags'     => $tags
+		);
+
+		if ( $id ) {
+			$wpdb->update( "{$wpdb->prefix}control_lesson_suggestions", $data, array( 'id' => $id ) );
+		} else {
+			$wpdb->insert( "{$wpdb->prefix}control_lesson_suggestions", $data );
+		}
+
 		wp_send_json_success();
 	}
 
