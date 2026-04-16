@@ -320,6 +320,7 @@ class Control_Auth {
 			'settings_manage' => array( 'label' => __( 'إدارة إعدادات النظام', 'control' ), 'category' => __( 'النظام', 'control' ) ),
 			'audit_view'    => array( 'label' => __( 'عرض سجل النشاطات', 'control' ), 'category' => __( 'النظام', 'control' ) ),
 			'backup_manage' => array( 'label' => __( 'إدارة النسخ الاحتياطي', 'control' ), 'category' => __( 'النظام', 'control' ) ),
+			'emails_send'   => array( 'label' => __( 'إرسال البريد الإلكتروني', 'control' ), 'category' => __( 'النظام', 'control' ) ),
 		);
 	}
 }
