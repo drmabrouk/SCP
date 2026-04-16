@@ -79,6 +79,12 @@
                 </a>
             <?php endif; ?>
 
+            <?php if ( Control_Auth::has_permission('lessons_manage') ) : ?>
+                <a href="<?php echo add_query_arg('control_view', 'lessons'); ?>" class="<?php echo (isset($_GET['control_view']) && $_GET['control_view'] == 'lessons') ? 'active' : ''; ?>">
+                    <span class="dashicons dashicons-welcome-learn-more"></span> <?php _e('تحضير الدروس', 'control'); ?>
+                </a>
+            <?php endif; ?>
+
             <?php if ( Control_Auth::has_permission('settings_manage') ) : ?>
                 <a href="<?php echo add_query_arg('control_view', 'settings'); ?>" class="<?php echo (isset($_GET['control_view']) && $_GET['control_view'] == 'settings') ? 'active' : ''; ?>">
                     <span class="dashicons dashicons-admin-generic"></span> <?php _e('إعدادات النظام', 'control'); ?>
@@ -125,6 +131,14 @@
             <a href="<?php echo add_query_arg('control_view', 'users'); ?>" class="mobile-nav-item <?php echo (isset($_GET['control_view']) && $_GET['control_view'] == 'users') ? 'active' : ''; ?>">
                 <span class="dashicons dashicons-admin-users"></span>
                 <small><?php _e('المستخدمين', 'control'); ?></small>
+            </a>
+            <div class="mobile-divider"></div>
+        <?php endif; ?>
+
+        <?php if ( Control_Auth::has_permission('lessons_manage') ) : ?>
+            <a href="<?php echo add_query_arg('control_view', 'lessons'); ?>" class="mobile-nav-item <?php echo (isset($_GET['control_view']) && $_GET['control_view'] == 'lessons') ? 'active' : ''; ?>">
+                <span class="dashicons dashicons-welcome-learn-more"></span>
+                <small><?php _e('الدروس', 'control'); ?></small>
             </a>
             <div class="mobile-divider"></div>
         <?php endif; ?>

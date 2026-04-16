@@ -18,6 +18,8 @@ class Control_Database {
 		$table_policies     = $wpdb->prefix . 'control_policies';
 		$table_otps         = $wpdb->prefix . 'control_otps';
 		$table_reset_tokens = $wpdb->prefix . 'control_reset_tokens';
+		$table_lessons      = $wpdb->prefix . 'control_lessons';
+		$table_lesson_suggestions = $wpdb->prefix . 'control_lesson_suggestions';
 
 		$sql = "CREATE TABLE $table_staff (
 			id mediumint(9) NOT NULL AUTO_INCREMENT,
@@ -129,6 +131,26 @@ class Control_Database {
 			is_used tinyint(1) DEFAULT 0,
 			PRIMARY KEY  (id),
 			KEY token (token)
+		) $charset_collate;
+
+		CREATE TABLE $table_lessons (
+			id bigint(20) NOT NULL AUTO_INCREMENT,
+			creator_id varchar(100) NOT NULL,
+			title varchar(255) NOT NULL,
+			target_group varchar(100),
+			duration varchar(50),
+			lesson_data longtext NOT NULL,
+			pdf_path text,
+			created_at datetime DEFAULT CURRENT_TIMESTAMP,
+			PRIMARY KEY  (id),
+			KEY creator_id (creator_id)
+		) $charset_collate;
+
+		CREATE TABLE $table_lesson_suggestions (
+			id mediumint(9) NOT NULL AUTO_INCREMENT,
+			topic varchar(255) NOT NULL,
+			created_at datetime DEFAULT CURRENT_TIMESTAMP,
+			PRIMARY KEY  (id)
 		) $charset_collate;";
 
 		if ( file_exists( ABSPATH . 'wp-admin/includes/upgrade.php' ) ) {
@@ -178,7 +200,7 @@ class Control_Database {
 			array(
 				'role_key'  => 'pe_teacher',
 				'role_name' => 'PE Teacher',
-				'permissions' => json_encode(array('dashboard' => true, 'users_view' => true)),
+				'permissions' => json_encode(array('dashboard' => true, 'users_view' => true, 'lessons_manage' => true)),
 				'is_system' => 1
 			),
 			array(
