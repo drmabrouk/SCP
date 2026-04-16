@@ -60,6 +60,29 @@ $sports_icons = array(
     </div>
 </div>
 
+<!-- Advanced Search and Filters -->
+<div class="control-card" style="padding:15px; margin-bottom:20px; border:none; background:rgba(0,0,0,0.02);">
+    <div style="display:flex; gap:12px; align-items: center; flex-wrap: wrap;">
+        <div style="flex:1; position:relative; min-width: 250px;">
+            <span class="dashicons dashicons-search" style="position:absolute; right:12px; top:50%; transform:translateY(-50%); color:var(--control-muted);"></span>
+            <input type="text" id="lesson-search-input" placeholder="<?php _e('ابحث باسم الدرس...', 'control'); ?>" style="padding:10px 40px 10px 12px;">
+        </div>
+
+        <select id="lesson-grade-filter" style="width:180px; padding:10px;">
+            <option value=""><?php _e('جميع الصفوف', 'control'); ?></option>
+            <?php for($i=1; $i<=12; $i++): ?>
+                <option value="<?php echo "الصف " . $i; ?>"><?php echo "الصف " . $i; ?></option>
+            <?php endfor; ?>
+            <option value="KINDERGARTEN"><?php _e('رياض الأطفال', 'control'); ?></option>
+        </select>
+
+        <select id="lesson-date-filter" style="width:160px; padding:10px;">
+            <option value="newest"><?php _e('الأحدث أولاً', 'control'); ?></option>
+            <option value="oldest"><?php _e('الأقدم أولاً', 'control'); ?></option>
+        </select>
+    </div>
+</div>
+
 <!-- Suggestions for users -->
 <?php if(!empty($suggestions)): ?>
 <div class="control-card" style="background:var(--control-accent-soft); border:1px dashed var(--control-accent); padding:15px; margin-bottom:25px;">
@@ -89,15 +112,15 @@ $sports_icons = array(
             <?php foreach($lessons as $l):
                 $data = json_decode($l->lesson_data, true);
             ?>
-                <div class="control-card lesson-card" style="padding:0; overflow:hidden; display:flex; flex-direction:column;">
+                <div class="control-card lesson-card" data-grade="<?php echo esc_attr($l->target_group); ?>" data-date="<?php echo strtotime($l->created_at); ?>" style="padding:0; overflow:hidden; display:flex; flex-direction:column;">
                     <div style="padding:20px; flex:1;">
                         <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:15px;">
-                            <span style="background:var(--control-bg); color:var(--control-primary); padding:4px 10px; border-radius:6px; font-size:0.65rem; font-weight:700;">
+                            <span class="grade-badge" style="background:var(--control-bg); color:var(--control-primary); padding:4px 10px; border-radius:6px; font-size:0.65rem; font-weight:700;">
                                 <?php echo esc_html($l->target_group); ?>
                             </span>
                             <span style="color:var(--control-muted); font-size:0.7rem;">
                                 <span class="dashicons dashicons-clock" style="font-size:14px; width:14px; height:14px; vertical-align:middle; margin-left:4px;"></span>
-                                <?php echo date_i18n('Y/m/d', strtotime($l->created_at)); ?>
+                                <span class="date-text"><?php echo date_i18n('Y/m/d', strtotime($l->created_at)); ?></span>
                             </span>
                         </div>
                         <h4 style="margin:0 0 10px 0; font-size:1.05rem; font-weight:800; color:var(--control-text-dark);"><?php echo esc_html($l->title); ?></h4>
@@ -110,7 +133,7 @@ $sports_icons = array(
                     </div>
                     <div style="background:var(--control-bg); padding:12px 20px; border-top:1px solid var(--control-border); display:flex; gap:10px;">
                         <button class="control-btn view-lesson-pdf" data-id="<?php echo $l->id; ?>" style="flex:1; padding:0; height:34px; font-size:0.75rem; background:var(--control-primary);">
-                            <span class="dashicons dashicons-pdf" style="margin-left:5px;"></span><?php _e('عرض PDF', 'control'); ?>
+                            <span class="dashicons dashicons-visibility" style="margin-left:5px;"></span><?php _e('معاينة وتحميل', 'control'); ?>
                         </button>
                         <button class="control-btn edit-lesson-btn" data-id="<?php echo $l->id; ?>" style="padding:0; width:34px; height:34px; background:#fff; color:var(--control-text-dark) !important; border:1px solid var(--control-border);"><span class="dashicons dashicons-edit"></span></button>
                         <button class="control-btn delete-lesson-btn" data-id="<?php echo $l->id; ?>" style="padding:0; width:34px; height:34px; background:#fef2f2; color:#ef4444 !important; border:1px solid #fee2e2;"><span class="dashicons dashicons-trash"></span></button>
@@ -145,15 +168,27 @@ $sports_icons = array(
 
                 <!-- Step 1: Basic Info -->
                 <div class="lesson-step" data-step="1">
-                    <h4 style="margin-bottom:25px; color:var(--control-primary); border-right:4px solid var(--control-accent); padding-right:15px;"><?php _e('معلومات الدرس الأساسية', 'control'); ?></h4>
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:25px;">
+                        <h4 style="margin:0; color:var(--control-primary); border-right:4px solid var(--control-accent); padding-right:15px;"><?php _e('معلومات الدرس الأساسية', 'control'); ?></h4>
+                        <button type="button" id="select-lesson-template" class="control-btn" style="font-size:0.75rem; min-height:34px; background:var(--control-bg); color:var(--control-primary) !important; border:1px solid var(--control-border);">
+                            <span class="dashicons dashicons-layout" style="margin-left:5px;"></span><?php _e('استخدام قالب جاهز', 'control'); ?>
+                        </button>
+                    </div>
                     <div class="control-form-group">
                         <label><?php _e('عنوان الدرس', 'control'); ?> *</label>
                         <input type="text" id="lesson-title" name="title" required placeholder="<?php _e('مثال: المهارات الأساسية في كرة القدم', 'control'); ?>">
                     </div>
-                    <div class="control-grid" style="grid-template-columns: 1fr 1fr; gap:20px;">
+                    <div class="control-grid" style="grid-template-columns: 1.5fr 1fr; gap:20px;">
                         <div class="control-form-group">
-                            <label><?php _e('المجموعة المستهدفة / الصف', 'control'); ?></label>
-                            <input type="text" id="lesson-target" name="target_group" placeholder="<?php _e('مثال: الصف السادس الابتدائي', 'control'); ?>">
+                            <label><?php _e('المجموعة المستهدفة / الصف', 'control'); ?> *</label>
+                            <select id="lesson-target" name="target_group" required>
+                                <option value=""><?php _e('اختر الصف الدراسي...', 'control'); ?></option>
+                                <?php for($i=1; $i<=12; $i++): ?>
+                                    <option value="<?php echo "الصف " . $i; ?>"><?php echo "الصف " . $i; ?></option>
+                                <?php endfor; ?>
+                                <option value="KINDERGARTEN"><?php _e('رياض الأطفال', 'control'); ?></option>
+                                <option value="OTHER"><?php _e('مجموعة أخرى', 'control'); ?></option>
+                            </select>
                         </div>
                         <div class="control-form-group">
                             <label><?php _e('مدة الحصة (دقيقة)', 'control'); ?></label>
@@ -250,7 +285,7 @@ $sports_icons = array(
             <div style="flex:1;"></div>
             <div style="display:flex; gap:10px;">
                 <button type="button" id="lesson-wizard-next" class="control-btn" style="background:var(--control-primary); border:none; min-width:120px;"><?php _e('التالي', 'control'); ?></button>
-                <button type="button" id="lesson-wizard-save" class="control-btn" style="background:var(--control-accent); color:var(--control-primary) !important; border:none; min-width:150px; display:none; font-weight:800;"><?php _e('حفظ وتوليد PDF', 'control'); ?></button>
+                <button type="button" id="lesson-wizard-save" class="control-btn" style="background:var(--control-accent); color:var(--control-primary) !important; border:none; min-width:150px; display:none; font-weight:800;"><?php _e('حفظ ومعاينة PDF', 'control'); ?></button>
                 <button type="button" class="control-btn close-lesson-modal" style="background:#fff; color:#ef4444 !important; border:1px solid #fee2e2;"><?php _e('إلغاء', 'control'); ?></button>
             </div>
         </div>
@@ -294,8 +329,43 @@ $sports_icons = array(
     </div>
 </div>
 
-<!-- Hidden PDF Export Container -->
-<div id="pdf-export-content" style="display:none; direction:rtl; text-align:right; font-family:'Rubik', sans-serif; padding:40px; color:#1e293b;">
+<!-- Lesson Template Modal -->
+<div id="lesson-template-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:10005; align-items:center; justify-content:center; backdrop-filter: blur(4px);">
+    <div class="control-card" style="width:100%; max-width:700px; padding:30px; border-radius:20px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+            <h3 style="margin:0;"><?php _e('اختر قالباً جاهزاً للدرس', 'control'); ?></h3>
+            <button type="button" onclick="jQuery('#lesson-template-modal').hide()" style="background:none; border:none; cursor:pointer;"><span class="dashicons dashicons-no-alt"></span></button>
+        </div>
+        <div id="templates-grid" style="display:grid; grid-template-columns: 1fr 1fr; gap:15px; max-height:400px; overflow-y:auto; padding:5px;">
+            <!-- Templates injected via JS -->
+        </div>
+    </div>
+</div>
+
+<!-- PDF Preview Modal -->
+<div id="lesson-preview-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:10006; align-items:center; justify-content:center; backdrop-filter: blur(10px);">
+    <div class="control-card" style="width:95%; max-width:1000px; height:90vh; padding:0; border-radius:24px; overflow:hidden; display:flex; flex-direction:column;">
+        <div style="background:var(--control-primary); color:#fff; padding:15px 30px; display:flex; justify-content:space-between; align-items:center;">
+            <h3 style="color:#fff; margin:0; font-size:1.1rem;"><?php _e('معاينة وتحميل تحضير الدرس', 'control'); ?></h3>
+            <div style="display:flex; gap:15px;">
+                <button id="download-preview-pdf" class="control-btn" style="background:var(--control-accent); color:var(--control-primary) !important; border:none; height:36px; padding:0 15px; font-size:0.8rem; font-weight:800;">
+                    <span class="dashicons dashicons-download" style="margin-left:5px;"></span><?php _e('تحميل PDF الآن', 'control'); ?>
+                </button>
+                <button type="button" onclick="jQuery('#lesson-preview-modal').hide()" style="background:none; border:none; color:#fff; cursor:pointer;"><span class="dashicons dashicons-no-alt"></span></button>
+            </div>
+        </div>
+        <div id="preview-iframe-container" style="flex:1; background:#525659; overflow-y:auto; position:relative;">
+             <div id="preview-html-content" style="background:#fff; width:210mm; min-height:297mm; margin:20px auto; padding:20mm; box-shadow:0 0 20px rgba(0,0,0,0.2); direction:rtl; text-align:right; font-family:'Rubik', sans-serif; display:none; position:relative;"></div>
+             <div id="preview-loader" style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); color:#fff; text-align:center;">
+                <span class="dashicons dashicons-update spin" style="font-size:40px; width:40px; height:40px;"></span>
+                <p><?php _e('جاري معالجة المعاينة...', 'control'); ?></p>
+             </div>
+        </div>
+    </div>
+</div>
+
+<!-- Hidden PDF Export Container (Off-screen for rendering) -->
+<div id="pdf-export-content" style="position:fixed; left:-9999px; top:-9999px; width:210mm; min-height:297mm; background:#fff; direction:rtl; text-align:right; font-family:'Rubik', sans-serif; padding:15mm; color:#1e293b; z-index:-1;">
     <!-- Populated by JS -->
 </div>
 
@@ -303,6 +373,38 @@ $sports_icons = array(
 jQuery(document).ready(function($) {
     let currentStep = 1;
     let activeIconTarget = null;
+    let lastGeneratedPDF = null;
+
+    const lessonTemplates = [
+        {
+            title: "أساسيات كرة القدم",
+            grade: "الصف 6",
+            objectives: "1. إتقان مهارة التمرير بوجه القدم الداخلي.\n2. التعرف على القوانين الأساسية للملعب.\n3. تنمية الروح الرياضية والعمل الجماعي.",
+            equipment: "كرات قدم، أقماع، صافرة، شواخص",
+            activities: {
+                warmup: [{icon: "🏃", title: "جري خفيف حول الملعب", desc: "جري لمدة 5 دقائق مع تحريك المفاصل."}],
+                main: [
+                    {icon: "⚽", title: "تمرير الكرة في أزواج", desc: "كل طالبين يمرران الكرة لبعضهما من مسافة 5 أمتار."},
+                    {icon: "🧱", title: "مراوغة الأقماع", desc: "الجري بالكرة بين الأقماع بسرعة متوسطة."}
+                ],
+                cooldown: [{icon: "🧘", title: "تمارين إطالة", desc: "إطالة لعضلات الرجلين والظهر."}]
+            }
+        },
+        {
+            title: "مهارات كرة السلة",
+            grade: "الصف 8",
+            objectives: "1. تحسين مهارة التنطيط باليدين.\n2. إتقان الرمية الحرة.\n3. زيادة اللياقة القلبية التنفسية.",
+            equipment: "كرات سلة، صافرة، لوحة أهداف",
+            activities: {
+                warmup: [{icon: "🤸", title: "إحماء سويدي", desc: "تمارين مرونة لجميع أعضاء الجسم."}],
+                main: [
+                    {icon: "🏀", title: "التنطيط بالتبادل", desc: "التنطيط باليد اليمنى ثم اليسرى في خط مستقيم."},
+                    {icon: "🏆", title: "مسابقة التصويب", desc: "تقسيم الطلاب لفريقين والتصويب من خط الرمية الحرة."}
+                ],
+                cooldown: [{icon: "🧘", title: "استرخاء وتحدث", desc: "تحدث عن أهمية النشاط البدني مع تمارين تنفس."}]
+            }
+        }
+    ];
 
     function showStep(step) {
         $('.lesson-step').hide();
@@ -384,7 +486,38 @@ jQuery(document).ready(function($) {
         $(this).css('background', 'var(--control-accent)').css('color', '#000');
     });
 
-    // Save and Generate PDF
+    // Templates Logic
+    $('#select-lesson-template').on('click', function() {
+        let html = '';
+        lessonTemplates.forEach((tpl, i) => {
+            html += `
+                <div class="template-card" data-index="${i}" style="background:var(--control-bg); border:1px solid var(--control-border); padding:20px; border-radius:15px; cursor:pointer; transition:0.2s;">
+                    <div style="font-weight:800; color:var(--control-primary); margin-bottom:5px;">${tpl.title}</div>
+                    <div style="font-size:0.75rem; color:var(--control-muted);">${tpl.grade}</div>
+                </div>
+            `;
+        });
+        $('#templates-grid').html(html);
+        $('#lesson-template-modal').css('display', 'flex');
+    });
+
+    $(document).on('click', '.template-card', function() {
+        const tpl = lessonTemplates[$(this).data('index')];
+        $('#lesson-title').val(tpl.title);
+        $('#lesson-target').val(tpl.grade);
+        $('#lesson-objectives').val(tpl.objectives);
+        $('#lesson-equipment').val(tpl.equipment);
+
+        $('#warmup-activities, #main-activities, #cooldown-activities').empty();
+        populateActivities('warmup-activities', tpl.activities.warmup);
+        populateActivities('main-activities', tpl.activities.main);
+        populateActivities('cooldown-activities', tpl.activities.cooldown);
+
+        $('#lesson-template-modal').hide();
+        if (typeof updateFloatingLabels === 'function') updateFloatingLabels();
+    });
+
+    // Save and Preview PDF
     $('#lesson-wizard-save').on('click', function() {
         const $btn = $(this);
         const originalText = $btn.text();
@@ -411,11 +544,12 @@ jQuery(document).ready(function($) {
             lesson_data: lessonData,
             nonce: control_ajax.nonce
         }, function(res) {
+            $btn.prop('disabled', false).text(originalText);
             if (res.success) {
-                generateLessonPDF(lessonData, res.data.id);
+                $('#lesson-wizard-modal').hide();
+                preparePDFPreview(lessonData, res.data.id);
             } else {
                 alert(res.data);
-                $btn.prop('disabled', false).text(originalText);
             }
         });
     });
@@ -432,9 +566,17 @@ jQuery(document).ready(function($) {
         return activities;
     }
 
-    function generateLessonPDF(data, id) {
-        const container = $('#pdf-export-content');
-        const orgLogoHtml = '<?php echo $org_logo ? '<img src="'.esc_url($org_logo).'" style="height:60px; margin-bottom:10px;">' : ''; ?>';
+    function preparePDFPreview(data, id) {
+        const $modal = $('#lesson-preview-modal');
+        const $htmlContainer = $('#preview-html-content');
+        const $exportContainer = $('#pdf-export-content');
+        const $loader = $('#preview-loader');
+
+        $modal.css('display', 'flex');
+        $htmlContainer.hide();
+        $loader.show();
+
+        const orgLogoHtml = '<?php echo $org_logo ? '<img src="'.esc_url($org_logo).'" style="height:60px; margin-bottom:15px; display:block;">' : ''; ?>';
 
         let activitiesHtml = '';
         const sections = [
@@ -444,16 +586,16 @@ jQuery(document).ready(function($) {
         ];
 
         sections.forEach(s => {
-            if (data.activities[s.key].length > 0) {
-                activitiesHtml += `<h3 style="background:${s.color}; color:#fff; padding:10px 15px; border-radius:8px; margin-top:30px;">${s.label}</h3>`;
-                activitiesHtml += `<table style="width:100%; border-collapse:collapse; margin-top:15px;">`;
+            if (data.activities[s.key] && data.activities[s.key].length > 0) {
+                activitiesHtml += `<h3 style="background:${s.color}; color:#fff; padding:8px 15px; border-radius:8px; margin-top:25px; font-size:16px;">${s.label}</h3>`;
+                activitiesHtml += `<table style="width:100%; border-collapse:collapse; margin-top:10px; border:1px solid #e2e8f0;">`;
                 data.activities[s.key].forEach((act, i) => {
                     activitiesHtml += `
                         <tr style="border-bottom:1px solid #e2e8f0;">
-                            <td style="padding:15px; width:50px; text-align:center; font-size:24px;">${act.icon}</td>
-                            <td style="padding:15px;">
-                                <div style="font-weight:800; color:#0f172a; margin-bottom:5px;">${act.title}</div>
-                                <div style="font-size:14px; color:#64748b; line-height:1.5;">${act.desc}</div>
+                            <td style="padding:12px; width:40px; text-align:center; font-size:24px; background:#f8fafc;">${act.icon}</td>
+                            <td style="padding:12px;">
+                                <div style="font-weight:800; color:#0f172a; margin-bottom:4px; font-size:14px;">${act.title}</div>
+                                <div style="font-size:12px; color:#64748b; line-height:1.5;">${act.desc}</div>
                             </td>
                         </tr>
                     `;
@@ -462,68 +604,86 @@ jQuery(document).ready(function($) {
             }
         });
 
-        const html = `
-            <div style="border-bottom:3px solid var(--control-primary); padding-bottom:20px; margin-bottom:30px; display:flex; justify-content:space-between; align-items:flex-end;">
-                <div>
+        const htmlBody = `
+            <div style="border-bottom:4px solid var(--control-primary); padding-bottom:20px; margin-bottom:25px; display:flex; justify-content:space-between; align-items:flex-end;">
+                <div style="flex:1;">
                     ${orgLogoHtml}
-                    <h1 style="margin:0; font-size:24px; color:var(--control-primary);">${data.title}</h1>
-                    <div style="color:var(--control-muted); font-size:14px; margin-top:5px;"><?php echo esc_html($org_name); ?></div>
+                    <h1 style="margin:0; font-size:26px; color:var(--control-primary); font-weight:800;">${data.title}</h1>
+                    <div style="color:var(--control-muted); font-size:14px; margin-top:5px; font-weight:700;"><?php echo esc_html($org_name); ?></div>
                 </div>
-                <div style="text-align:left; font-size:12px; color:var(--control-muted);">
-                    <div><?php _e('تاريخ التحضير:', 'control'); ?> ${new Date().toLocaleDateString('ar-SA')}</div>
-                    <div><?php _e('المعد:', 'control'); ?> <?php echo esc_html($user->name); ?></div>
+                <div style="text-align:left; font-size:12px; color:var(--control-muted); line-height:1.6;">
+                    <div><strong><?php _e('تاريخ التحضير:', 'control'); ?></strong> ${new Date().toLocaleDateString('ar-SA')}</div>
+                    <div><strong><?php _e('المعد:', 'control'); ?></strong> <?php echo esc_html($user->name); ?></div>
+                    <div><strong><?php _e('المسمى الوظيفي:', 'control'); ?></strong> <?php echo esc_html($user->job_title ?: '---'); ?></div>
                 </div>
             </div>
 
-            <table style="width:100%; border-collapse:collapse; margin-bottom:30px;">
-                <tr>
-                    <td style="width:50%; vertical-align:top; padding-left:20px;">
-                        <h4 style="margin:0 0 10px 0; color:var(--control-primary);"><?php _e('المجموعة المستهدفة', 'control'); ?></h4>
-                        <div style="background:#f8fafc; padding:15px; border-radius:10px; font-weight:700;">${data.target_group || '---'}</div>
-                    </td>
-                    <td style="width:50%; vertical-align:top;">
-                        <h4 style="margin:0 0 10px 0; color:var(--control-primary);"><?php _e('المدة الزمنية', 'control'); ?></h4>
-                        <div style="background:#f8fafc; padding:15px; border-radius:10px; font-weight:700;">${data.duration || '---'}</div>
-                    </td>
-                </tr>
-            </table>
-
-            <div style="margin-bottom:30px;">
-                <h4 style="margin:0 0 10px 0; color:var(--control-primary);"><?php _e('الأهداف التعليمية', 'control'); ?></h4>
-                <div style="background:#f8fafc; padding:20px; border-radius:10px; white-space:pre-wrap; line-height:1.6;">${data.objectives || '---'}</div>
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px; margin-bottom:25px;">
+                <div style="background:#f8fafc; padding:15px; border-radius:12px; border:1px solid #e2e8f0;">
+                    <h4 style="margin:0 0 8px 0; color:var(--control-primary); font-size:13px;"><?php _e('المجموعة المستهدفة', 'control'); ?></h4>
+                    <div style="font-weight:800; font-size:15px; color:#0f172a;">${data.target_group || '---'}</div>
+                </div>
+                <div style="background:#f8fafc; padding:15px; border-radius:12px; border:1px solid #e2e8f0;">
+                    <h4 style="margin:0 0 8px 0; color:var(--control-primary); font-size:13px;"><?php _e('المدة الزمنية', 'control'); ?></h4>
+                    <div style="font-weight:800; font-size:15px; color:#0f172a;">${data.duration || '---'}</div>
+                </div>
             </div>
 
-            <div style="margin-bottom:30px;">
-                <h4 style="margin:0 0 10px 0; color:var(--control-primary);"><?php _e('الأدوات والتجهيزات', 'control'); ?></h4>
-                <div style="background:#f1f5f9; padding:15px; border-radius:10px; font-weight:600;">${data.equipment || '---'}</div>
+            <div style="margin-bottom:25px;">
+                <h4 style="margin:0 0 10px 0; color:var(--control-primary); border-right:4px solid var(--control-accent); padding-right:10px;"><?php _e('الأهداف التعليمية والمهارية', 'control'); ?></h4>
+                <div style="background:#fff; padding:15px; border:1px solid #e2e8f0; border-radius:12px; white-space:pre-wrap; line-height:1.6; font-size:13px;">${data.objectives || '---'}</div>
+            </div>
+
+            <div style="margin-bottom:25px;">
+                <h4 style="margin:0 0 10px 0; color:var(--control-primary); border-right:4px solid var(--control-accent); padding-right:10px;"><?php _e('الأدوات والتجهيزات', 'control'); ?></h4>
+                <div style="background:#f1f5f9; padding:12px 15px; border-radius:12px; font-weight:700; color:#334155; font-size:13px;">${data.equipment || '---'}</div>
             </div>
 
             ${activitiesHtml}
 
-            <div style="margin-top:40px; padding:25px; background:var(--control-bg); border-radius:15px; border:1px solid #e2e8f0;">
-                <h4 style="margin:0 0 10px 0; color:var(--control-primary);"><?php _e('التقويم والملاحظات', 'control'); ?></h4>
-                <div style="font-size:14px; color:#334155; line-height:1.6;">${data.assessment || '---'}</div>
-                <div style="font-size:14px; color:#334155; line-height:1.6; margin-top:15px; font-style:italic;">${data.notes || ''}</div>
+            <div style="margin-top:30px; display:grid; grid-template-columns: 1.5fr 1fr; gap:20px;">
+                <div style="padding:20px; background:var(--control-bg); border-radius:15px; border:1px solid #e2e8f0;">
+                    <h4 style="margin:0 0 10px 0; color:var(--control-primary); font-size:14px;"><?php _e('التقويم وأدوات القياس', 'control'); ?></h4>
+                    <div style="font-size:13px; color:#334155; line-height:1.6;">${data.assessment || '---'}</div>
+                </div>
+                <div style="padding:20px; background:#fff9eb; border-radius:15px; border:1px solid #fde68a;">
+                    <h4 style="margin:0 0 10px 0; color:#92400e; font-size:14px;"><?php _e('ملاحظات إضافية', 'control'); ?></h4>
+                    <div style="font-size:13px; color:#92400e; line-height:1.6; font-style:italic;">${data.notes || 'لا توجد ملاحظات إضافية'}</div>
+                </div>
             </div>
 
-            <div style="margin-top:50px; text-align:center; font-size:10px; color:#94a3b8; border-top:1px solid #f1f5f9; padding-top:20px;">
-                <?php _e('تم توليد هذا التحضير آلياً عبر نظام كنترول - الإدارة الرياضية المتكاملة', 'control'); ?>
+            <div style="margin-top:40px; text-align:center; font-size:10px; color:#94a3b8; border-top:1px solid #f1f5f9; padding-top:15px;">
+                <?php _e('هذه الوثيقة رسمية ومعتمدة، تم توليدها عبر نظام كنترول للإدارة الرياضية المتكاملة', 'control'); ?>
             </div>
         `;
 
-        container.html(html);
+        // Update containers
+        $htmlContainer.html(htmlBody);
+        $exportContainer.html(htmlBody);
 
+        // Options for high quality rendering
         const opt = {
-            margin:       [10, 10],
+            margin:       [10, 10, 10, 10],
             filename:     `lesson_${id}.pdf`,
             image:        { type: 'jpeg', quality: 0.98 },
-            html2canvas:  { scale: 2, useCORS: true },
+            html2canvas:  { scale: 2, useCORS: true, logging: false, letterRendering: true },
             jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
         };
 
-        html2pdf().set(opt).from(container[0]).save().then(() => {
-            alert('<?php _e('تم حفظ الدرس وتوليد ملف PDF بنجاح!', 'control'); ?>');
-            location.reload();
+        // Generate Blob for preview
+        html2pdf().set(opt).from($exportContainer[0]).outputPdf('blob').then(function(pdfBlob) {
+            const url = URL.createObjectURL(pdfBlob);
+            lastGeneratedPDF = { blob: pdfBlob, url: url, filename: `lesson_${id}.pdf` };
+
+            $loader.hide();
+            $htmlContainer.show();
+
+            $('#download-preview-pdf').off('click').on('click', function() {
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = lastGeneratedPDF.filename;
+                link.click();
+            });
         });
     }
 
@@ -531,7 +691,7 @@ jQuery(document).ready(function($) {
         const id = $(this).data('id');
         $.post(control_ajax.ajax_url, { action: 'control_get_lesson', id: id, nonce: control_ajax.nonce }, function(res) {
             if (res.success) {
-                generateLessonPDF(res.data.lesson_data, res.data.id);
+                preparePDFPreview(res.data.lesson_data, res.data.id);
             }
         });
     });
@@ -582,6 +742,38 @@ jQuery(document).ready(function($) {
         });
     }
 
+    // Search and Filtering
+    function filterLessons() {
+        const query = $('#lesson-search-input').val().toLowerCase();
+        const grade = $('#lesson-grade-filter').val();
+        const sort = $('#lesson-date-filter').val();
+
+        let visibleCards = $('.lesson-card').filter(function() {
+            const card = $(this);
+            const title = card.find('h4').text().toLowerCase();
+            const cardGrade = card.find('.grade-badge').text().trim();
+
+            const matchesQuery = !query || title.includes(query);
+            const matchesGrade = !grade || cardGrade === grade;
+
+            return matchesQuery && matchesGrade;
+        });
+
+        $('.lesson-card').hide();
+
+        // Sort
+        const sortedArray = visibleCards.toArray().sort(function(a, b) {
+            const dateA = parseInt($(a).data('date'));
+            const dateB = parseInt($(b).data('date'));
+            return sort === 'newest' ? dateB - dateA : dateA - dateB;
+        });
+
+        $('#lesson-library-view .control-grid').append(sortedArray);
+        $(sortedArray).fadeIn(200);
+    }
+
+    $('#lesson-search-input, #lesson-grade-filter, #lesson-date-filter').on('input change', filterLessons);
+
     $(document).on('click', '.delete-lesson-btn', function() {
         if (!confirm('<?php _e('هل أنت متأكد من حذف هذا الدرس نهائياً؟', 'control'); ?>')) return;
         const id = $(this).data('id');
@@ -617,4 +809,5 @@ jQuery(document).ready(function($) {
 .lesson-card:hover { transform: translateY(-5px); box-shadow: 0 20px 40px rgba(0,0,0,0.1); border-color: var(--control-accent); }
 .suggestion-chip:hover { border-color: var(--control-accent); color: var(--control-accent); }
 .selectable-icon:hover { border-color: var(--control-accent); transform: scale(1.1); }
+.template-card:hover { border-color: var(--control-accent) !important; transform: translateY(-2px); }
 </style>
