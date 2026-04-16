@@ -62,10 +62,10 @@ jQuery(document).ready(function($) {
         });
     }
 
-    $('#switch-to-register').on('click', function() { switchAuthView('#control-login-container', '#control-register-container'); initRegDots(); setTimeout(updateFloatingLabels, 300); });
-    $('#switch-to-login-from-reg').on('click', function() { switchAuthView('#control-register-container', '#control-login-container'); setTimeout(updateFloatingLabels, 300); });
-    $('#switch-to-forgot').on('click', function() { switchAuthView('#control-login-container', '#control-forgot-container'); setTimeout(updateFloatingLabels, 300); });
-    $('#switch-to-login-from-forgot').on('click', function() { switchAuthView('#control-forgot-container', '#control-login-container'); setTimeout(updateFloatingLabels, 300); });
+    $(document).on('click', '#switch-to-register', function() { switchAuthView('#control-login-container', '#control-register-container'); initRegDots(); setTimeout(updateFloatingLabels, 300); });
+    $(document).on('click', '#switch-to-login-from-reg', function() { switchAuthView('#control-register-container', '#control-login-container'); setTimeout(updateFloatingLabels, 300); });
+    $(document).on('click', '#switch-to-forgot', function() { switchAuthView('#control-login-container', '#control-forgot-container'); setTimeout(updateFloatingLabels, 300); });
+    $(document).on('click', '#switch-to-login-from-forgot', function() { switchAuthView('#control-forgot-container', '#control-login-container'); setTimeout(updateFloatingLabels, 300); });
 
     let regCurrentStep = 1;
     function getRegTotalSteps() { return $('.reg-step').length; }
@@ -77,7 +77,7 @@ jQuery(document).ready(function($) {
         $('#reg-step-indicator').html(dots);
     }
 
-    $('#reg-next').on('click', function() {
+    $(document).on('click', '#reg-next', function() {
         const $current = $(`#reg-step-${regCurrentStep}`);
 
         if (validateRegStep(regCurrentStep)) {
@@ -95,7 +95,7 @@ jQuery(document).ready(function($) {
         }
     });
 
-    $('#reg-prev').on('click', function() {
+    $(document).on('click', '#reg-prev', function() {
         if ($('#reg-step-otp').is(':visible')) {
             $('#reg-step-otp').hide();
             $(`#reg-step-${regCurrentStep}`).fadeIn(300);
@@ -324,7 +324,7 @@ jQuery(document).ready(function($) {
 
     // --- Authentication Actions ---
 
-    $('#control-login-form').on('submit', function(e) {
+    $(document).on('submit', '#control-login-form', function(e) {
         e.preventDefault();
         const $btn = $(this).find('button[type="submit"]');
         const phoneFull = $('#login-country-code').val() + $('#login-phone-body').val();
@@ -344,7 +344,7 @@ jQuery(document).ready(function($) {
         });
     });
 
-    $('#control-register-form').on('submit', function(e) {
+    $(document).on('submit', '#control-register-form', function(e) {
         e.preventDefault();
         const $btn = $('#reg-submit');
         const phoneFull = $('#reg-country-code').val() + $('#reg-phone-body').val();
@@ -373,7 +373,7 @@ jQuery(document).ready(function($) {
         });
     });
 
-    $('#control-reset-password-form').on('submit', function(e) {
+    $(document).on('submit', '#control-reset-password-form', function(e) {
         e.preventDefault();
         const $btn = $(this).find('button[type="submit"]');
         const pass = $('#reset-new-password').val();
@@ -399,7 +399,7 @@ jQuery(document).ready(function($) {
     });
 
     let recoveryEmail = '';
-    $('#control-forgot-form').on('submit', function(e) {
+    $(document).on('submit', '#control-forgot-form', function(e) {
         e.preventDefault();
         const $btn = $(this).find('button[type="submit"]');
         const phoneFull = $('#forgot-country-code').val() + $('#forgot-phone-body').val();
@@ -425,7 +425,7 @@ jQuery(document).ready(function($) {
         });
     });
 
-    $('#verify-recovery-otp-btn').on('click', function() {
+    $(document).on('click', '#verify-recovery-otp-btn', function() {
         let otp = '';
         $('.recovery-otp').each(function() { otp += $(this).val(); });
 
@@ -454,7 +454,7 @@ jQuery(document).ready(function($) {
         });
     });
 
-    $('#reset-recovery-pass-btn').on('click', function() {
+    $(document).on('click', '#reset-recovery-pass-btn', function() {
         const pass = $('#recovery-new-password').val();
         const confirm = $('#recovery-confirm-password').val();
 
@@ -501,7 +501,7 @@ jQuery(document).ready(function($) {
 
     // --- Settings System & Real-time Design Preview ---
 
-    $('#control-design-form input, #control-design-form select, #control-identity-form input, #control-identity-form select').on('input change', function() {
+    $(document).on('input change', '#control-design-form input, #control-design-form select, #control-identity-form input, #control-identity-form select', function() {
         const name = $(this).attr('name');
         const val = $(this).val();
         const root = document.documentElement;
@@ -535,7 +535,7 @@ jQuery(document).ready(function($) {
         }
     });
 
-    $('.control-tab-btn').on('click', function() {
+    $(document).on('click', '.control-tab-btn', function() {
         const tab = $(this).data('tab');
         $('.control-tab-btn').removeClass('active');
         $(this).addClass('active');
@@ -543,7 +543,7 @@ jQuery(document).ready(function($) {
         $('#' + tab).fadeIn(200);
     });
 
-    $('.control-system-settings-form').on('submit', function(e) {
+    $(document).on('submit', '.control-system-settings-form', function(e) {
         e.preventDefault();
         const $btn = $(this).find('button[type="submit"]');
         const originalHtml = $btn.html();
@@ -569,7 +569,7 @@ jQuery(document).ready(function($) {
     $(document).ajaxStart(function() { showSync(); });
     $(document).ajaxStop(function() { hideSync(); });
 
-    $('#control-refresh-btn, #control-mobile-refresh-btn').on('click', function() {
+    $(document).on('click', '#control-refresh-btn, #control-mobile-refresh-btn', function() {
         showSync('جاري مسح التخزين المؤقت وتحديث ملفات النظام...');
 
         // Clear Application State
@@ -592,7 +592,7 @@ jQuery(document).ready(function($) {
     });
 
 
-    $('#control-logout-btn, #control-mobile-logout-btn, #control-header-logout').on('click', function(e) {
+    $(document).on('click', '#control-logout-btn, #control-mobile-logout-btn, #control-header-logout', function(e) {
         e.preventDefault();
         showSync('جاري تسجيل الخروج وتأمين الحساب...');
 
@@ -937,11 +937,9 @@ jQuery(document).ready(function($) {
     // --- Email System Logic ---
 
     let emailTargetIds = [];
-    const emailModal = $('#control-email-composer-modal');
-    const templateSelect = $('#email-template-select');
     let emailTemplates = [];
 
-    $('#control-send-email-blast-btn').on('click', function() {
+    $(document).on('click', '#control-send-email-blast-btn', function() {
         const selected = $('.user-bulk-select:checked').map((_, el) => el.value).get();
         if (selected.length === 0) {
             alert('يرجى اختيار مستخدم واحد على الأقل من القائمة أولاً.');
@@ -953,25 +951,29 @@ jQuery(document).ready(function($) {
     function openEmailComposer(ids) {
         emailTargetIds = ids;
         const count = ids.length;
+        const $modal = $('#control-email-composer-modal');
+        const $templateSelect = $('#email-template-select');
+
         $('#email-target-display').text(count === 1 ? 'إرسال بريد لمستخدم واحد' : `إرسال بريد لـ ${count} مستخدم مختار`);
 
         // Fetch templates
         $.post(control_ajax.ajax_url, { action: 'control_get_email_templates', nonce: control_ajax.nonce }, function(res) {
             if (res.success) {
                 emailTemplates = res.data;
-                templateSelect.find('option:not([value="custom"])').remove();
+                $templateSelect.find('option:not([value="custom"])').remove();
                 res.data.forEach(tpl => {
-                    templateSelect.append(`<option value="${tpl.template_key}">${tpl.subject}</option>`);
+                    $templateSelect.append(`<option value="${tpl.template_key}">${tpl.subject}</option>`);
                 });
             }
         });
 
         $('#email-preview-container').hide();
-        $('#control-email-composer-form')[0].reset();
-        emailModal.css('display', 'flex');
+        const $form = $('#control-email-composer-form');
+        if ($form.length) $form[0].reset();
+        $modal.css('display', 'flex');
     }
 
-    templateSelect.on('change', function() {
+    $(document).on('change', '#email-template-select', function() {
         const key = $(this).val();
         if (key === 'custom') {
             $('#email-subject').val('');
@@ -986,7 +988,7 @@ jQuery(document).ready(function($) {
         }
     });
 
-    $('#preview-email-btn').on('click', function() {
+    $(document).on('click', '#preview-email-btn', function() {
         updateEmailPreview();
     });
 
@@ -1008,7 +1010,7 @@ jQuery(document).ready(function($) {
         });
     }
 
-    $('#control-email-composer-form').on('submit', function(e) {
+    $(document).on('submit', '#control-email-composer-form', function(e) {
         e.preventDefault();
         if (!confirm('هل أنت متأكد من رغبتك في إرسال هذا البريد الآن؟')) return;
 
@@ -1025,7 +1027,7 @@ jQuery(document).ready(function($) {
         }, function(res) {
             if (res.success) {
                 alert(res.data);
-                emailModal.hide();
+                $('#control-email-composer-modal').hide();
                 $('.user-bulk-select').prop('checked', false);
                 $('.user-card-item').removeClass('selected');
                 $('#bulk-actions-toolbar').hide();
