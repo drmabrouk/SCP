@@ -927,4 +927,107 @@ jQuery(document).ready(function($) {
             }
         });
     });
+
+    // --- Email System Logic ---
+
+    let emailTargetIds = [];
+    const emailModal = $('#control-email-composer-modal');
+    const templateSelect = $('#email-template-select');
+    let emailTemplates = [];
+
+    $('#control-send-email-blast-btn').on('click', function() {
+        const selected = $('.user-bulk-select:checked').map((_, el) => el.value).get();
+        if (selected.length === 0) {
+            alert('يرجى اختيار مستخدم واحد على الأقل من القائمة أولاً.');
+            return;
+        }
+        openEmailComposer(selected);
+    });
+
+    function openEmailComposer(ids) {
+        emailTargetIds = ids;
+        const count = ids.length;
+        $('#email-target-display').text(count === 1 ? 'إرسال بريد لمستخدم واحد' : `إرسال بريد لـ ${count} مستخدم مختار`);
+
+        // Fetch templates
+        $.post(control_ajax.ajax_url, { action: 'control_get_email_templates', nonce: control_ajax.nonce }, function(res) {
+            if (res.success) {
+                emailTemplates = res.data;
+                templateSelect.find('option:not([value="custom"])').remove();
+                res.data.forEach(tpl => {
+                    templateSelect.append(`<option value="${tpl.template_key}">${tpl.subject}</option>`);
+                });
+            }
+        });
+
+        $('#email-preview-container').hide();
+        $('#control-email-composer-form')[0].reset();
+        emailModal.css('display', 'flex');
+    }
+
+    templateSelect.on('change', function() {
+        const key = $(this).val();
+        if (key === 'custom') {
+            $('#email-subject').val('');
+            $('#email-content').val('');
+        } else {
+            const tpl = emailTemplates.find(t => t.template_key === key);
+            if (tpl) {
+                $('#email-subject').val(tpl.subject);
+                $('#email-content').val(tpl.content);
+                updateEmailPreview();
+            }
+        }
+    });
+
+    $('#preview-email-btn').on('click', function() {
+        updateEmailPreview();
+    });
+
+    function updateEmailPreview() {
+        const content = $('#email-content').val();
+        if (!content) return;
+
+        $('#email-preview-container').show();
+        $('#email-preview-frame').html('<p style="text-align:center;">جاري توليد المعاينة...</p>');
+
+        $.post(control_ajax.ajax_url, {
+            action: 'control_preview_email',
+            content: content,
+            nonce: control_ajax.nonce
+        }, function(res) {
+            if (res.success) {
+                $('#email-preview-frame').html(res.data);
+            }
+        });
+    }
+
+    $('#control-email-composer-form').on('submit', function(e) {
+        e.preventDefault();
+        if (!confirm('هل أنت متأكد من رغبتك في إرسال هذا البريد الآن؟')) return;
+
+        const $btn = $('#send-email-final-btn');
+        const originalText = $btn.text();
+        $btn.prop('disabled', true).text('جاري الإرسال...');
+
+        $.post(control_ajax.ajax_url, {
+            action: 'control_send_manual_email',
+            user_ids: emailTargetIds,
+            subject: $('#email-subject').val(),
+            content: $('#email-content').val(),
+            nonce: control_ajax.nonce
+        }, function(res) {
+            if (res.success) {
+                alert(res.data);
+                emailModal.hide();
+                $('.user-bulk-select').prop('checked', false);
+                $('.user-card-item').removeClass('selected');
+                $('#bulk-actions-toolbar').hide();
+                $('#select-all-users').prop('checked', false);
+            } else {
+                alert(res.data.message || 'حدث خطأ أثناء الإرسال');
+            }
+            $btn.prop('disabled', false).text(originalText);
+        });
+    });
 });

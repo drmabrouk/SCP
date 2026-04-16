@@ -74,6 +74,11 @@ function control_get_time_ago($timestamp) {
                 <span class="dashicons dashicons-plus-alt" style="margin-left:5px;"></span><?php _e('إضافة كادر', 'control'); ?>
             </button>
         <?php endif; ?>
+        <?php if(Control_Auth::has_permission('emails_send')): ?>
+            <button id="control-send-email-blast-btn" class="control-btn" style="background:#8b5cf6; border:none;">
+                <span class="dashicons dashicons-email-alt" style="margin-left:5px;"></span><?php _e('إرسال بريد', 'control'); ?>
+            </button>
+        <?php endif; ?>
         <?php if(Control_Auth::has_permission('users_view')): ?>
             <div class="control-dropdown" style="position:relative;">
                 <button class="control-btn" style="background:#fff; color:var(--control-text-dark) !important; border:1px solid var(--control-border);" onclick="jQuery('#user-data-mgmt-modal').css('display', 'flex')">
@@ -382,6 +387,57 @@ function control_get_time_ago($timestamp) {
 .mgmt-tab-btn.active { color:var(--control-primary); border-bottom-color:var(--control-accent); }
 .export-format-card.active { border-color:var(--control-accent) !important; background:var(--control-accent-soft); }
 </style>
+
+<!-- Email Composer Modal -->
+<div id="control-email-composer-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:10004; align-items:center; justify-content:center; backdrop-filter: blur(4px);">
+    <div class="control-card" style="width:100%; max-width:800px; padding:0; border-radius:20px; overflow:hidden; box-shadow:0 25px 50px -12px rgba(0,0,0,0.5);">
+        <div style="background:var(--control-primary); color:#fff; padding:20px 30px; display:flex; justify-content:space-between; align-items:center;">
+            <h3 style="color:#fff; margin:0; font-size:1.1rem;"><?php _e('مؤلف البريد الإلكتروني', 'control'); ?></h3>
+            <button onclick="jQuery('#control-email-composer-modal').hide()" style="background:none; border:none; color:#fff; cursor:pointer;"><span class="dashicons dashicons-no-alt"></span></button>
+        </div>
+
+        <div style="padding:30px; max-height:80vh; overflow-y:auto;">
+            <div id="email-target-display" style="background:var(--control-bg); padding:12px 20px; border-radius:10px; margin-bottom:25px; border:1px solid var(--control-border); font-weight:700; color:var(--control-primary);">
+                <!-- Populated by JS -->
+            </div>
+
+            <form id="control-email-composer-form">
+                <div class="control-grid" style="grid-template-columns: 1fr 1fr; gap:20px;">
+                    <div class="control-form-group">
+                        <label><?php _e('قالب البريد', 'control'); ?></label>
+                        <select id="email-template-select">
+                            <option value="custom"><?php _e('رسالة مخصصة (بدون قالب)', 'control'); ?></option>
+                        </select>
+                    </div>
+                    <div class="control-form-group">
+                        <label><?php _e('عنوان الرسالة (Subject)', 'control'); ?></label>
+                        <input type="text" id="email-subject" required>
+                    </div>
+                </div>
+
+                <div class="control-form-group">
+                    <label><?php _e('محتوى الرسالة (HTML)', 'control'); ?></label>
+                    <textarea id="email-content" rows="10" style="font-family:monospace;"></textarea>
+                    <div style="margin-top:8px;">
+                        <small style="color:var(--control-muted);"><?php _e('يمكنك استخدام المتغير {user_name} ليتم استبداله باسم المستلم تلقائياً.', 'control'); ?></small>
+                    </div>
+                </div>
+
+                <div id="email-preview-container" style="display:none; margin-top:30px;">
+                    <h4 style="margin-bottom:15px; border-bottom:1px solid var(--control-border); padding-bottom:10px;"><?php _e('معاينة حية (Branded Preview)', 'control'); ?></h4>
+                    <div id="email-preview-frame" style="border:1px solid var(--control-border); border-radius:12px; height:300px; overflow:auto; background:#f1f5f9; padding:20px;">
+                        <!-- Preview injected here -->
+                    </div>
+                </div>
+
+                <div style="margin-top:30px; display:flex; gap:15px; border-top:1px solid var(--control-border); padding-top:25px;">
+                    <button type="submit" id="send-email-final-btn" class="control-btn" style="flex:2; background:#8b5cf6; color:#fff !important; border:none; font-weight:800;"><?php _e('إرسال البريد الآن', 'control'); ?></button>
+                    <button type="button" id="preview-email-btn" class="control-btn" style="flex:1; background:var(--control-bg); color:var(--control-text-dark) !important; border:none;"><?php _e('تحديث المعاينة', 'control'); ?></button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 
 <!-- User Details Modal -->
 <div id="control-details-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:10002; align-items:center; justify-content:center; backdrop-filter: blur(4px);">

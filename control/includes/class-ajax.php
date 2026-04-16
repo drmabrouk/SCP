@@ -18,7 +18,8 @@ class Control_Ajax {
 			'save_policy', 'delete_policy',
 			'get_user_insights', 'check_uniqueness',
 			'send_admin_reset_email', 'process_password_reset',
-			'verify_recovery_otp', 'reset_password_recovery'
+			'verify_recovery_otp', 'reset_password_recovery',
+			'get_email_templates', 'preview_email', 'send_manual_email'
 		);
 
 		foreach ( $private_actions as $action ) {
@@ -1193,6 +1194,57 @@ class Control_Ajax {
 		} else {
 			$this->send_success();
 		}
+	}
+
+	public function get_email_templates() {
+		check_ajax_referer( 'control_nonce', 'nonce' );
+		if ( ! Control_Auth::has_permission('emails_send') ) $this->send_error( 'Unauthorized', 403 );
+
+		global $wpdb;
+		$templates = $wpdb->get_results( "SELECT template_key, subject, content FROM {$wpdb->prefix}control_email_templates", ARRAY_A );
+
+		$this->send_success( $templates );
+	}
+
+	public function preview_email() {
+		check_ajax_referer( 'control_nonce', 'nonce' );
+		if ( ! Control_Auth::has_permission('emails_send') ) $this->send_error( 'Unauthorized', 403 );
+
+		$content = wp_unslash( $_POST['content'] ?? '' );
+		$content = str_replace( '{user_name}', 'اسم المستخدم التجريبي', $content );
+
+		$html = Control_Notifications::get_html_wrapper( $content );
+		$this->send_success( $html );
+	}
+
+	public function send_manual_email() {
+		check_ajax_referer( 'control_nonce', 'nonce' );
+		if ( ! Control_Auth::has_permission('emails_send') ) $this->send_error( 'Unauthorized', 403 );
+
+		$user_ids = array_map( 'intval', (array) ($_POST['user_ids'] ?? array()) );
+		$subject = sanitize_text_field( $_POST['subject'] ?? '' );
+		$content = wp_unslash( $_POST['content'] ?? '' );
+
+		if ( empty($user_ids) || empty($subject) || empty($content) ) {
+			$this->send_error( __( 'يرجى إكمال كافة البيانات.', 'control' ) );
+		}
+
+		global $wpdb;
+		$placeholders = implode( ',', array_fill( 0, count( $user_ids ), '%d' ) );
+		$users = $wpdb->get_results( $wpdb->prepare( "SELECT email, first_name, last_name FROM {$wpdb->prefix}control_staff WHERE id IN ($placeholders)", ...$user_ids ) );
+
+		$success_count = 0;
+		foreach ( $users as $user ) {
+			if ( ! empty($user->email) ) {
+				$sent = Control_Notifications::send_custom( $user->email, $subject, $content, array(
+					'{user_name}' => $user->first_name . ' ' . $user->last_name
+				) );
+				if ( $sent ) $success_count++;
+			}
+		}
+
+		Control_Audit::log( 'email_blast', sprintf( __('إرسال بريد يدوي لـ %d مستخدم', 'control'), $success_count ) );
+		$this->send_success( sprintf( __('تم إرسال %d رسالة بنجاح.', 'control'), $success_count ) );
 	}
 }
 

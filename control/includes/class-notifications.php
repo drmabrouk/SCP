@@ -70,9 +70,29 @@ class Control_Notifications {
 	}
 
 	/**
+	 * Send custom branded email.
+	 */
+	public static function send_custom( $to_email, $subject, $content, $placeholders = array() ) {
+		global $wpdb;
+		$system_name = $wpdb->get_var( "SELECT setting_value FROM {$wpdb->prefix}control_settings WHERE setting_key = 'system_name'" ) ?: 'Control';
+		$placeholders['{system_name}'] = $system_name;
+		$placeholders['{site_url}']    = site_url();
+
+		foreach ( $placeholders as $tag => $val ) {
+			$subject = str_replace( $tag, $val, $subject );
+			$content = str_replace( $tag, $val, $content );
+		}
+
+		$html_body = self::get_html_wrapper( $content );
+		$headers = array('Content-Type: text/html; charset=UTF-8');
+
+		return wp_mail( $to_email, $subject, $html_body, $headers );
+	}
+
+	/**
 	 * Professional HTML Email Wrapper with branding.
 	 */
-	private static function get_html_wrapper( $content ) {
+	public static function get_html_wrapper( $content ) {
 		global $wpdb;
 		$system_name = $wpdb->get_var( "SELECT setting_value FROM {$wpdb->prefix}control_settings WHERE setting_key = 'system_name'" ) ?: 'Control';
 		$logo_url    = $wpdb->get_var( "SELECT setting_value FROM {$wpdb->prefix}control_settings WHERE setting_key = 'company_logo'" );
