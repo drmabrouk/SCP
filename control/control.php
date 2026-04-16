@@ -63,6 +63,7 @@ class Control_System {
 		require_once CONTROL_PATH . 'includes/class-notifications.php';
 		require_once CONTROL_PATH . 'includes/class-audit.php';
 		require_once CONTROL_PATH . 'includes/class-pwa.php';
+		require_once CONTROL_PATH . 'includes/class-lessons.php';
 
 		// Infrastructure
 		require_once CONTROL_PATH . 'includes/class-shortcode.php';

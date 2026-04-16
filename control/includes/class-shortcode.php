@@ -58,6 +58,13 @@ class Control_Shortcode {
 					include CONTROL_PATH . 'templates/settings.php';
 				}
 				break;
+			case 'lessons':
+				if ( ! Control_Auth::has_permission('lessons_manage') ) {
+					echo $no_access_html;
+				} else {
+					include CONTROL_PATH . 'templates/lessons.php';
+				}
+				break;
 			default:
 				if ( ! Control_Auth::has_permission('dashboard') ) {
 					echo $no_access_html;
