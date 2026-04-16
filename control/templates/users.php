@@ -230,6 +230,7 @@ function control_get_time_ago($timestamp) {
                         <button class="control-btn control-view-user" title="<?php _e('تفاصيل الحساب', 'control'); ?>" style="padding:0; width:34px; height:34px; background:#fff; color:var(--control-muted) !important; border:1px solid var(--control-border);"><span class="dashicons dashicons-visibility"></span></button>
                     <?php endif; ?>
                     <?php if(Control_Auth::has_permission('users_manage')): ?>
+                        <button class="control-btn control-reset-user-email" data-id="<?php echo $u->id; ?>" title="<?php _e('إرسال رابط استعادة كلمة المرور', 'control'); ?>" style="padding:0; width:34px; height:34px; background:#fff; color:var(--control-muted) !important; border:1px solid var(--control-border);"><span class="dashicons dashicons-email-alt"></span></button>
                         <button class="control-btn control-edit-user" title="<?php _e('تعديل', 'control'); ?>" style="padding:0; width:34px; height:34px; background:#fff; color:var(--control-muted) !important; border:1px solid var(--control-border);"><span class="dashicons dashicons-edit"></span></button>
                         <?php if($u->username !== 'admin' && $u->phone !== '1234567890'): ?>
                             <button class="control-btn control-restrict-user" data-id="<?php echo $u->id; ?>" title="<?php echo $u->is_restricted ? __('إلغاء التقييد', 'control') : __('تقييد', 'control'); ?>" style="padding:0; width:34px; height:34px; background:<?php echo $u->is_restricted ? '#ecfdf5' : '#fff7ed'; ?>; color:<?php echo $u->is_restricted ? '#059669' : '#d97706'; ?> !important; border:1px solid <?php echo $u->is_restricted ? '#d1fae5' : '#ffedd5'; ?>;">
@@ -1140,6 +1141,28 @@ jQuery(document).ready(function($) {
     });
 
     $('.close-delete-modal').on('click', function() { $('#control-delete-modal').hide(); });
+
+    $(document).on('click', '.control-reset-user-email', function() {
+        const id = $(this).data('id');
+        if (confirm('<?php _e("هل أنت متأكد من إرسال رابط استعادة كلمة المرور لهذا المستخدم؟ سيتم إرساله إلى بريده الإلكتروني المسجل.", "control"); ?>')) {
+            const $btn = $(this);
+            const originalHtml = $btn.html();
+            $btn.prop('disabled', true).html('<span class="dashicons dashicons-update spin"></span>');
+
+            $.post(control_ajax.ajax_url, {
+                action: 'control_send_admin_reset_email',
+                user_id: id,
+                nonce: control_ajax.nonce
+            }, function(res) {
+                $btn.prop('disabled', false).html(originalHtml);
+                if (res.success) {
+                    alert(res.data);
+                } else {
+                    alert(res.data.message || 'حدث خطأ');
+                }
+            });
+        }
+    });
 
     $('#confirm-delete-btn').on('click', function() {
         if (!userToDelete) return;

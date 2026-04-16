@@ -17,6 +17,7 @@ class Control_Database {
 		$table_email_templates = $wpdb->prefix . 'control_email_templates';
 		$table_policies     = $wpdb->prefix . 'control_policies';
 		$table_otps         = $wpdb->prefix . 'control_otps';
+		$table_reset_tokens = $wpdb->prefix . 'control_reset_tokens';
 
 		$sql = "CREATE TABLE $table_staff (
 			id mediumint(9) NOT NULL AUTO_INCREMENT,
@@ -117,6 +118,17 @@ class Control_Database {
 			is_verified tinyint(1) DEFAULT 0,
 			PRIMARY KEY  (id),
 			KEY email (email)
+		) $charset_collate;
+
+		CREATE TABLE $table_reset_tokens (
+			id bigint(20) NOT NULL AUTO_INCREMENT,
+			user_id varchar(100) NOT NULL,
+			token varchar(100) NOT NULL,
+			expiry datetime NOT NULL,
+			created_at datetime DEFAULT CURRENT_TIMESTAMP,
+			is_used tinyint(1) DEFAULT 0,
+			PRIMARY KEY  (id),
+			KEY token (token)
 		) $charset_collate;";
 
 		if ( file_exists( ABSPATH . 'wp-admin/includes/upgrade.php' ) ) {
@@ -283,6 +295,10 @@ class Control_Database {
 			'email_verification_otp' => array(
 				'subject' => 'رمز التحقق الخاص بك - {system_name}',
 				'content' => '<h1>تحقق من بريدك الإلكتروني</h1><p>أهلاً بك، يرجى استخدام الرمز التالي لإكمال عملية التسجيل في المنصة. هذا الرمز صالح لمدة 10 دقائق فقط.</p><div style="background:#f1f5f9; padding:30px; border-radius:12px; margin:20px 0; text-align:center;"><span style="font-size:32px; font-weight:800; color:var(--control-primary); letter-spacing:10px;">{otp_code}</span></div><p>إذا لم تكن أنت من بدأ هذا الطلب، يرجى تجاهل هذا البريد.</p>'
+			),
+			'password_reset_link' => array(
+				'subject' => 'استعادة كلمة المرور - {system_name}',
+				'content' => '<h1>أهلاً {user_name}،</h1><p>لقد تلقينا طلباً لإعادة تعيين كلمة المرور الخاصة بحسابك. يمكنك القيام بذلك من خلال الضغط على الزر أدناه:</p><div style="text-align:center; margin:30px 0;"><a href="{reset_url}" style="background:var(--control-primary); color:#fff; padding:15px 30px; border-radius:8px; text-decoration:none; font-weight:bold; display:inline-block;">تعيين كلمة مرور جديدة</a></div><p>هذا الرابط صالح لمدة 24 ساعة فقط. إذا لم تطلب استعادة كلمة المرور، يرجى تجاهل هذا البريد.</p>'
 			)
 		);
 

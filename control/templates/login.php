@@ -130,7 +130,35 @@ $sub_text = $auth_settings['auth_subtitle_text']->setting_value ?? __('نظام 
             </form>
         </div>
 
-        <?php if ($login_visible === '0' && $reg_visible === '0') : ?>
+        <!-- Password Reset Final Step -->
+        <?php if ( isset($_GET['reset_token']) ) : ?>
+            <div id="control-reset-password-container" class="auth-container">
+                <div class="auth-section-header">
+                    <h3 class="auth-section-title"><?php _e('تعيين كلمة مرور جديدة', 'control'); ?></h3>
+                    <p class="auth-section-desc"><?php _e('يرجى إدخال كلمة المرور الجديدة لحسابك.', 'control'); ?></p>
+                </div>
+                <form id="control-reset-password-form">
+                    <input type="hidden" name="token" value="<?php echo esc_attr($_GET['reset_token']); ?>">
+                    <div class="control-form-group">
+                        <input type="password" name="password" id="reset-new-password" required placeholder="<?php _e('كلمة المرور الجديدة', 'control'); ?>">
+                        <label><?php _e('كلمة المرور الجديدة', 'control'); ?></label>
+                    </div>
+                    <div class="control-form-group">
+                        <input type="password" name="confirm_password" id="reset-confirm-password" required placeholder="<?php _e('تأكيد كلمة المرور', 'control'); ?>">
+                        <label><?php _e('تأكيد كلمة المرور', 'control'); ?></label>
+                    </div>
+                    <div id="reset-feedback" class="auth-feedback-box" style="display:none;"></div>
+                    <button type="submit" class="control-btn control-btn-accent auth-submit-btn"><?php _e('تحديث كلمة المرور', 'control'); ?></button>
+                </form>
+            </div>
+            <script>
+                jQuery(document).ready(function($) {
+                    $('#control-login-container, #control-register-container, #control-forgot-container').hide();
+                });
+            </script>
+        <?php endif; ?>
+
+        <?php if ($login_visible === '0' && $reg_visible === '0' && !isset($_GET['reset_token'])) : ?>
             <div class="auth-maintenance-box">
                 <span class="dashicons dashicons-lock"></span>
                 <p><?php _e('النظام في وضع الصيانة حالياً. الدخول والاشتراك معطلان.', 'control'); ?></p>

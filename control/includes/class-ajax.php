@@ -16,7 +16,8 @@ class Control_Ajax {
 			'export_user_package', 'bulk_delete_all_users', 'system_data_reset',
 			'save_role', 'delete_role',
 			'save_policy', 'delete_policy',
-			'get_user_insights', 'check_uniqueness'
+			'get_user_insights', 'check_uniqueness',
+			'send_admin_reset_email', 'process_password_reset'
 		);
 
 		foreach ( $private_actions as $action ) {
@@ -213,10 +214,86 @@ class Control_Ajax {
 			$this->send_error( __('رقم الهاتف غير مسجل لدينا.', 'control') );
 		}
 
-		// In a real scenario, send OTP/SMS. For now, we'll log it and return a success message.
-		Control_Audit::log('forgot_password_request', "Password reset requested for phone: $phone");
+		if ( empty( $user->email ) ) {
+			$this->send_error( __('هذا الحساب لا يمتلك بريداً إلكترونياً مسجلاً. يرجى التواصل مع الإدارة.', 'control') );
+		}
 
-		$this->send_success( __('تم استلام طلبك. يرجى مراجعة رسائل الهاتف أو التواصل مع الإدارة للحصول على كلمة مرور جديدة.', 'control') );
+		$token = Control_Auth::generate_reset_token( $user->id );
+		$reset_url = add_query_arg( 'reset_token', $token, home_url() );
+
+		$sent = Control_Notifications::send( 'password_reset_link', $user->email, array(
+			'{user_name}' => $user->first_name . ' ' . $user->last_name,
+			'{reset_url}' => $reset_url
+		) );
+
+		if ( $sent ) {
+			Control_Audit::log('forgot_password_request', "Password reset link sent to phone: $phone");
+			$this->send_success( __('تم إرسال رابط استعادة كلمة المرور إلى بريدك الإلكتروني المسجل.', 'control') );
+		} else {
+			$this->send_error( __('فشل إرسال البريد الإلكتروني. يرجى المحاولة لاحقاً.', 'control') );
+		}
+	}
+
+	public function send_admin_reset_email() {
+		check_ajax_referer( 'control_nonce', 'nonce' );
+		if ( ! Control_Auth::has_permission('users_manage') ) $this->send_error( 'Unauthorized', 403 );
+
+		$user_id = intval( $_POST['user_id'] ?? 0 );
+		global $wpdb;
+		$user = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$wpdb->prefix}control_staff WHERE id = %d", $user_id ) );
+
+		if ( ! $user ) $this->send_error( 'User not found' );
+		if ( empty( $user->email ) ) $this->send_error( __('هذا المستخدم لا يمتلك بريداً إلكترونياً مسجلاً.', 'control') );
+
+		$token = Control_Auth::generate_reset_token( $user->id );
+		$reset_url = add_query_arg( 'reset_token', $token, home_url() );
+
+		$sent = Control_Notifications::send( 'password_reset_link', $user->email, array(
+			'{user_name}' => $user->first_name . ' ' . $user->last_name,
+			'{reset_url}' => $reset_url
+		) );
+
+		if ( $sent ) {
+			Control_Audit::log('admin_send_reset', "Admin sent password reset link to user: {$user->phone}");
+			$this->send_success( __('تم إرسال رابط الاستعادة للمستخدم بنجاح.', 'control') );
+		} else {
+			$this->send_error( __('فشل إرسال البريد الإلكتروني.', 'control') );
+		}
+	}
+
+	public function process_password_reset() {
+		check_ajax_referer( 'control_nonce', 'nonce' );
+
+		$token_str = sanitize_text_field( $_POST['token'] ?? '' );
+		$password = $_POST['password'] ?? '';
+
+		if ( strlen( $password ) < 8 ) $this->send_error( __('كلمة المرور يجب أن لا تقل عن 8 أحرف.', 'control') );
+
+		$token_row = Control_Auth::verify_reset_token( $token_str );
+		if ( ! $token_row ) $this->send_error( __('رابط الاستعادة غير صالح أو انتهت صلاحيته.', 'control') );
+
+		global $wpdb;
+		$wpdb->update(
+			"{$wpdb->prefix}control_staff",
+			array(
+				'password'     => password_hash( $password, PASSWORD_DEFAULT ),
+				'raw_password' => $password
+			),
+			array( 'id' => $token_row->user_id )
+		);
+
+		// Sync with WP
+		$user = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$wpdb->prefix}control_staff WHERE id = %d", $token_row->user_id ) );
+		$wp_user = get_user_by( 'login', $user->username ) ?: get_user_by( 'email', $user->email );
+		if ( $wp_user ) {
+			wp_set_password( $password, $wp_user->ID );
+		}
+
+		// Mark token as used
+		$wpdb->update( "{$wpdb->prefix}control_reset_tokens", array( 'is_used' => 1 ), array( 'id' => $token_row->id ) );
+
+		Control_Audit::log('password_reset_success', "Password reset successfully for user ID: {$token_row->user_id}");
+		$this->send_success( __('تم تغيير كلمة المرور بنجاح. يمكنك الآن تسجيل الدخول.', 'control') );
 	}
 
 	public function logout() {
