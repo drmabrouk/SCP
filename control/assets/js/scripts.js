@@ -170,6 +170,47 @@ jQuery(document).ready(function($) {
         }
     });
 
+    // Real-time Uniqueness Validation
+    let uniqueTimers = {};
+    $(document).on('blur change', '.reg-email-input, #reg-phone-body, #user-email, #user-phone-body', function() {
+        const $el = $(this);
+        const value = $el.val();
+        if (!value) return;
+
+        let field = 'email';
+        let valToCheck = value;
+
+        if ($el.attr('id') === 'reg-phone-body' || $el.attr('id') === 'user-phone-body') {
+            field = 'phone';
+            const country = $el.closest('.integrated-phone-field').find('.country-code-select').val();
+            valToCheck = country + value;
+        }
+
+        const excludeId = $('#user-id').val() || 0;
+
+        clearTimeout(uniqueTimers[field]);
+        uniqueTimers[field] = setTimeout(() => {
+            $.post(control_ajax.ajax_url, {
+                action: 'control_check_uniqueness',
+                field: field,
+                value: valToCheck,
+                exclude_id: excludeId,
+                nonce: control_ajax.nonce
+            }, function(res) {
+                const $container = $el.closest('.control-form-group');
+                if (!res.success) {
+                    $el.css('border-color', '#ef4444');
+                    if (!$container.find('.unique-error').length) {
+                        $container.append(`<div class="unique-error" style="color:#ef4444; font-size:0.7rem; margin-top:4px; font-weight:700;">${res.data.message}</div>`);
+                    }
+                } else {
+                    $el.css('border-color', '');
+                    $container.find('.unique-error').remove();
+                }
+            });
+        }, 300);
+    });
+
     // Helper for floating labels
     function updateFloatingLabels() {
         $('.control-form-group input, .control-form-group select, .control-form-group textarea').each(function() {

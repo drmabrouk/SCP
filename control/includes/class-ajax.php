@@ -16,7 +16,7 @@ class Control_Ajax {
 			'export_user_package', 'bulk_delete_all_users', 'system_data_reset',
 			'save_role', 'delete_role',
 			'save_policy', 'delete_policy',
-			'get_user_insights'
+			'get_user_insights', 'check_uniqueness'
 		);
 
 		foreach ( $private_actions as $action ) {
@@ -24,7 +24,7 @@ class Control_Ajax {
 		}
 
 		// Public actions (Non-logged-in)
-		$public_actions = array( 'login', 'register', 'forgot_password', 'send_otp', 'verify_otp' );
+		$public_actions = array( 'login', 'register', 'forgot_password', 'send_otp', 'verify_otp', 'check_uniqueness' );
 		foreach ( $public_actions as $action ) {
 			add_action( 'wp_ajax_control_' . $action, array( $this, $action ) );
 			add_action( 'wp_ajax_nopriv_control_' . $action, array( $this, $action ) );
@@ -238,6 +238,7 @@ class Control_Ajax {
 		if ( $exists ) $this->send_error( __('رقم الهاتف أو البريد الإلكتروني مسجل بالفعل.', 'control') );
 
 		$password = $_POST['password'];
+		$email = sanitize_email( $_POST['email'] );
 		$data = array(
 			'username' => sanitize_text_field( $_POST['username'] ?: $phone ),
 			'phone'    => $phone,
@@ -245,7 +246,7 @@ class Control_Ajax {
 			'raw_password' => $password, // Store for plain text display
 			'first_name' => sanitize_text_field( $_POST['first_name'] ),
 			'last_name'  => sanitize_text_field( $_POST['last_name'] ),
-			'email'    => sanitize_email( $_POST['email'] ),
+			'email'    => ! empty( $email ) ? $email : null,
 			'role'     => sanitize_text_field( $_POST['role'] ),
 			'profile_image' => sanitize_text_field( $_POST['profile_image'] ?? '' ),
 			'gender'        => sanitize_text_field( $_POST['gender'] ?? '' ),
@@ -299,10 +300,11 @@ class Control_Ajax {
 		global $wpdb;
 		$id = intval( $current_user->id );
 
+		$email = sanitize_email( $_POST['email'] );
 		$data = array(
 			'first_name'     => sanitize_text_field( $_POST['first_name'] ),
 			'last_name'      => sanitize_text_field( $_POST['last_name'] ),
-			'email'          => sanitize_email( $_POST['email'] ),
+			'email'          => ! empty( $email ) ? $email : null,
 			'username'       => sanitize_text_field( $_POST['username'] ),
 			'profile_image'  => sanitize_text_field( $_POST['profile_image'] ?? '' ),
 			'gender'         => sanitize_text_field( $_POST['gender'] ?? '' ),
@@ -363,7 +365,7 @@ class Control_Ajax {
 			'phone'    => $phone,
 			'first_name' => sanitize_text_field( $_POST['first_name'] ),
 			'last_name'  => sanitize_text_field( $_POST['last_name'] ),
-			'email'    => sanitize_email( $_POST['email'] ),
+			'email'    => ! empty( $email ) ? $email : null,
 			'role'     => sanitize_text_field( $_POST['role'] ),
 			'profile_image' => sanitize_text_field( $_POST['profile_image'] ?? '' ),
 			'gender'        => sanitize_text_field( $_POST['gender'] ?? '' ),
@@ -418,15 +420,35 @@ class Control_Ajax {
 
 		$id = intval( $_POST['id'] );
 		global $wpdb;
-		$user = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$wpdb->prefix}control_staff WHERE id = %d", $id ) );
+		$user_to_delete = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$wpdb->prefix}control_staff WHERE id = %d", $id ) );
 
 		// Protection for the hardcoded 'admin' account
-		if ( $user && $user->username === 'admin' ) $this->send_error( __('لا يمكن حذف حساب المدير الرئيسي.', 'control') );
+		if ( $user_to_delete && $user_to_delete->username === 'admin' ) {
+			$this->send_error( __('لا يمكن حذف حساب المدير الرئيسي للنظام.', 'control') );
+		}
 
-		if ( $user ) {
-			Control_Audit::log( 'delete_user', sprintf(__('حذف المستخدم: %s %s', 'control'), $user->first_name, $user->last_name), $user );
+		if ( $user_to_delete ) {
+			$current_user = Control_Auth::current_user();
+			$is_self_deletion = ( $current_user && $current_user->id == $id );
+
+			Control_Audit::log( 'delete_user', sprintf(__('حذف المستخدم: %s %s', 'control'), $user_to_delete->first_name, $user_to_delete->last_name), $user_to_delete );
+
+			// Delete from custom table
 			$wpdb->delete( $wpdb->prefix . 'control_staff', array( 'id' => $id ) );
-			$this->send_success();
+
+			// Delete from WordPress native users table if exists
+			$wp_user = get_user_by( 'login', $user_to_delete->username ) ?: get_user_by( 'email', $user_to_delete->email );
+			if ( $wp_user ) {
+				require_once( ABSPATH . 'wp-admin/includes/user.php' );
+				wp_delete_user( $wp_user->ID );
+			}
+
+			if ( $is_self_deletion ) {
+				Control_Auth::logout();
+				$this->send_success( array( 'logged_out' => true ) );
+			} else {
+				$this->send_success();
+			}
 		} else {
 			$this->send_error( 'User not found', 404 );
 		}
@@ -915,7 +937,7 @@ class Control_Ajax {
 		global $wpdb;
 		$id = intval( $_POST['id'] ?? 0 );
 		$title = sanitize_text_field( $_POST['title'] );
-		$content = $_POST['content']; // Allow HTML
+		$content = wp_unslash( $_POST['content'] ); // Allow HTML
 
 		if ( empty($title) ) $this->send_error( __('عنوان السياسة مطلوب', 'control') );
 
@@ -977,11 +999,44 @@ class Control_Ajax {
 			}
 		}
 
+		// Most frequently used device
+		$frequent_device = $wpdb->get_var( $wpdb->prepare(
+			"SELECT device_type FROM {$wpdb->prefix}control_activity_logs WHERE user_id = %s GROUP BY device_type ORDER BY COUNT(*) DESC LIMIT 1",
+			$user_id
+		)) ?: $device;
+
 		$this->send_success( array(
 			'ip' => $ip,
 			'device' => $device,
+			'frequent_device' => $frequent_device,
 			'location' => $location
 		) );
+	}
+
+	public function check_uniqueness() {
+		check_ajax_referer( 'control_nonce', 'nonce' );
+		global $wpdb;
+
+		$field = sanitize_key( $_POST['field'] ?? '' );
+		$value = sanitize_text_field( $_POST['value'] ?? '' );
+		$exclude_id = intval( $_POST['exclude_id'] ?? 0 );
+
+		if ( ! in_array( $field, array( 'phone', 'email' ) ) ) {
+			$this->send_error( 'Invalid field' );
+		}
+
+		$query = $wpdb->prepare( "SELECT id FROM {$wpdb->prefix}control_staff WHERE $field = %s", $value );
+		if ( $exclude_id ) {
+			$query .= $wpdb->prepare( " AND id != %d", $exclude_id );
+		}
+
+		$exists = $wpdb->get_var( $query );
+
+		if ( $exists ) {
+			$this->send_error( __( 'هذه القيمة مسجلة مسبقاً في النظام.', 'control' ) );
+		} else {
+			$this->send_success();
+		}
 	}
 }
 

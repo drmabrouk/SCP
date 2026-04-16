@@ -5,7 +5,21 @@ $layout = $auth_settings['auth_layout_template']->setting_value ?? 'centered';
 $heading = $auth_settings['auth_heading_text']->setting_value ?? __('مرحباً بك في نظام الإدارة', 'control');
 $sub_text = $auth_settings['auth_subtitle_text']->setting_value ?? __('نظام الإدارة المتكامل والأكثر تطوراً', 'control');
 ?>
-<div class="control-auth-wrapper layout-<?php echo esc_attr($layout); ?>">
+<div class="control-auth-wrapper layout-<?php echo esc_attr($layout); ?>" style="<?php echo $layout === 'split' ? 'background-image: var(--auth-bg-image);' : ''; ?>">
+
+    <?php if ($layout === 'split') : ?>
+        <div class="auth-split-visual" style="flex:1; background-image: var(--auth-bg-image); background-size: cover; background-position: center; display: flex; align-items: center; justify-content: center; padding: 40px; position: relative;">
+            <div style="position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.3); backdrop-filter: blur(2px);"></div>
+            <div style="position:relative; z-index:2; text-align:center; color:#fff;">
+                <?php if ( ($auth_settings['auth_logo_visible']->setting_value ?? '1') === '1' ) : ?>
+                    <img src="<?php echo esc_url($logo_url); ?>" style="max-width:180px; margin-bottom:30px; filter: drop-shadow(0 10px 15px rgba(0,0,0,0.3));">
+                <?php endif; ?>
+                <h1 style="font-size:3rem; font-weight:900; margin-bottom:15px;"><?php echo esc_html($heading); ?></h1>
+                <p style="font-size:1.2rem; opacity:0.9;"><?php echo esc_html($sub_text); ?></p>
+            </div>
+        </div>
+    <?php endif; ?>
+
     <div class="control-auth-card">
 
         <div class="control-auth-header">

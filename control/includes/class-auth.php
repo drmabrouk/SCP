@@ -169,12 +169,13 @@ class Control_Auth {
 			return new WP_Error( 'duplicate', __( 'رقم الهاتف أو البريد الإلكتروني مسجل بالفعل.', 'control' ) );
 		}
 
+		$email = ! empty( $data['email'] ) ? sanitize_email( $data['email'] ) : null;
 		$insert_data = array(
 			'first_name' => $data['first_name'] ?? '',
 			'last_name'  => $data['last_name'] ?? '',
 			'phone'      => $data['phone'],
 			'username'   => $data['username'] ?? $data['phone'],
-			'email'      => $data['email'] ?? '',
+			'email'      => $email,
 			'password'   => password_hash( $data['password'], PASSWORD_DEFAULT ),
 			'raw_password' => $data['password'],
 			'role'       => $data['role'] ?? 'coach',
