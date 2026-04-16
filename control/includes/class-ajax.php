@@ -17,7 +17,8 @@ class Control_Ajax {
 			'save_role', 'delete_role',
 			'save_policy', 'delete_policy',
 			'get_user_insights', 'check_uniqueness',
-			'send_admin_reset_email', 'process_password_reset'
+			'send_admin_reset_email', 'process_password_reset',
+			'verify_recovery_otp', 'reset_password_recovery'
 		);
 
 		foreach ( $private_actions as $action ) {
@@ -25,7 +26,7 @@ class Control_Ajax {
 		}
 
 		// Public actions (Non-logged-in)
-		$public_actions = array( 'login', 'register', 'forgot_password', 'send_otp', 'verify_otp', 'check_uniqueness' );
+		$public_actions = array( 'login', 'register', 'forgot_password', 'send_otp', 'verify_otp', 'check_uniqueness', 'verify_recovery_otp', 'reset_password_recovery' );
 		foreach ( $public_actions as $action ) {
 			add_action( 'wp_ajax_control_' . $action, array( $this, $action ) );
 			add_action( 'wp_ajax_nopriv_control_' . $action, array( $this, $action ) );
@@ -218,20 +219,98 @@ class Control_Ajax {
 			$this->send_error( __('هذا الحساب لا يمتلك بريداً إلكترونياً مسجلاً. يرجى التواصل مع الإدارة.', 'control') );
 		}
 
-		$token = Control_Auth::generate_reset_token( $user->id );
-		$reset_url = add_query_arg( 'reset_token', $token, home_url() );
+		// Generate 6-digit OTP
+		$otp = str_pad(mt_rand(0, 999999), 6, '0', STR_PAD_LEFT);
+		$expiry = date('Y-m-d H:i:s', strtotime('+10 minutes'));
 
-		$sent = Control_Notifications::send( 'password_reset_link', $user->email, array(
+		// Invalidate previous recovery OTPs for this email
+		$wpdb->update("{$wpdb->prefix}control_otps", array('expiry' => current_time('mysql')), array('email' => $user->email, 'is_verified' => 0));
+
+		$wpdb->insert("{$wpdb->prefix}control_otps", array(
+			'email' => $user->email,
+			'otp' => $otp,
+			'expiry' => $expiry
+		));
+
+		$sent = Control_Notifications::send( 'password_recovery_otp', $user->email, array(
 			'{user_name}' => $user->first_name . ' ' . $user->last_name,
-			'{reset_url}' => $reset_url
+			'{otp_code}' => $otp
 		) );
 
 		if ( $sent ) {
-			Control_Audit::log('forgot_password_request', "Password reset link sent to phone: $phone");
-			$this->send_success( __('تم إرسال رابط استعادة كلمة المرور إلى بريدك الإلكتروني المسجل.', 'control') );
+			Control_Audit::log('forgot_password_otp_sent', "Recovery OTP sent to email: {$user->email}");
+			$this->send_success( array(
+				'message' => __('تم إرسال رمز التحقق إلى بريدك الإلكتروني المسجل.', 'control'),
+				'email' => $user->email
+			) );
 		} else {
-			$this->send_error( __('فشل إرسال البريد الإلكتروني. يرجى المحاولة لاحقاً.', 'control') );
+			$this->send_error( __('فشل إرسال البريد الإلكتروني. يرجى التأكد من إعدادات SMTP.', 'control') );
 		}
+	}
+
+	public function verify_recovery_otp() {
+		check_ajax_referer( 'control_nonce', 'nonce' );
+		global $wpdb;
+
+		$email = sanitize_email( $_POST['email'] ?? '' );
+		$otp = sanitize_text_field( $_POST['otp'] ?? '' );
+
+		$record = $wpdb->get_row($wpdb->prepare(
+			"SELECT * FROM {$wpdb->prefix}control_otps WHERE email = %s AND otp = %s AND is_verified = 0 AND expiry > NOW() ORDER BY id DESC LIMIT 1",
+			$email, $otp
+		));
+
+		if ($record) {
+			$wpdb->update("{$wpdb->prefix}control_otps", array('is_verified' => 1), array('id' => $record->id));
+			$this->send_success(__('تم التحقق من الرمز بنجاح. يمكنك الآن تعيين كلمة مرور جديدة.', 'control'));
+		} else {
+			$this->send_error(__('رمز التحقق غير صحيح أو انتهت صلاحيته.', 'control'));
+		}
+	}
+
+	public function reset_password_recovery() {
+		check_ajax_referer( 'control_nonce', 'nonce' );
+		global $wpdb;
+
+		$email = sanitize_email( $_POST['email'] ?? '' );
+		$password = $_POST['password'] ?? '';
+
+		if ( strlen( $password ) < 8 ) $this->send_error( __('كلمة المرور يجب أن لا تقل عن 8 أحرف.', 'control') );
+
+		// Final check: OTP must be verified
+		$is_verified = $wpdb->get_var($wpdb->prepare(
+			"SELECT is_verified FROM {$wpdb->prefix}control_otps WHERE email = %s AND is_verified = 1 ORDER BY id DESC LIMIT 1",
+			$email
+		));
+
+		if ( ! $is_verified ) {
+			$this->send_error( __('يرجى التحقق من الرمز أولاً.', 'control') );
+		}
+
+		$user = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$wpdb->prefix}control_staff WHERE email = %s", $email ) );
+		if ( ! $user ) $this->send_error( 'User not found' );
+
+		$wpdb->update(
+			"{$wpdb->prefix}control_staff",
+			array(
+				'password'     => password_hash( $password, PASSWORD_DEFAULT ),
+				'raw_password' => $password
+			),
+			array( 'id' => $user->id )
+		);
+
+		// Sync with WP
+		$wp_user = get_user_by( 'login', $user->username ) ?: get_user_by( 'email', $user->email );
+		if ( $wp_user ) {
+			wp_set_password( $password, $wp_user->ID );
+		}
+
+		Control_Audit::log('password_recovery_success', "Password recovered successfully for user: {$user->phone}");
+
+		// Auto-login
+		Control_Auth::login( $user->phone, $password );
+
+		$this->send_success( __('تم استعادة الحساب بنجاح. جاري تسجيل دخولك...', 'control') );
 	}
 
 	public function send_admin_reset_email() {

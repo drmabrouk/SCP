@@ -398,6 +398,7 @@ jQuery(document).ready(function($) {
         });
     });
 
+    let recoveryEmail = '';
     $('#control-forgot-form').on('submit', function(e) {
         e.preventDefault();
         const $btn = $(this).find('button[type="submit"]');
@@ -411,13 +412,91 @@ jQuery(document).ready(function($) {
             phone: phoneFull,
             nonce: control_ajax.nonce
         }, function(res) {
-            $btn.prop('disabled', false).text('إرسال طلب الاستعادة');
+            $btn.prop('disabled', false).text('إرسال رمز التحقق');
             if (res.success) {
-                $('#forgot-feedback').html('<span class="dashicons dashicons-yes"></span> ' + res.data).addClass('success').fadeIn();
+                recoveryEmail = res.data.email;
+                $('#forgot-step-1').hide();
+                $('#forgot-step-2').fadeIn();
+                $('#forgot-feedback').html('<span class="dashicons dashicons-yes"></span> ' + res.data.message).addClass('success').fadeIn();
+                $('.recovery-otp').first().focus();
             } else {
-                $('#forgot-feedback').html('<span class="dashicons dashicons-warning"></span> ' + (res.data.message || 'رقم الهاتف غير مسجل لدينا.')).addClass('error').fadeIn();
+                $('#forgot-feedback').html('<span class="dashicons dashicons-warning"></span> ' + (res.data.message || 'حدث خطأ')).addClass('error').fadeIn();
             }
         });
+    });
+
+    $('#verify-recovery-otp-btn').on('click', function() {
+        let otp = '';
+        $('.recovery-otp').each(function() { otp += $(this).val(); });
+
+        if (otp.length < 6) return;
+
+        const $btn = $(this);
+        $btn.prop('disabled', true).html('<span class="dashicons dashicons-update spin"></span> جاري التحقق...');
+        $('#forgot-feedback').hide().removeClass('error success');
+
+        $.post(control_ajax.ajax_url, {
+            action: 'control_verify_recovery_otp',
+            email: recoveryEmail,
+            otp: otp,
+            nonce: control_ajax.nonce
+        }, function(res) {
+            if (res.success) {
+                $('#forgot-step-2').hide();
+                $('#forgot-step-3').fadeIn();
+                $('#forgot-feedback').html('<span class="dashicons dashicons-yes"></span> ' + res.data).addClass('success').fadeIn();
+                updateFloatingLabels();
+            } else {
+                $btn.prop('disabled', false).text('تحقق من الرمز');
+                $('#forgot-feedback').html('<span class="dashicons dashicons-warning"></span> ' + res.data.message).addClass('error').fadeIn();
+                $('.recovery-otp').val('').first().focus();
+            }
+        });
+    });
+
+    $('#reset-recovery-pass-btn').on('click', function() {
+        const pass = $('#recovery-new-password').val();
+        const confirm = $('#recovery-confirm-password').val();
+
+        if (pass.length < 8) {
+            $('#forgot-feedback').html('<span class="dashicons dashicons-warning"></span> كلمة المرور قصيرة جداً').addClass('error').fadeIn();
+            return;
+        }
+
+        if (pass !== confirm) {
+            $('#forgot-feedback').html('<span class="dashicons dashicons-warning"></span> كلمة المرور غير متطابقة').addClass('error').fadeIn();
+            return;
+        }
+
+        const $btn = $(this);
+        $btn.prop('disabled', true).html('<span class="dashicons dashicons-update spin"></span> جاري الحفظ...');
+
+        $.post(control_ajax.ajax_url, {
+            action: 'control_reset_password_recovery',
+            email: recoveryEmail,
+            password: pass,
+            nonce: control_ajax.nonce
+        }, function(res) {
+            if (res.success) {
+                $('#forgot-feedback').html('<span class="dashicons dashicons-yes"></span> ' + res.data).addClass('success').fadeIn();
+                setTimeout(() => window.location.reload(), 1500);
+            } else {
+                $btn.prop('disabled', false).text('تحديث كلمة المرور والدخول');
+                $('#forgot-feedback').html('<span class="dashicons dashicons-warning"></span> ' + res.data.message).addClass('error').fadeIn();
+            }
+        });
+    });
+
+    $('.recovery-otp').on('input', function() {
+        if ($(this).val() && $(this).data('index') < 5) {
+            $(this).next('.recovery-otp').focus();
+        }
+    });
+
+    $('.recovery-otp').on('keydown', function(e) {
+        if (e.key === 'Backspace' && !$(this).val() && $(this).data('index') > 0) {
+            $(this).prev('.recovery-otp').focus();
+        }
     });
 
     // --- Settings System & Real-time Design Preview ---
@@ -513,10 +592,17 @@ jQuery(document).ready(function($) {
     });
 
 
-    $('#control-logout-btn, #control-mobile-logout-btn').on('click', function() {
-        showSync('جاري تسجيل الخروج...');
-        $.post(control_ajax.ajax_url, { action: 'control_logout', nonce: control_ajax.nonce }, () => {
-            window.location.href = control_ajax.home_url;
+    $('#control-logout-btn, #control-mobile-logout-btn, #control-header-logout').on('click', function() {
+        showSync('جاري تسجيل الخروج وتأمين الحساب...');
+
+        $.post(control_ajax.ajax_url, { action: 'control_logout', nonce: control_ajax.nonce }, function() {
+            // Clear Client Storage
+            localStorage.clear();
+            sessionStorage.clear();
+
+            // Redirect with Cache Busting
+            const logoutUrl = control_ajax.home_url + '?logged_out=' + new Date().getTime();
+            window.location.href = logoutUrl;
         });
     });
 
@@ -558,10 +644,6 @@ jQuery(document).ready(function($) {
         html2pdf().set(opt).from(element).save();
     });
 
-    // Mobile Header Logout (Red Pill)
-    $('#control-header-logout').on('click', function() {
-        $.post(control_ajax.ajax_url, { action: 'control_logout', nonce: control_ajax.nonce }, () => location.reload());
-    });
 
     // Expandable Panels
     $(document).on('click', '.control-collapse-trigger', function() {
