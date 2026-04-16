@@ -109,7 +109,7 @@ class Control_System {
 		wp_enqueue_style( 'control-rtl-style', CONTROL_URL . 'assets/css/style-rtl.css', array( 'control-font-rubik' ), CONTROL_VERSION );
 		wp_enqueue_style( 'control-print-style', CONTROL_URL . 'assets/css/print.css', array(), CONTROL_VERSION, 'print' );
 
-		// Enqueue html2pdf for bulk export
+		// Enqueue html2pdf for bulk export and lesson plans
 		wp_enqueue_script( 'html2pdf', 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js', array(), '0.10.1', true );
 
 		wp_enqueue_script( 'control-scripts', CONTROL_URL . 'assets/js/scripts.js', array( 'jquery' ), CONTROL_VERSION, true );

@@ -148,7 +148,10 @@ class Control_Database {
 
 		CREATE TABLE $table_lesson_suggestions (
 			id mediumint(9) NOT NULL AUTO_INCREMENT,
+			category varchar(50) DEFAULT 'general',
 			topic varchar(255) NOT NULL,
+			content text,
+			tags varchar(255),
 			created_at datetime DEFAULT CURRENT_TIMESTAMP,
 			PRIMARY KEY  (id)
 		) $charset_collate;";
@@ -182,19 +185,19 @@ class Control_Database {
 			array(
 				'role_key'  => 'coach',
 				'role_name' => 'Sports Coach',
-				'permissions' => json_encode(array('dashboard' => true, 'users_view' => true)),
+				'permissions' => json_encode(array('dashboard' => true, 'users_view' => true, 'lessons_manage' => true)),
 				'is_system' => 1
 			),
 			array(
 				'role_key'  => 'therapist',
 				'role_name' => 'Sports Therapist',
-				'permissions' => json_encode(array('dashboard' => true, 'users_view' => true)),
+				'permissions' => json_encode(array('dashboard' => true, 'users_view' => true, 'lessons_manage' => true)),
 				'is_system' => 1
 			),
 			array(
 				'role_key'  => 'nutritionist',
 				'role_name' => 'Sports Nutrition Specialist',
-				'permissions' => json_encode(array('dashboard' => true, 'users_view' => true)),
+				'permissions' => json_encode(array('dashboard' => true, 'users_view' => true, 'lessons_manage' => true)),
 				'is_system' => 1
 			),
 			array(
@@ -206,7 +209,7 @@ class Control_Database {
 			array(
 				'role_key'  => 'researcher',
 				'role_name' => 'Sports Researcher',
-				'permissions' => json_encode(array('dashboard' => true, 'users_view' => true)),
+				'permissions' => json_encode(array('dashboard' => true, 'users_view' => true, 'lessons_manage' => true)),
 				'is_system' => 1
 			)
 		);

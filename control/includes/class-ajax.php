@@ -86,6 +86,8 @@ class Control_Ajax {
 		$reg_fields = json_decode($reg_fields_json, true) ?: array();
 
 		$data = array();
+		$data['phone'] = sanitize_text_field( $_POST['phone'] ?? '' );
+		$data['password'] = $_POST['password'] ?? '';
 		foreach ($reg_fields as $field) {
 			// Strict synchronization: Ignore fields disabled in settings
 			if (isset($field['enabled']) && ($field['enabled'] === false || $field['enabled'] === 'false' || $field['enabled'] === 0)) {

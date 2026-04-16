@@ -131,12 +131,15 @@ $sports_icons = array(
                             <?php endif; ?>
                         </div>
                     </div>
-                    <div style="background:var(--control-bg); padding:12px 20px; border-top:1px solid var(--control-border); display:flex; gap:10px;">
-                        <button class="control-btn view-lesson-pdf" data-id="<?php echo $l->id; ?>" style="flex:1; padding:0; height:34px; font-size:0.75rem; background:var(--control-primary);">
-                            <span class="dashicons dashicons-visibility" style="margin-left:5px;"></span><?php _e('معاينة وتحميل', 'control'); ?>
+                    <div style="background:var(--control-bg); padding:12px 20px; border-top:1px solid var(--control-border); display:flex; gap:8px;">
+                        <button class="control-btn view-lesson-pdf" data-id="<?php echo $l->id; ?>" title="<?php _e('معاينة', 'control'); ?>" style="flex:1; padding:0; height:34px; font-size:0.75rem; background:var(--control-primary);">
+                            <span class="dashicons dashicons-visibility" style="margin-left:5px;"></span><?php _e('معاينة', 'control'); ?>
                         </button>
-                        <button class="control-btn edit-lesson-btn" data-id="<?php echo $l->id; ?>" style="padding:0; width:34px; height:34px; background:#fff; color:var(--control-text-dark) !important; border:1px solid var(--control-border);"><span class="dashicons dashicons-edit"></span></button>
-                        <button class="control-btn delete-lesson-btn" data-id="<?php echo $l->id; ?>" style="padding:0; width:34px; height:34px; background:#fef2f2; color:#ef4444 !important; border:1px solid #fee2e2;"><span class="dashicons dashicons-trash"></span></button>
+                        <button class="control-btn download-lesson-pdf" data-id="<?php echo $l->id; ?>" title="<?php _e('تحميل', 'control'); ?>" style="flex:1; padding:0; height:34px; font-size:0.75rem; background:var(--control-accent); color:var(--control-primary) !important; border:none;">
+                            <span class="dashicons dashicons-download" style="margin-left:5px;"></span><?php _e('تحميل', 'control'); ?>
+                        </button>
+                        <button class="control-btn edit-lesson-btn" data-id="<?php echo $l->id; ?>" title="<?php _e('تعديل', 'control'); ?>" style="padding:0; width:34px; height:34px; background:#fff; color:var(--control-text-dark) !important; border:1px solid var(--control-border);"><span class="dashicons dashicons-edit"></span></button>
+                        <button class="control-btn delete-lesson-btn" data-id="<?php echo $l->id; ?>" title="<?php _e('حذف', 'control'); ?>" style="padding:0; width:34px; height:34px; background:#fef2f2; color:#ef4444 !important; border:1px solid #fee2e2;"><span class="dashicons dashicons-trash"></span></button>
                     </div>
                 </div>
             <?php endforeach; ?>
@@ -215,9 +218,12 @@ $sports_icons = array(
                     <h4 style="margin-bottom:25px; color:var(--control-primary); border-right:4px solid var(--control-accent); padding-right:15px;"><?php _e('سير الأنشطة والتمارين', 'control'); ?></h4>
 
                     <div class="activity-section" style="margin-bottom:30px;">
-                        <h5 style="background:var(--control-bg); padding:10px 15px; border-radius:8px; font-weight:800; color:var(--control-primary); margin-bottom:15px; display:flex; align-items:center; gap:10px;">
-                            <span style="width:10px; height:10px; background:#10b981; border-radius:50%;"></span><?php _e('1. الإحماء (Warm-up)', 'control'); ?>
-                        </h5>
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                            <h5 style="background:var(--control-bg); padding:10px 15px; border-radius:8px; font-weight:800; color:var(--control-primary); margin:0; display:flex; align-items:center; gap:10px; flex:1;">
+                                <span style="width:10px; height:10px; background:#10b981; border-radius:50%;"></span><?php _e('1. الإحماء (Warm-up)', 'control'); ?>
+                            </h5>
+                            <button type="button" class="browse-suggestions-btn" data-category="warmup" style="margin-right:10px; background:none; border:none; color:var(--control-accent); cursor:pointer; font-weight:700; font-size:0.75rem;"><span class="dashicons dashicons-lightbulb"></span> <?php _e('تصفح المقترحات', 'control'); ?></button>
+                        </div>
                         <div id="warmup-activities"></div>
                         <button type="button" class="add-activity-btn control-btn" data-container="warmup-activities" style="background:none; color:var(--control-primary) !important; border:1px dashed var(--control-border); width:100%; font-size:0.8rem;">
                             <span class="dashicons dashicons-plus" style="margin-left:5px;"></span><?php _e('إضافة تمرين إحماء', 'control'); ?>
@@ -225,9 +231,12 @@ $sports_icons = array(
                     </div>
 
                     <div class="activity-section" style="margin-bottom:30px;">
-                        <h5 style="background:var(--control-bg); padding:10px 15px; border-radius:8px; font-weight:800; color:var(--control-primary); margin-bottom:15px; display:flex; align-items:center; gap:10px;">
-                            <span style="width:10px; height:10px; background:#3b82f6; border-radius:50%;"></span><?php _e('2. الجزء الرئيسي (Main Activities)', 'control'); ?>
-                        </h5>
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                            <h5 style="background:var(--control-bg); padding:10px 15px; border-radius:8px; font-weight:800; color:var(--control-primary); margin:0; display:flex; align-items:center; gap:10px; flex:1;">
+                                <span style="width:10px; height:10px; background:#3b82f6; border-radius:50%;"></span><?php _e('2. الجزء الرئيسي (Main Activities)', 'control'); ?>
+                            </h5>
+                            <button type="button" class="browse-suggestions-btn" data-category="main" style="margin-right:10px; background:none; border:none; color:var(--control-accent); cursor:pointer; font-weight:700; font-size:0.75rem;"><span class="dashicons dashicons-lightbulb"></span> <?php _e('تصفح المقترحات', 'control'); ?></button>
+                        </div>
                         <div id="main-activities"></div>
                         <button type="button" class="add-activity-btn control-btn" data-container="main-activities" style="background:none; color:var(--control-primary) !important; border:1px dashed var(--control-border); width:100%; font-size:0.8rem;">
                             <span class="dashicons dashicons-plus" style="margin-left:5px;"></span><?php _e('إضافة نشاط رئيسي', 'control'); ?>
@@ -235,9 +244,12 @@ $sports_icons = array(
                     </div>
 
                     <div class="activity-section">
-                        <h5 style="background:var(--control-bg); padding:10px 15px; border-radius:8px; font-weight:800; color:var(--control-primary); margin-bottom:15px; display:flex; align-items:center; gap:10px;">
-                            <span style="width:10px; height:10px; background:#6366f1; border-radius:50%;"></span><?php _e('3. الختام والتهدئة (Cooldown)', 'control'); ?>
-                        </h5>
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                            <h5 style="background:var(--control-bg); padding:10px 15px; border-radius:8px; font-weight:800; color:var(--control-primary); margin:0; display:flex; align-items:center; gap:10px; flex:1;">
+                                <span style="width:10px; height:10px; background:#6366f1; border-radius:50%;"></span><?php _e('3. الختام والتهدئة (Cooldown)', 'control'); ?>
+                            </h5>
+                            <button type="button" class="browse-suggestions-btn" data-category="cooldown" style="margin-right:10px; background:none; border:none; color:var(--control-accent); cursor:pointer; font-weight:700; font-size:0.75rem;"><span class="dashicons dashicons-lightbulb"></span> <?php _e('تصفح المقترحات', 'control'); ?></button>
+                        </div>
                         <div id="cooldown-activities"></div>
                         <button type="button" class="add-activity-btn control-btn" data-container="cooldown-activities" style="background:none; color:var(--control-primary) !important; border:1px dashed var(--control-border); width:100%; font-size:0.8rem;">
                             <span class="dashicons dashicons-plus" style="margin-left:5px;"></span><?php _e('إضافة نشاط ختامي', 'control'); ?>
@@ -309,22 +321,77 @@ $sports_icons = array(
 
 <!-- Admin Suggestions Modal -->
 <div id="suggestions-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:10003; align-items:center; justify-content:center;">
-    <div class="control-card" style="width:100%; max-width:500px; padding:30px;">
-        <h3><?php _e('إدارة العناوين والمقترحات', 'control'); ?></h3>
-        <form id="add-suggestion-form" style="display:flex; gap:10px; margin-bottom:20px;">
-            <input type="text" id="new-suggestion-topic" placeholder="<?php _e('أضف عنواناً مقترحاً جديداً...', 'control'); ?>" required style="flex:1;">
-            <button type="submit" class="control-btn"><?php _e('إضافة', 'control'); ?></button>
-        </form>
-        <div id="suggestions-list" style="max-height:300px; overflow-y:auto; background:var(--control-bg); border-radius:12px; padding:15px;">
-            <?php foreach($suggestions as $s): ?>
-                <div style="display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid var(--control-border);">
-                    <span style="font-size:0.9rem; font-weight:600;"><?php echo esc_html($s->topic); ?></span>
-                    <button class="delete-suggestion-btn" data-id="<?php echo $s->id; ?>" style="background:none; border:none; color:#ef4444; cursor:pointer;"><span class="dashicons dashicons-trash"></span></button>
-                </div>
-            <?php endforeach; ?>
+    <div class="control-card" style="width:100%; max-width:700px; padding:0; border-radius:24px; overflow:hidden;">
+        <div style="background:var(--control-primary); color:#fff; padding:20px 30px; display:flex; justify-content:space-between; align-items:center;">
+            <h3 style="color:#fff; margin:0;"><?php _e('إدارة بنك المقترحات', 'control'); ?></h3>
+            <button type="button" onclick="jQuery('#suggestions-modal').hide()" style="background:none; border:none; color:#fff; cursor:pointer;"><span class="dashicons dashicons-no-alt"></span></button>
         </div>
-        <div style="margin-top:20px; text-align:center;">
-            <button type="button" onclick="jQuery('#suggestions-modal').hide()" class="control-btn" style="background:none; color:var(--control-text-dark) !important; border:none;"><?php _e('إغلاق', 'control'); ?></button>
+
+        <div style="padding:30px;">
+            <form id="add-suggestion-form">
+                <input type="hidden" id="edit-suggestion-id" value="0">
+                <div class="control-grid" style="grid-template-columns: 1fr 1fr; gap:15px; margin-bottom:15px;">
+                    <div class="control-form-group">
+                        <label><?php _e('الفئة', 'control'); ?></label>
+                        <select id="suggestion-category" required>
+                            <option value="title"><?php _e('عنوان الدرس', 'control'); ?></option>
+                            <option value="warmup"><?php _e('تمرين إحماء', 'control'); ?></option>
+                            <option value="main"><?php _e('نشاط رئيسي', 'control'); ?></option>
+                            <option value="cooldown"><?php _e('نشاط ختامي', 'control'); ?></option>
+                            <option value="assessment"><?php _e('طريقة تقويم', 'control'); ?></option>
+                            <option value="general"><?php _e('عام', 'control'); ?></option>
+                        </select>
+                    </div>
+                    <div class="control-form-group">
+                        <label><?php _e('العنوان / الموضوع', 'control'); ?></label>
+                        <input type="text" id="suggestion-topic" required>
+                    </div>
+                </div>
+                <div class="control-form-group">
+                    <label><?php _e('المحتوى التفصيلي (اختياري)', 'control'); ?></label>
+                    <textarea id="suggestion-content" rows="3"></textarea>
+                </div>
+                <div class="control-form-group">
+                    <label><?php _e('الوسوم (مفصولة بفاصلة)', 'control'); ?></label>
+                    <input type="text" id="suggestion-tags" placeholder="كرة قدم، لياقة، ابتدائي...">
+                </div>
+                <button type="submit" class="control-btn" style="width:100%;"><?php _e('حفظ المقترح في البنك', 'control'); ?></button>
+            </form>
+
+            <div style="margin-top:30px; border-top:1px solid var(--control-border); padding-top:20px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                    <h4 style="margin:0;"><?php _e('المقترحات الحالية', 'control'); ?></h4>
+                    <input type="text" id="filter-suggestions" placeholder="<?php _e('تصفية بالاسم أو الوسم...', 'control'); ?>" style="width:200px; padding:5px 10px; font-size:0.8rem;">
+                </div>
+                <div id="suggestions-list" style="max-height:300px; overflow-y:auto; border-radius:12px;">
+                    <table class="control-table" style="font-size:0.8rem;">
+                        <thead>
+                            <tr style="background:var(--control-bg);">
+                                <th><?php _e('الفئة', 'control'); ?></th>
+                                <th><?php _e('الموضوع', 'control'); ?></th>
+                                <th><?php _e('الوسوم', 'control'); ?></th>
+                                <th style="width:80px;"><?php _e('إجراء', 'control'); ?></th>
+                            </tr>
+                        </thead>
+                        <tbody id="suggestions-table-body">
+                            <!-- Populated by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Browser Suggestions Modal (User side) -->
+<div id="browse-suggestions-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:10007; align-items:center; justify-content:center;">
+    <div class="control-card" style="width:100%; max-width:600px; padding:0; border-radius:24px; overflow:hidden;">
+        <div style="background:var(--control-accent); color:var(--control-primary); padding:20px 30px; display:flex; justify-content:space-between; align-items:center;">
+            <h3 style="margin:0; font-size:1.1rem;"><?php _e('تصفح بنك المقترحات', 'control'); ?></h3>
+            <button type="button" onclick="jQuery('#browse-suggestions-modal').hide()" style="background:none; border:none; cursor:pointer;"><span class="dashicons dashicons-no-alt"></span></button>
+        </div>
+        <div style="padding:25px; max-height:70vh; overflow-y:auto;" id="browse-suggestions-content">
+            <!-- Populated by JS -->
         </div>
     </div>
 </div>
@@ -782,23 +849,251 @@ jQuery(document).ready(function($) {
         });
     });
 
-    // Admin Suggestions
-    $('#manage-suggestions-btn').on('click', function() { $('#suggestions-modal').css('display', 'flex'); });
+    // --- Admin Suggestions Management ---
+
+    let allSuggestions = <?php echo json_encode($suggestions); ?>;
+
+    function renderSuggestionsTable() {
+        const query = $('#filter-suggestions').val().toLowerCase();
+        let html = '';
+        allSuggestions.forEach(s => {
+            if (!query || s.topic.toLowerCase().includes(query) || (s.tags && s.tags.toLowerCase().includes(query))) {
+                html += `
+                    <tr>
+                        <td><span class="control-status-indicator indicator-accent">${s.category}</span></td>
+                        <td><strong>${s.topic}</strong></td>
+                        <td><small>${s.tags || '---'}</small></td>
+                        <td>
+                            <div style="display:flex; gap:5px;">
+                                <button class="delete-suggestion-btn audit-action-btn" data-id="${s.id}"><span class="dashicons dashicons-trash"></span></button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }
+        });
+        $('#suggestions-table-body').html(html);
+    }
+
+    $('#manage-suggestions-btn').on('click', function() {
+        renderSuggestionsTable();
+        $('#suggestions-modal').css('display', 'flex');
+    });
+
+    $('#filter-suggestions').on('input', renderSuggestionsTable);
 
     $('#add-suggestion-form').on('submit', function(e) {
         e.preventDefault();
-        const topic = $('#new-suggestion-topic').val();
-        $.post(control_ajax.ajax_url, { action: 'control_save_lesson_suggestion', topic: topic, nonce: control_ajax.nonce }, function(res) {
+        const $btn = $(this).find('button[type="submit"]');
+        $btn.prop('disabled', true).text('<?php _e('جاري الحفظ...', 'control'); ?>');
+
+        $.post(control_ajax.ajax_url, {
+            action: 'control_save_lesson_suggestion',
+            topic: $('#suggestion-topic').val(),
+            category: $('#suggestion-category').val(),
+            content: $('#suggestion-content').val(),
+            tags: $('#suggestion-tags').val(),
+            nonce: control_ajax.nonce
+        }, function(res) {
             if (res.success) location.reload();
         });
     });
 
     $(document).on('click', '.delete-suggestion-btn', function() {
+        if (!confirm('<?php _e('حذف هذا المقترح من البنك؟', 'control'); ?>')) return;
         const id = $(this).data('id');
         $.post(control_ajax.ajax_url, { action: 'control_delete_lesson_suggestion', id: id, nonce: control_ajax.nonce }, function(res) {
             if (res.success) location.reload();
         });
     });
+
+    // --- Browser Suggestions (User side) ---
+
+    let currentTargetContainer = null;
+
+    $(document).on('click', '.browse-suggestions-btn', function() {
+        const cat = $(this).data('category');
+        currentTargetContainer = $(this).closest('.activity-section').find('div[id$="-activities"]');
+
+        let html = '<div class="control-grid" style="grid-template-columns:1fr; gap:15px;">';
+        const filtered = allSuggestions.filter(s => s.category === cat);
+
+        if (filtered.length === 0) {
+            html += `<p style="text-align:center; color:var(--control-muted);"><?php _e('لا توجد مقترحات متوفرة لهذه الفئة حالياً.', 'control'); ?></p>`;
+        } else {
+            filtered.forEach(s => {
+                html += `
+                    <div class="suggestion-item-box" style="background:var(--control-bg); border:1px solid var(--control-border); padding:20px; border-radius:15px; cursor:pointer; transition:0.2s;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                            <h4 style="margin:0; color:var(--control-primary);">${s.topic}</h4>
+                            <button class="control-btn insert-suggestion-btn" data-topic="${s.topic}" data-content="${s.content || ''}" style="height:30px; font-size:0.7rem; padding:0 12px; background:var(--control-accent); color:var(--control-primary) !important; border:none; font-weight:800;"><?php _e('إدراج', 'control'); ?></button>
+                        </div>
+                        <p style="font-size:0.8rem; color:var(--control-muted); margin:0;">${s.content || ''}</p>
+                    </div>
+                `;
+            });
+        }
+        html += '</div>';
+        $('#browse-suggestions-content').html(html);
+        $('#browse-suggestions-modal').css('display', 'flex');
+    });
+
+    $(document).on('click', '.insert-suggestion-btn', function() {
+        const topic = $(this).data('topic');
+        const content = $(this).data('content');
+
+        const html = `
+            <div class="activity-item" style="background:#fff; border:1px solid var(--control-border); padding:20px; border-radius:12px; margin-bottom:15px; position:relative;">
+                <button type="button" class="remove-activity" style="position:absolute; top:10px; left:10px; background:none; border:none; color:#ef4444; cursor:pointer;"><span class="dashicons dashicons-no-alt"></span></button>
+                <div style="display:flex; gap:15px;">
+                    <div class="select-icon-trigger" style="width:50px; height:50px; background:var(--control-bg); border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:1.5rem; cursor:pointer; border:1px dashed var(--control-border);" title="<?php _e('اختر أيقونة', 'control'); ?>">🏃</div>
+                    <div style="flex:1;">
+                        <input type="text" class="activity-title" value="${topic}" placeholder="<?php _e('عنوان النشاط/التمرين', 'control'); ?>" style="margin-bottom:10px; font-weight:700;">
+                        <textarea class="activity-desc" placeholder="<?php _e('وصف موجز لطريقة الأداء والتعليمات...', 'control'); ?>" rows="2">${content}</textarea>
+                    </div>
+                </div>
+            </div>
+        `;
+        currentTargetContainer.append(html);
+        $('#browse-suggestions-modal').hide();
+    });
+
+    $(document).on('click', '.download-lesson-pdf', function() {
+        const id = $(this).data('id');
+        const $btn = $(this);
+        const originalHtml = $btn.html();
+        $btn.prop('disabled', true).html('<span class="dashicons dashicons-update spin"></span>');
+
+        $.post(control_ajax.ajax_url, { action: 'control_get_lesson', id: id, nonce: control_ajax.nonce }, function(res) {
+            if (res.success) {
+                // To avoid "blank PDF" issues, we use a temporary off-screen but fully visible container
+                // that html2pdf can definitely capture.
+                const data = res.data.lesson_data;
+                const creator = res.data; // Includes metadata from join
+                generateDirectPDF(data, id, creator, function() {
+                    $btn.prop('disabled', false).html(originalHtml);
+                });
+            } else {
+                $btn.prop('disabled', false).html(originalHtml);
+            }
+        });
+    });
+
+    function generateDirectPDF(data, id, creator, callback) {
+        const $exportContainer = $('#pdf-export-content');
+        $exportContainer.show(); // Briefly show to ensure layout is calculated
+
+        const html = renderFormalPDFHtml(data, creator);
+        $exportContainer.html(html);
+
+        const opt = {
+            margin:       [5, 5, 5, 5], // Reduced margins
+            filename:     `official_lesson_${id}.pdf`,
+            image:        { type: 'jpeg', quality: 0.98 },
+            html2canvas:  { scale: 2, useCORS: true, logging: false },
+            jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        };
+
+        html2pdf().set(opt).from($exportContainer[0]).save().then(function() {
+            $exportContainer.hide();
+            if(callback) callback();
+        });
+    }
+
+    function renderFormalPDFHtml(data, creator) {
+        const orgLogoHtml = creator.org_logo ? `<img src="${creator.org_logo}" style="height:60px; object-fit:contain; margin-bottom:10px;">` : '';
+
+        let activitiesHtml = '';
+        const sections = [
+            { key: 'warmup', label: '<?php _e('الإحماء والتحضير البدني', 'control'); ?>', color: '#10b981' },
+            { key: 'main', label: '<?php _e('الجزء الرئيسي والمهاري', 'control'); ?>', color: '#3b82f6' },
+            { key: 'cooldown', label: '<?php _e('الختام والاسترخاء', 'control'); ?>', color: '#6366f1' }
+        ];
+
+        sections.forEach(s => {
+            if (data.activities[s.key] && data.activities[s.key].length > 0) {
+                activitiesHtml += `
+                    <div style="margin-top:20px;">
+                        <h3 style="background:${s.color}; color:#fff; padding:8px 15px; border-radius:6px; font-size:14px; margin-bottom:10px;">${s.label}</h3>
+                        <table style="width:100%; border-collapse:collapse; border:1px solid #e2e8f0;">
+                `;
+                data.activities[s.key].forEach(act => {
+                    activitiesHtml += `
+                        <tr style="border-bottom:1px solid #e2e8f0;">
+                            <td style="padding:10px; width:40px; text-align:center; font-size:24px; background:#f8fafc; border-left:1px solid #e2e8f0;">${act.icon}</td>
+                            <td style="padding:10px;">
+                                <div style="font-weight:800; color:#0f172a; margin-bottom:3px; font-size:13px;">${act.title}</div>
+                                <div style="font-size:12px; color:#475569; line-height:1.4;">${act.desc}</div>
+                            </td>
+                        </tr>
+                    `;
+                });
+                activitiesHtml += `</table></div>`;
+            }
+        });
+
+        return `
+            <div style="background:#fff; border:1px solid #e2e8f0; padding:15px; border-radius:4px;">
+                <!-- Header -->
+                <div style="display:flex; justify-content:space-between; align-items:flex-start; border-bottom:2px solid #0f172a; padding-bottom:15px; margin-bottom:20px;">
+                    <div style="flex:1;">
+                        ${orgLogoHtml}
+                        <h1 style="margin:0; font-size:22px; color:#0f172a; font-weight:800;">${data.title}</h1>
+                        <div style="color:#64748b; font-size:13px; margin-top:5px; font-weight:700;">${creator.employer_name || '<?php echo esc_html($org_name); ?>'}</div>
+                    </div>
+                    <div style="text-align:left; font-size:11px; color:#475569; line-height:1.5; border-right:2px solid #e2e8f0; padding-right:15px; margin-right:15px;">
+                        <div><strong><?php _e('المُعد:', 'control'); ?></strong> ${creator.first_name} ${creator.last_name}</div>
+                        <div><strong><?php _e('المسمى الوظيفي:', 'control'); ?></strong> ${creator.job_title || '---'}</div>
+                        <div><strong><?php _e('بلد الإقامة:', 'control'); ?></strong> ${creator.home_country || '---'}</div>
+                        <div><strong><?php _e('التاريخ:', 'control'); ?></strong> ${new Date().toLocaleDateString('ar-SA')}</div>
+                    </div>
+                </div>
+
+                <!-- Basic Info Grid -->
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px; margin-bottom:20px;">
+                    <div style="background:#f1f5f9; padding:10px 15px; border-radius:8px; border:1px solid #e2e8f0;">
+                        <span style="font-size:11px; color:#64748b; font-weight:700; display:block;"><?php _e('المجموعة المستهدفة', 'control'); ?></span>
+                        <strong style="font-size:14px; color:#0f172a;">${data.target_group || '---'}</strong>
+                    </div>
+                    <div style="background:#f1f5f9; padding:10px 15px; border-radius:8px; border:1px solid #e2e8f0;">
+                        <span style="font-size:11px; color:#64748b; font-weight:700; display:block;"><?php _e('المدة الزمنية', 'control'); ?></span>
+                        <strong style="font-size:14px; color:#0f172a;">${data.duration || '---'}</strong>
+                    </div>
+                </div>
+
+                <!-- Objectives & Tools -->
+                <div style="margin-bottom:20px;">
+                    <h4 style="margin:0 0 8px 0; color:#0f172a; font-size:13px; border-right:4px solid var(--control-accent); padding-right:10px;"><?php _e('الأهداف التدريبية والتربوية', 'control'); ?></h4>
+                    <div style="background:#fff; border:1px solid #e2e8f0; padding:12px; border-radius:8px; font-size:12px; line-height:1.6; white-space:pre-wrap;">${data.objectives || '---'}</div>
+                </div>
+
+                <div style="margin-bottom:20px;">
+                    <h4 style="margin:0 0 8px 0; color:#0f172a; font-size:13px; border-right:4px solid var(--control-accent); padding-right:10px;"><?php _e('الأدوات والتجهيزات المطلوبة', 'control'); ?></h4>
+                    <div style="background:#f8fafc; border:1px solid #e2e8f0; padding:10px 12px; border-radius:8px; font-size:12px; font-weight:700; color:#475569;">${data.equipment || '---'}</div>
+                </div>
+
+                <!-- Activities -->
+                ${activitiesHtml}
+
+                <!-- Assessment & Notes -->
+                <div style="margin-top:25px; display:grid; grid-template-columns: 1fr 1fr; gap:15px;">
+                    <div style="padding:15px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px;">
+                        <h4 style="margin:0 0 8px 0; color:#0f172a; font-size:13px;"><?php _e('التقويم وأدوات القياس', 'control'); ?></h4>
+                        <div style="font-size:12px; color:#475569; line-height:1.5;">${data.assessment || '---'}</div>
+                    </div>
+                    <div style="padding:15px; background:#fffbeb; border:1px solid #fde68a; border-radius:10px;">
+                        <h4 style="margin:0 0 8px 0; color:#92400e; font-size:13px;"><?php _e('ملاحظات المنسق الرياضي', 'control'); ?></h4>
+                        <div style="font-size:12px; color:#92400e; line-height:1.5; font-style:italic;">${data.notes || '---'}</div>
+                    </div>
+                </div>
+
+                <!-- Footer -->
+                <div style="margin-top:40px; border-top:1px solid #e2e8f0; padding-top:10px; text-align:center;">
+                    <div style="font-size:9px; color:#94a3b8;"><?php _e('مستند رسمي صادر عبر منصة كنترول الذكية للإدارة الرياضية المتكاملة', 'control'); ?></div>
+                </div>
+            </div>
+        `;
+    }
 });
 </script>
 
