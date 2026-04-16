@@ -373,6 +373,31 @@ jQuery(document).ready(function($) {
         });
     });
 
+    $('#control-reset-password-form').on('submit', function(e) {
+        e.preventDefault();
+        const $btn = $(this).find('button[type="submit"]');
+        const pass = $('#reset-new-password').val();
+        const confirm = $('#reset-confirm-password').val();
+
+        if (pass !== confirm) {
+            $('#reset-feedback').html('<span class="dashicons dashicons-warning"></span> كلمة المرور غير متطابقة').addClass('error').fadeIn();
+            return;
+        }
+
+        $btn.prop('disabled', true).html('<span class="dashicons dashicons-update spin"></span> جاري التحديث...');
+        $('#reset-feedback').hide().removeClass('error success');
+
+        $.post(control_ajax.ajax_url, $(this).serialize() + '&action=control_process_password_reset&nonce=' + control_ajax.nonce, function(res) {
+            if (res.success) {
+                $('#reset-feedback').html('<span class="dashicons dashicons-yes"></span> ' + res.data).addClass('success').fadeIn();
+                setTimeout(() => window.location.href = control_ajax.home_url, 2000);
+            } else {
+                $btn.prop('disabled', false).text('تحديث كلمة المرور');
+                $('#reset-feedback').html('<span class="dashicons dashicons-warning"></span> ' + (res.data.message || 'حدث خطأ')).addClass('error').fadeIn();
+            }
+        });
+    });
+
     $('#control-forgot-form').on('submit', function(e) {
         e.preventDefault();
         const $btn = $(this).find('button[type="submit"]');

@@ -275,6 +275,39 @@ class Control_Auth {
 	}
 
 	/**
+	 * Generate a secure password reset token.
+	 */
+	public static function generate_reset_token( $user_id ) {
+		global $wpdb;
+		$token = bin2hex( random_bytes( 32 ) );
+		$expiry = date( 'Y-m-d H:i:s', strtotime( '+24 hours' ) );
+
+		// Invalidate old tokens for this user
+		$wpdb->update( "{$wpdb->prefix}control_reset_tokens", array( 'is_used' => 1 ), array( 'user_id' => $user_id, 'is_used' => 0 ) );
+
+		$wpdb->insert( "{$wpdb->prefix}control_reset_tokens", array(
+			'user_id' => $user_id,
+			'token'   => $token,
+			'expiry'  => $expiry
+		) );
+
+		return $token;
+	}
+
+	/**
+	 * Verify a password reset token.
+	 */
+	public static function verify_reset_token( $token ) {
+		global $wpdb;
+		$row = $wpdb->get_row( $wpdb->prepare(
+			"SELECT * FROM {$wpdb->prefix}control_reset_tokens WHERE token = %s AND is_used = 0 AND expiry > NOW()",
+			$token
+		) );
+
+		return $row;
+	}
+
+	/**
 	 * Centralized Permissions Registry
 	 */
 	public static function get_permissions_registry() {
