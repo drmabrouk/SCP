@@ -228,6 +228,11 @@ class Control_Auth {
 
 		// Clear native WordPress session and cookies
 		wp_logout();
+		wp_clear_auth_cookie();
+
+		if ( session_id() ) {
+			session_destroy();
+		}
 	}
 
 	public static function is_logged_in() {

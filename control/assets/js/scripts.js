@@ -592,18 +592,24 @@ jQuery(document).ready(function($) {
     });
 
 
-    $('#control-logout-btn, #control-mobile-logout-btn, #control-header-logout').on('click', function() {
+    $('#control-logout-btn, #control-mobile-logout-btn, #control-header-logout').on('click', function(e) {
+        e.preventDefault();
         showSync('جاري تسجيل الخروج وتأمين الحساب...');
 
-        $.post(control_ajax.ajax_url, { action: 'control_logout', nonce: control_ajax.nonce }, function() {
-            // Clear Client Storage
-            localStorage.clear();
-            sessionStorage.clear();
+        // Clear Client Storage immediately
+        localStorage.clear();
+        sessionStorage.clear();
 
-            // Redirect with Cache Busting
-            const logoutUrl = control_ajax.home_url + '?logged_out=' + new Date().getTime();
+        // Use native WP logout URL (includes correct nonce)
+        const logoutUrl = control_ajax.logout_url;
+
+        // First try server-side logout via AJAX, then redirect regardless
+        $.post(control_ajax.ajax_url, { action: 'control_logout', nonce: control_ajax.nonce }).always(function() {
             window.location.href = logoutUrl;
         });
+
+        // Fallback for safety
+        setTimeout(() => { window.location.href = logoutUrl; }, 1500);
     });
 
     $(document).on('click', '.control-upload-btn', function(e) {

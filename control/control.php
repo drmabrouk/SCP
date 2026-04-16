@@ -116,6 +116,7 @@ class Control_System {
 		wp_localize_script( 'control-scripts', 'control_ajax', array(
 			'ajax_url' => admin_url( 'admin-ajax.php' ),
 			'home_url' => home_url(),
+			'logout_url' => wp_logout_url( home_url() ),
 			'nonce'    => wp_create_nonce( 'control_nonce' ),
 		) );
 	}
