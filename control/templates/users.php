@@ -431,8 +431,12 @@ function control_get_time_ago($timestamp) {
                     <label style="display:block; font-size:0.75rem; color:var(--control-muted); margin-bottom:5px; font-weight:700;"><?php _e('الموقع الأخير (IP)', 'control'); ?></label>
                     <div id="detail-last-ip" style="font-weight:600; color:var(--control-text-dark);"></div>
                 </div>
+                <div class="info-group">
+                    <label style="display:block; font-size:0.75rem; color:var(--control-muted); margin-bottom:5px; font-weight:700;"><?php _e('الجهاز المفضل', 'control'); ?></label>
+                    <div id="detail-frequent-device" style="font-weight:600; color:var(--control-text-dark);"></div>
+                </div>
                 <div class="info-group" style="grid-column: span 2;">
-                    <label style="display:block; font-size:0.75rem; color:var(--control-muted); margin-bottom:5px; font-weight:700;"><?php _e('رؤى الجهاز والنشاط', 'control'); ?></label>
+                    <label style="display:block; font-size:0.75rem; color:var(--control-muted); margin-bottom:5px; font-weight:700;"><?php _e('تفاصيل الجهاز الحالي', 'control'); ?></label>
                     <div id="detail-device-insights" style="font-weight:600; color:var(--control-primary); font-size:0.85rem;"></div>
                 </div>
                 <div class="info-group" style="grid-column: span 2;">
@@ -926,9 +930,11 @@ jQuery(document).ready(function($) {
             if (res.success) {
                 $('#detail-last-ip').text(res.data.ip + ' (' + res.data.location + ')');
                 $('#detail-device-insights').text(res.data.device);
+                $('#detail-frequent-device').text(res.data.frequent_device);
             } else {
                 $('#detail-last-ip').text('N/A');
                 $('#detail-device-insights').text('N/A');
+                $('#detail-frequent-device').text('N/A');
             }
         });
 
