@@ -277,6 +277,7 @@ body, .control-dashboard {
     background-position: center;
     background-attachment: fixed;
     padding: 20px;
+    transition: var(--control-transition);
 }
 
 .control-auth-card {
@@ -289,7 +290,8 @@ body, .control-dashboard {
     padding: 40px;
     border-radius: var(--auth-border-radius, 24px) !important;
     box-shadow: var(--auth-container-shadow, 0 25px 50px -12px rgba(0, 0, 0, 0.5)) !important;
-    backdrop-filter: blur(10px);
+    backdrop-filter: blur(15px);
+    transition: transform 0.3s ease, opacity 0.3s ease;
 }
 
 .control-auth-header {
@@ -351,7 +353,7 @@ body, .control-dashboard {
     background: var(--auth-input-bg, rgba(255, 255, 255, 0.05)) !important;
     border: 1px solid var(--auth-input-border, rgba(255, 255, 255, 0.15)) !important;
     color: var(--auth-input-text, #ffffff) !important;
-    border-radius: 12px;
+    border-radius: var(--auth-input-radius, 12px) !important;
     height: 50px;
     padding: 0 18px;
     font-size: 0.95rem;
@@ -376,9 +378,10 @@ body, .control-dashboard {
     direction: ltr;
     background: var(--auth-input-bg, rgba(255, 255, 255, 0.05));
     border: 1px solid var(--auth-input-border, rgba(255, 255, 255, 0.15));
-    border-radius: 12px;
+    border-radius: var(--auth-input-radius, 12px);
     overflow: hidden;
     transition: var(--control-transition);
+    height: 50px;
 }
 
 .integrated-phone-field:focus-within {
@@ -472,7 +475,7 @@ body, .control-dashboard {
     width: 100%;
     height: 54px;
     font-size: 1.05rem;
-    border-radius: 14px;
+    border-radius: var(--auth-input-radius, 14px);
     font-weight: 800;
     margin-top: 10px;
     box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2);
@@ -862,6 +865,7 @@ body, .control-dashboard {
 
 /* Auth Specific Floating Labels */
 .control-auth-card .control-form-group.has-value label,
+.control-auth-card .control-form-group:focus-within label,
 .control-auth-card .control-form-group input:focus ~ label,
 .control-auth-card .control-form-group select:focus ~ label,
 .control-auth-card .control-form-group textarea:focus ~ label {
