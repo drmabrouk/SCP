@@ -90,6 +90,25 @@ class Control_Notifications {
 	}
 
 	/**
+	 * Send Smart Reminder (Internal + Email)
+	 */
+	public static function send_reminder( $user_id, $title, $message, $email_data = array() ) {
+		global $wpdb;
+
+		// 1. Store as internal notification (Activity Log for now, or a separate table if we had one)
+		Control_Audit::log( 'lesson_reminder', $message, $user_id );
+
+		// 2. Optional Email Notification
+		$notifications_enabled = $wpdb->get_var( "SELECT setting_value FROM {$wpdb->prefix}control_settings WHERE setting_key = 'notifications_enabled'" );
+
+		if ( $notifications_enabled === '1' && ! empty($email_data['to']) ) {
+			return self::send_custom( $email_data['to'], $title, $message );
+		}
+
+		return true;
+	}
+
+	/**
 	 * Professional HTML Email Wrapper with branding.
 	 */
 	public static function get_html_wrapper( $content ) {

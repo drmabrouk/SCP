@@ -4,6 +4,10 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 $is_admin = Control_Auth::is_admin();
+global $wpdb;
+$grading_config = json_decode($wpdb->get_var("SELECT setting_value FROM {$wpdb->prefix}control_settings WHERE setting_key = 'grading_config'"), true);
+$org_name = $wpdb->get_var("SELECT setting_value FROM {$wpdb->prefix}control_settings WHERE setting_key = 'company_name'") ?: 'Control System';
+$org_logo = $wpdb->get_var("SELECT setting_value FROM {$wpdb->prefix}control_settings WHERE setting_key = 'company_logo'");
 ?>
 
 <div class="control-header-flex" style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
@@ -12,6 +16,11 @@ $is_admin = Control_Auth::is_admin();
         <p style="color:var(--control-muted); font-size:0.85rem; margin-top:5px;"><?php _e('رصد أداء الطلاب البدني والمهاري والمشاركة', 'control'); ?></p>
     </div>
     <div style="display:flex; gap:10px;">
+        <?php if($is_admin): ?>
+        <button id="open-grading-config" class="control-btn" style="background:var(--control-bg); color:var(--control-text-dark) !important; border:1px solid var(--control-border); padding:0 12px;" title="<?php _e('إعدادات توزيع الدرجات', 'control'); ?>">
+            <span class="dashicons dashicons-admin-generic"></span>
+        </button>
+        <?php endif; ?>
         <button id="import-excel-btn" class="control-btn" style="background:var(--control-bg); color:var(--control-primary) !important; border:1px solid var(--control-border);">
             <span class="dashicons dashicons-upload" style="margin-left:8px;"></span><?php _e('استيراد من Excel', 'control'); ?>
         </button>
@@ -68,13 +77,10 @@ $is_admin = Control_Auth::is_admin();
                 <tr>
                     <th style="width:60px;"><?php _e('م', 'control'); ?></th>
                     <th><?php _e('اسم الطالب', 'control'); ?></th>
-                    <th style="width:100px;"><?php _e('اللياقة (20)', 'control'); ?></th>
-                    <th style="width:100px;"><?php _e('الانضباط (10)', 'control'); ?></th>
-                    <th style="width:100px;"><?php _e('الشفهي (10)', 'control'); ?></th>
-                    <th style="width:100px;"><?php _e('المهاري (30)', 'control'); ?></th>
-                    <th style="width:100px;"><?php _e('السلوك (15)', 'control'); ?></th>
-                    <th style="width:100px;"><?php _e('المشاركة (15)', 'control'); ?></th>
-                    <th style="width:100px; background:rgba(212,175,55,0.1);"><?php _e('المجموع (100)', 'control'); ?></th>
+                    <?php foreach($grading_config as $cat): ?>
+                        <th style="width:100px;"><?php echo $cat['label']; ?> (<?php echo $cat['weight']; ?>)</th>
+                    <?php endforeach; ?>
+                    <th style="width:100px; background:rgba(212,175,55,0.1); font-weight:800;"><?php _e('المجموع (100)', 'control'); ?></th>
                     <th style="width:80px;"><?php _e('إجراء', 'control'); ?></th>
                 </tr>
             </thead>
@@ -149,6 +155,12 @@ $is_admin = Control_Auth::is_admin();
             <?php _e('يرجى لصق البيانات من Excel مباشرة (يجب أن تكون الأعمدة بالترتيب: الاسم، الصف، الشعبة، الجنسية، البريد، الهاتف، الهوية).', 'control'); ?>
         </p>
         <textarea id="excel-paste-area" style="width:100%; height:200px; margin-bottom:20px; font-size:0.8rem; direction:ltr;" placeholder="Paste Excel data here..."></textarea>
+        <div id="import-progress-container" style="display:none; margin-bottom:20px;">
+            <div style="width:100%; height:8px; background:#f1f5f9; border-radius:10px; overflow:hidden; margin-bottom:10px;">
+                <div id="import-progress-bar" style="width:0%; height:100%; background:var(--control-primary); transition:0.3s;"></div>
+            </div>
+            <p id="import-progress-text" style="font-size:0.75rem; color:var(--control-primary); font-weight:700;">0%</p>
+        </div>
         <div style="display:flex; gap:10px;">
             <button id="process-import-btn" class="control-btn" style="flex:1; background:var(--control-primary); border:none;"><?php _e('تحليل واستيراد', 'control'); ?></button>
             <button type="button" onclick="jQuery('#import-modal').hide()" class="control-btn" style="flex:1; background:var(--control-bg); color:var(--control-text-dark) !important; border:1px solid var(--control-border);"><?php _e('إلغاء', 'control'); ?></button>
@@ -156,14 +168,41 @@ $is_admin = Control_Auth::is_admin();
     </div>
 </div>
 
+<!-- Grading Config Modal -->
+<div id="grading-config-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:10006; align-items:center; justify-content:center; backdrop-filter: blur(8px);">
+    <div class="control-card" style="width:100%; max-width:600px; border-radius:24px; padding:0; overflow:hidden;">
+        <div style="background:var(--control-primary); color:#fff; padding:20px 30px; display:flex; justify-content:space-between; align-items:center;">
+            <h3 style="color:#fff; margin:0; font-size:1.1rem;"><?php _e('إعدادات توزيع الدرجات', 'control'); ?></h3>
+            <button type="button" onclick="jQuery('#grading-config-modal').hide()" style="background:none; border:none; color:#fff; cursor:pointer;"><span class="dashicons dashicons-no-alt"></span></button>
+        </div>
+        <div style="padding:30px;">
+            <div id="config-items-container" style="display:flex; flex-direction:column; gap:12px; margin-bottom:25px;">
+                <!-- Config items injected via JS -->
+            </div>
+            <div style="background:var(--control-bg); padding:15px; border-radius:12px; display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                <strong style="color:var(--control-primary);"><?php _e('المجموع الكلي:', 'control'); ?></strong>
+                <span id="config-total-weight" style="font-weight:800; font-size:1.2rem; color:var(--control-accent);">100</span>
+            </div>
+            <button id="add-config-item" class="control-btn" style="width:100%; background:none; color:var(--control-primary) !important; border:1px dashed var(--control-border); margin-bottom:15px;">
+                <span class="dashicons dashicons-plus-alt" style="margin-left:8px;"></span><?php _e('إضافة فئة جديدة', 'control'); ?>
+            </button>
+            <button id="save-grading-config" class="control-btn" style="width:100%; height:45px; background:var(--control-accent); color:var(--control-primary) !important; border:none; font-weight:800;">
+                <?php _e('حفظ التعديلات وتطبيقها', 'control'); ?>
+            </button>
+        </div>
+    </div>
+</div>
+
 <script>
 jQuery(document).ready(function($) {
+    const gradingConfig = <?php echo json_encode($grading_config); ?>;
+
     function fetchStudents() {
         const grade = $('#grade-filter').val();
         const section = $('#section-filter').val();
         const $tbody = $('#grades-table-body');
 
-        $tbody.html('<tr><td colspan="10" style="text-align:center; padding:50px;"><span class="dashicons dashicons-update spin"></span></td></tr>');
+        $tbody.html('<tr><td colspan="' + (gradingConfig.length + 4) + '" style="text-align:center; padding:50px;"><span class="dashicons dashicons-update spin"></span></td></tr>');
 
         $.post(control_ajax.ajax_url, {
             action: 'control_get_students',
@@ -174,29 +213,27 @@ jQuery(document).ready(function($) {
             if (res.success && res.data.length > 0) {
                 let html = '';
                 res.data.forEach((s, index) => {
-                    html += `
-                        <tr class="student-grade-row" data-id="${s.id}">
-                            <td>${index + 1}</td>
-                            <td><strong class="student-name">${s.name}</strong><br><small style="color:#94a3b8;">${s.nationality || ''} | ${s.national_id || ''}</small></td>
-                            <td><input type="number" class="grade-input" data-field="physical_fitness" value="${s.physical_fitness || 0}" min="0" max="20"></td>
-                            <td><input type="number" class="grade-input" data-field="discipline" value="${s.discipline || 0}" min="0" max="10"></td>
-                            <td><input type="number" class="grade-input" data-field="oral_questioning" value="${s.oral_questioning || 0}" min="0" max="10"></td>
-                            <td><input type="number" class="grade-input" data-field="practical_skills" value="${s.practical_skills || 0}" min="0" max="30"></td>
-                            <td><input type="number" class="grade-input" data-field="behavior" value="${s.behavior || 0}" min="0" max="15"></td>
-                            <td><input type="number" class="grade-input" data-field="participation" value="${s.participation || 0}" min="0" max="15"></td>
-                            <td style="background:rgba(212,175,55,0.05);"><strong class="total-score-val">${s.total_score || 0}</strong></td>
-                            <td>
-                                <div style="display:flex; gap:5px;">
-                                    <button class="edit-student-btn" data-id='${JSON.stringify(s)}' style="background:none; border:none; cursor:pointer; color:var(--control-primary);"><span class="dashicons dashicons-edit"></span></button>
-                                    <button class="delete-student-btn" data-id="${s.id}" style="background:none; border:none; cursor:pointer; color:#ef4444;"><span class="dashicons dashicons-trash"></span></button>
-                                </div>
-                            </td>
-                        </tr>
-                    `;
+                    html += `<tr class="student-grade-row" data-id="${s.id}">
+                        <td>${index + 1}</td>
+                        <td><strong class="student-name">${s.name}</strong><br><small style="color:#94a3b8;">${s.nationality || ''} | ${s.national_id || ''}</small></td>`;
+
+                    gradingConfig.forEach(cat => {
+                        const val = s[cat.id] || 0;
+                        html += `<td><input type="number" class="grade-input" data-field="${cat.id}" data-weight="${cat.weight}" value="${val}" min="0" max="${cat.weight}"></td>`;
+                    });
+
+                    html += `<td style="background:rgba(212,175,55,0.05);"><strong class="total-score-val">${s.total_score || 0}</strong></td>
+                        <td>
+                            <div style="display:flex; gap:5px;">
+                                <button class="edit-student-btn" data-id='${JSON.stringify(s)}' style="background:none; border:none; cursor:pointer; color:var(--control-primary);"><span class="dashicons dashicons-edit"></span></button>
+                                <button class="delete-student-btn" data-id="${s.id}" style="background:none; border:none; cursor:pointer; color:#ef4444;"><span class="dashicons dashicons-trash"></span></button>
+                            </div>
+                        </td>
+                    </tr>`;
                 });
                 $tbody.html(html);
             } else {
-                $tbody.html('<tr><td colspan="10" style="text-align:center; padding:50px; color:var(--control-muted);"><?php _e('لا يوجد طلاب مضافين لهذا الصف/الشعبة.', 'control'); ?></td></tr>');
+                $tbody.html('<tr><td colspan="' + (gradingConfig.length + 4) + '" style="text-align:center; padding:50px; color:var(--control-muted);"><?php _e('لا يوجد طلاب مضافين لهذا الصف/الشعبة.', 'control'); ?></td></tr>');
             }
         });
     }
@@ -258,60 +295,112 @@ jQuery(document).ready(function($) {
         const students = [];
         lines.forEach(line => {
             const cols = line.split("\t");
-            if (cols.length >= 2) {
+            if (cols.length >= 1 && cols[0].trim() !== '') {
                 students.push({
-                    name: cols[0],
-                    grade: cols[1] || '',
-                    section: cols[2] || '',
-                    nationality: cols[3] || '',
-                    email: cols[4] || '',
-                    phone: cols[5] || '',
-                    national_id: cols[6] || ''
+                    name: (cols[0] || '').trim(),
+                    grade: (cols[1] || '').trim(),
+                    section: (cols[2] || '').trim(),
+                    nationality: (cols[3] || '').trim(),
+                    email: (cols[4] || '').trim(),
+                    phone: (cols[5] || '').trim(),
+                    national_id: (cols[6] || '').trim()
                 });
             }
         });
 
-        if (students.length === 0) return;
+        if (students.length === 0) {
+            alert('لم يتم العثور على بيانات صالحة.');
+            return;
+        }
 
         const $btn = $(this);
-        $btn.prop('disabled', true).text('<?php _e('جاري الاستيراد...', 'control'); ?>');
+        const $progress = $('#import-progress-container');
+        const $bar = $('#import-progress-bar');
+        const $text = $('#import-progress-text');
 
-        $.post(control_ajax.ajax_url, {
-            action: 'control_import_students',
-            students: students,
-            nonce: control_ajax.nonce
-        }, function(res) {
-            if (res.success) {
+        $btn.prop('disabled', true);
+        $progress.fadeIn();
+
+        // Process in chunks for large datasets
+        const chunkSize = 50;
+        let processed = 0;
+        let totalImported = 0;
+        let totalUpdated = 0;
+        let totalFailed = [];
+
+        function sendChunk() {
+            const chunk = students.slice(processed, processed + chunkSize);
+            if (chunk.length === 0) {
+                $progress.fadeOut();
+                alert(`اكتمل الاستيراد:\n- تمت إضافة: ${totalImported}\n- تم تحديث: ${totalUpdated}\n- فشل: ${totalFailed.length}`);
+                if(totalFailed.length > 0) console.log('Failures:', totalFailed);
                 $('#import-modal').hide();
-                alert(`Successfully imported ${res.data.imported} students.`);
                 fetchStudents();
+                $btn.prop('disabled', false);
+                return;
             }
-            $btn.prop('disabled', false).text('<?php _e('تحليل واستيراد', 'control'); ?>');
-        });
+
+            $.post(control_ajax.ajax_url, {
+                action: 'control_import_students',
+                students: chunk,
+                nonce: control_ajax.nonce
+            }, function(res) {
+                if (res.success) {
+                    totalImported += res.data.imported;
+                    totalUpdated += res.data.updated;
+                    totalFailed = totalFailed.concat(res.data.failed);
+                }
+                processed += chunk.length;
+                const percent = Math.round((processed / students.length) * 100);
+                $bar.css('width', percent + '%');
+                $text.text(percent + '%');
+                sendChunk();
+            });
+        }
+
+        sendChunk();
     });
 
     $(document).on('input', '.grade-input', function() {
-        const row = $(this).closest('tr');
+        const $input = $(this);
+        const max = parseFloat($input.attr('max'));
+        let val = parseFloat($input.val());
+
+        if (val > max) { $input.val(max); val = max; }
+        if (val < 0 || isNaN(val)) { $input.val(0); val = 0; }
+
+        const row = $input.closest('tr');
         let total = 0;
         row.find('.grade-input').each(function() {
             total += parseFloat($(this).val()) || 0;
         });
         row.find('.total-score-val').text(total.toFixed(1));
+
+        // Instant Auto-save for inline editing
+        const studentId = row.data('id');
+        const grades = {};
+        grades[studentId] = {};
+        row.find('.grade-input').each(function() {
+            grades[studentId][$(this).data('field')] = $(this).val();
+        });
+        grades[studentId]['total_score'] = total.toFixed(1);
+
+        $.post(control_ajax.ajax_url, {
+            action: 'control_save_grades',
+            grades: grades,
+            nonce: control_ajax.nonce
+        });
     });
 
     $('#save-all-grades').on('click', function() {
         const grades = {};
         $('.student-grade-row').each(function() {
             const id = $(this).data('id');
-            grades[id] = {
-                physical_fitness: $(this).find('[data-field="physical_fitness"]').val(),
-                discipline: $(this).find('[data-field="discipline"]').val(),
-                oral_questioning: $(this).find('[data-field="oral_questioning"]').val(),
-                practical_skills: $(this).find('[data-field="practical_skills"]').val(),
-                behavior: $(this).find('[data-field="behavior"]').val(),
-                participation: $(this).find('[data-field="participation"]').val(),
-                total_score: $(this).find('.total-score-val').text()
-            };
+            grades[id] = {};
+            $(this).find('.grade-input').each(function() {
+                grades[id][$(this).data('field')] = $(this).val();
+            });
+            grades[id]['total_score'] = $(this).find('.total-score-val').text();
         });
 
         if ($.isEmptyObject(grades)) return;
@@ -342,36 +431,159 @@ jQuery(document).ready(function($) {
     });
 
     $('#print-class-list').on('click', function() {
-        const grade = $('#grade-filter').val();
-        const section = $('#section-filter').val();
-        const content = $('#grades-bulk-table')[0].outerHTML;
+        const grade = $('#grade-filter').val() || 'جميع الصفوف';
+        const section = $('#section-filter').val() || 'جميع الشعب';
+
+        // Prepare data for printing (clean from inputs)
+        let tableHtml = `<table style="width:100%; border-collapse:collapse; font-size:11px; margin-top:20px; border:1px solid #000;">
+            <thead>
+                <tr style="background:#f1f5f9;">
+                    <th style="border:1px solid #000; padding:10px;">م</th>
+                    <th style="border:1px solid #000; padding:10px;">اسم الطالب</th>`;
+
+        gradingConfig.forEach(cat => {
+            tableHtml += `<th style="border:1px solid #000; padding:10px; width:60px;">${cat.label}<br>(${cat.weight})</th>`;
+        });
+
+        tableHtml += `<th style="border:1px solid #000; padding:10px; width:70px; background:#e2e8f0; font-weight:800;">المجموع<br>(100)</th></tr></thead><tbody>`;
+
+        $('.student-grade-row:visible').each(function(i) {
+            const name = $(this).find('.student-name').text();
+            tableHtml += `<tr>
+                <td style="border:1px solid #000; padding:8px; text-align:center;">${i+1}</td>
+                <td style="border:1px solid #000; padding:8px; font-weight:700;">${name}</td>`;
+
+            gradingConfig.forEach(cat => {
+                const val = $(this).find(`input[data-field="${cat.id}"]`).val();
+                tableHtml += `<td style="border:1px solid #000; padding:8px; text-align:center;">${val}</td>`;
+            });
+
+            const total = $(this).find('.total-score-val').text();
+            tableHtml += `<td style="border:1px solid #000; padding:8px; text-align:center; font-weight:800; background:#f8fafc;">${total}</td></tr>`;
+        });
+
+        tableHtml += `</tbody></table>`;
 
         const win = window.open('', '_blank');
         win.document.write(`
             <html>
                 <head>
-                    <title>كشف درجات: ${grade} - ${section}</title>
+                    <title>تقرير درجات: ${grade} - ${section}</title>
+                    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;700;800&display=swap">
                     <style>
-                        body { font-family: 'Rubik', sans-serif; direction: rtl; padding: 20px; }
-                        table { width: 100%; border-collapse: collapse; }
-                        th, td { border: 1px solid #000; padding: 8px; text-align: right; }
-                        th { background: #f1f5f9; }
-                        input { border: none; width: 40px; text-align: center; font-family: inherit; }
-                        .edit-student-btn, .delete-student-btn, #grades-bulk-table th:last-child, #grades-bulk-table td:last-child { display: none; }
+                        body { font-family: 'Rubik', sans-serif; direction: rtl; padding: 15mm; margin: 0; color: #000; }
+                        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2.5px solid #000; padding-bottom: 15px; margin-bottom: 20px; }
+                        .org-info { flex: 1; }
+                        .org-logo { height: 60px; margin-bottom: 10px; }
+                        .doc-title { font-size: 20px; font-weight: 800; }
+                        .meta { font-size: 11px; line-height: 1.6; }
+                        @media print { body { padding: 0; } }
                     </style>
                 </head>
                 <body>
-                    <h2 style="text-align:center;">كشف درجات مادة التربية الرياضية</h2>
-                    <p style="text-align:center;">${grade} - شعبة ${section}</p>
-                    ${content}
-                    <div style="margin-top:50px; display:flex; justify-content:space-between;">
-                        <div>توقيع المعلم: ............................</div>
-                        <div>توقيع المنسق: ............................</div>
+                    <div class="header">
+                        <div class="org-info">
+                            <?php if($org_logo): ?><img src="<?php echo $org_logo; ?>" class="org-logo"><?php endif; ?>
+                            <div class="doc-title">كشف رصد درجات الطلاب</div>
+                            <div style="font-weight:700; margin-top:5px;"><?php echo $org_name; ?></div>
+                        </div>
+                        <div class="meta">
+                            <div><strong>الصف:</strong> ${grade}</div>
+                            <div><strong>الشعبة:</strong> ${section}</div>
+                            <div><strong>التاريخ:</strong> ${new Date().toLocaleDateString('ar-SA')}</div>
+                            <div><strong>المادة:</strong> التربية الرياضية</div>
+                        </div>
+                    </div>
+                    ${tableHtml}
+                    <div style="margin-top:40px; display:flex; justify-content:space-between; font-size:12px;">
+                        <div style="text-align:center;">توقيع مدرس المادة<br><br>................................</div>
+                        <div style="text-align:center;">توقيع منسق القسم<br><br>................................</div>
+                        <div style="text-align:center;">اعتماد الإدارة<br><br>................................</div>
                     </div>
                 </body>
             </html>
         `);
-        win.print();
+        setTimeout(() => { win.print(); }, 500);
+    });
+
+    // --- Grading Configuration Logic ---
+
+    $('#open-grading-config').on('click', function() {
+        renderConfigItems();
+        $('#grading-config-modal').css('display', 'flex');
+    });
+
+    function renderConfigItems() {
+        let html = '';
+        gradingConfig.forEach((item, index) => {
+            html += `
+                <div class="config-row" style="display:flex; gap:10px; align-items:center; background:#f8fafc; padding:12px; border-radius:12px; border:1px solid var(--control-border);">
+                    <input type="text" class="config-label" value="${item.label}" placeholder="Category Name" style="flex:3; height:36px; font-size:0.85rem; font-weight:700;">
+                    <input type="number" class="config-weight" value="${item.weight}" placeholder="Weight" style="flex:1; height:36px; text-align:center;">
+                    <button class="remove-config-item" style="background:none; border:none; color:#ef4444; cursor:pointer;"><span class="dashicons dashicons-no-alt"></span></button>
+                </div>
+            `;
+        });
+        $('#config-items-container').html(html);
+        updateConfigTotal();
+    }
+
+    $(document).on('click', '.remove-config-item', function() {
+        $(this).closest('.config-row').remove();
+        updateConfigTotal();
+    });
+
+    $('#add-config-item').on('click', function() {
+        const html = `
+            <div class="config-row" style="display:flex; gap:10px; align-items:center; background:#f8fafc; padding:12px; border-radius:12px; border:1px solid var(--control-border);">
+                <input type="text" class="config-label" placeholder="Category Name" style="flex:3; height:36px; font-size:0.85rem; font-weight:700;">
+                <input type="number" class="config-weight" value="0" placeholder="Weight" style="flex:1; height:36px; text-align:center;">
+                <button class="remove-config-item" style="background:none; border:none; color:#ef4444; cursor:pointer;"><span class="dashicons dashicons-no-alt"></span></button>
+            </div>
+        `;
+        $('#config-items-container').append(html);
+    });
+
+    $(document).on('input', '.config-weight', updateConfigTotal);
+
+    function updateConfigTotal() {
+        let total = 0;
+        $('.config-weight').each(function() { total += parseFloat($(this).val()) || 0; });
+        $('#config-total-weight').text(total);
+        if(total !== 100) $('#config-total-weight').css('color', '#ef4444');
+        else $('#config-total-weight').css('color', '#10b981');
+    }
+
+    $('#save-grading-config').on('click', function() {
+        const total = parseFloat($('#config-total-weight').text());
+        if(total !== 100) {
+            alert('يجب أن يكون مجموع الدرجات مساوياً لـ 100 بالضبط.');
+            return;
+        }
+
+        const config = [];
+        $('.config-row').each(function() {
+            const label = $(this).find('.config-label').val();
+            const weight = parseFloat($(this).find('.config-weight').val());
+            if(label && weight >= 0) {
+                config.push({
+                    id: label.replace(/\s+/g, '_').toLowerCase(),
+                    label: label,
+                    weight: weight
+                });
+            }
+        });
+
+        const $btn = $(this);
+        $btn.prop('disabled', true).text('جاري الحفظ...');
+
+        $.post(control_ajax.ajax_url, {
+            action: 'control_save_settings',
+            settings: { grading_config: JSON.stringify(config) },
+            nonce: control_ajax.nonce
+        }, function(res) {
+            if(res.success) location.reload();
+        });
     });
 });
 </script>

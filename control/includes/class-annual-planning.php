@@ -9,6 +9,11 @@ class Control_Annual_Planning {
 		add_action( 'wp_ajax_control_save_annual_plan', array( __CLASS__, 'save_plan' ) );
 		add_action( 'wp_ajax_control_get_annual_plan', array( __CLASS__, 'get_plan' ) );
 		add_action( 'wp_ajax_control_delete_annual_plan', array( __CLASS__, 'delete_plan' ) );
+
+		if ( ! wp_next_scheduled( 'control_lesson_reminders' ) ) {
+			wp_schedule_event( time(), 'daily', 'control_lesson_reminders' );
+		}
+		add_action( 'control_lesson_reminders', array( __CLASS__, 'process_reminders' ) );
 	}
 
 	public static function save_plan() {
@@ -67,6 +72,51 @@ class Control_Annual_Planning {
 	public static function get_user_plans( $user_id ) {
 		global $wpdb;
 		return $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$wpdb->prefix}control_annual_plans WHERE creator_id = %s ORDER BY created_at DESC", $user_id ) );
+	}
+
+	/**
+	 * Daily task to scan all active plans and send reminders.
+	 */
+	public static function process_reminders() {
+		global $wpdb;
+		$today = date('Y-m-d');
+		$tomorrow = date('Y-m-d', strtotime('+1 day'));
+
+		$plans = $wpdb->get_results( "SELECT * FROM {$wpdb->prefix}control_annual_plans" );
+
+		foreach ( $plans as $p ) {
+			$data = json_decode($p->plan_data, true);
+			if ( empty($data) ) continue;
+
+			foreach ( $data as $slot ) {
+				$lesson_date = $slot['date'] ?? '';
+				if ( empty($lesson_date) ) continue;
+
+				$title = '';
+				$msg = '';
+
+				if ( $lesson_date === $today ) {
+					$title = $p->lang === 'en' ? "Today's Lesson Reminder" : "تذكير بدرس اليوم";
+					$msg = ($p->lang === 'en' ? "Today's scheduled lesson: " : "درس اليوم المقرر: ") . "<b>{$slot['title']}</b>";
+				} elseif ( $lesson_date === $tomorrow ) {
+					$title = $p->lang === 'en' ? "Upcoming Lesson Tomorrow" : "تذكير بدرس غداً";
+					$msg = ($p->lang === 'en' ? "Upcoming lesson tomorrow: " : "درس غداً المرتقب: ") . "<b>{$slot['title']}</b>";
+				}
+
+				if ( $title ) {
+					// Get creator email if available
+					$creator_email = '';
+					if ( strpos($p->creator_id, 'wp_') === 0 ) {
+						$wp_u = get_userdata(str_replace('wp_', '', $p->creator_id));
+						$creator_email = $wp_u->user_email;
+					} else {
+						$creator_email = $wpdb->get_var($wpdb->prepare("SELECT email FROM {$wpdb->prefix}control_staff WHERE id = %d", $p->creator_id));
+					}
+
+					Control_Notifications::send_reminder( $p->creator_id, $title, $msg, array('to' => $creator_email) );
+				}
+			}
+		}
 	}
 }
 

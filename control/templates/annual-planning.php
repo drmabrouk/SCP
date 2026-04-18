@@ -391,11 +391,27 @@ jQuery(document).ready(function($) {
                     `;
                     $('#annual-guidance-container').html(guidanceHtml).fadeIn();
                 } else {
-                    $('#annual-guidance-container').empty().hide();
-                }
-            }
+                    let guidanceHtml = `
+                        <div class="control-card guidance-alert" style="background:rgba(16,185,129,0.1); border:1px dashed #10b981; padding:20px; border-radius:16px; display:flex; align-items:center; gap:20px;">
+                            <div style="background:#10b981; color:#fff; width:50px; height:50px; border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                                <span class="dashicons dashicons-yes-alt" style="font-size:24px; width:24px; height:24px;"></span>
+                            </div>
+                            <div style="flex:1;">
+                                <h4 style="margin:0 0 5px; color:#065f46; font-size:1rem; font-weight:800;">
+                                    ${isAr ? 'اكتملت جميع الفصول!' : 'All Terms Completed!'}
+                                </h4>
+                                <p style="margin:0; font-size:0.85rem; color:var(--control-muted);">
+                                    ${isAr ? 'يمكنك الآن إنشاء الخطة السنوية المجمعة وتصدير التقرير الكامل لعامك الدراسي.' : 'You can now generate the consolidated Annual Plan and export the full report for your academic year.'}
+                                </p>
+                            </div>
+                            <button id="consolidate-now-btn" class="control-btn" style="background:#10b981; border:none; font-weight:800;">
+                                ${isAr ? 'تجميع الخطة السنوية' : 'Consolidate Annual Plan'}
+                            </button>
+                        </div>
+                    `;
+                    $('#annual-guidance-container').html(guidanceHtml).fadeIn();
         },
-        compile: function() {
+        compile: function(silent = false) {
             const system = $('#academic-system-input').val();
             const terms = ['term_1', 'term_2'];
             if (system === 'three_semesters') terms.push('term_3');
@@ -414,7 +430,7 @@ jQuery(document).ready(function($) {
                 }
             });
 
-            if (missingTerms.length > 0) {
+            if (missingTerms.length > 0 && !silent) {
                 const lang = $('#plan-lang').val();
                 const termLabels = { term_1: 'الفصل 1', term_2: 'الفصل 2', term_3: 'الفصل 3' };
                 const msg = lang === 'ar' ?
@@ -585,6 +601,15 @@ jQuery(document).ready(function($) {
     }
 
     $('#plan-search-input, #plan-term-filter, #plan-system-filter, #plan-date-start, #plan-date-end').on('input change', filterPlans);
+
+    $(document).on('click', '#consolidate-now-btn', function() {
+        $('#create-annual-plan-btn').trigger('click');
+        setTimeout(() => {
+            $('#plan-type').val('annual_summary').trigger('change');
+            showStep(2);
+            $('#plan-name').val('الخطة السنوية المجمعة - ' + new Date().getFullYear());
+        }, 100);
+    });
 
     $('.system-option').on('click', function() {
         $('.system-option').css('border-color', 'var(--control-border)').css('background', '#fff');
