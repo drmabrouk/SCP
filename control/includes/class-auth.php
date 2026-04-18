@@ -328,6 +328,7 @@ class Control_Auth {
 			'emails_send'   => array( 'label' => __( 'إرسال البريد الإلكتروني', 'control' ), 'category' => __( 'النظام', 'control' ) ),
 			'lessons_manage' => array( 'label' => __( 'إدارة وتحضير الدروس', 'control' ), 'category' => __( 'الدروس', 'control' ) ),
 			'lessons_view_all' => array( 'label' => __( 'عرض كافة دروس النظام', 'control' ), 'category' => __( 'الدروس', 'control' ) ),
+			'annual_planning_manage' => array( 'label' => __( 'إدارة الخطط السنوية والفصلية', 'control' ), 'category' => __( 'التخطيط السنوي', 'control' ) ),
 		);
 	}
 }

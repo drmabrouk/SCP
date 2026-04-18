@@ -156,6 +156,24 @@ class Control_Database {
 			tags varchar(255),
 			created_at datetime DEFAULT CURRENT_TIMESTAMP,
 			PRIMARY KEY  (id)
+		) $charset_collate;
+
+		CREATE TABLE {$wpdb->prefix}control_annual_plans (
+			id bigint(20) NOT NULL AUTO_INCREMENT,
+			creator_id varchar(100) NOT NULL,
+			plan_name varchar(255) NOT NULL,
+			academic_system varchar(50) NOT NULL, -- 'two_semesters' or 'three_semesters'
+			plan_type varchar(50) NOT NULL, -- 'term_1', 'term_2', 'term_3', 'annual'
+			start_date date,
+			end_date date,
+			weekly_frequency int(2) DEFAULT 1,
+			lesson_day varchar(20),
+			lang varchar(10) DEFAULT 'ar',
+			plan_data longtext NOT NULL, -- JSON with weeks and lesson slots
+			created_at datetime DEFAULT CURRENT_TIMESTAMP,
+			updated_at datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+			PRIMARY KEY  (id),
+			KEY creator_id (creator_id)
 		) $charset_collate;";
 
 		if ( file_exists( ABSPATH . 'wp-admin/includes/upgrade.php' ) ) {
@@ -187,31 +205,31 @@ class Control_Database {
 			array(
 				'role_key'  => 'coach',
 				'role_name' => 'Sports Coach',
-				'permissions' => json_encode(array('dashboard' => true, 'users_view' => true, 'lessons_manage' => true)),
+				'permissions' => json_encode(array('dashboard' => true, 'users_view' => true, 'lessons_manage' => true, 'annual_planning_manage' => true)),
 				'is_system' => 1
 			),
 			array(
 				'role_key'  => 'therapist',
 				'role_name' => 'Sports Therapist',
-				'permissions' => json_encode(array('dashboard' => true, 'users_view' => true, 'lessons_manage' => true)),
+				'permissions' => json_encode(array('dashboard' => true, 'users_view' => true, 'lessons_manage' => true, 'annual_planning_manage' => true)),
 				'is_system' => 1
 			),
 			array(
 				'role_key'  => 'nutritionist',
 				'role_name' => 'Sports Nutrition Specialist',
-				'permissions' => json_encode(array('dashboard' => true, 'users_view' => true, 'lessons_manage' => true)),
+				'permissions' => json_encode(array('dashboard' => true, 'users_view' => true, 'lessons_manage' => true, 'annual_planning_manage' => true)),
 				'is_system' => 1
 			),
 			array(
 				'role_key'  => 'pe_teacher',
 				'role_name' => 'PE Teacher',
-				'permissions' => json_encode(array('dashboard' => true, 'users_view' => true, 'lessons_manage' => true)),
+				'permissions' => json_encode(array('dashboard' => true, 'users_view' => true, 'lessons_manage' => true, 'annual_planning_manage' => true)),
 				'is_system' => 1
 			),
 			array(
 				'role_key'  => 'researcher',
 				'role_name' => 'Sports Researcher',
-				'permissions' => json_encode(array('dashboard' => true, 'users_view' => true, 'lessons_manage' => true)),
+				'permissions' => json_encode(array('dashboard' => true, 'users_view' => true, 'lessons_manage' => true, 'annual_planning_manage' => true)),
 				'is_system' => 1
 			)
 		);

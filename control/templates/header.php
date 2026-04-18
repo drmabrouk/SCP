@@ -85,6 +85,12 @@
                 </a>
             <?php endif; ?>
 
+            <?php if ( Control_Auth::has_permission('annual_planning_manage') ) : ?>
+                <a href="<?php echo add_query_arg('control_view', 'annual_planning'); ?>" class="<?php echo (isset($_GET['control_view']) && $_GET['control_view'] == 'annual_planning') ? 'active' : ''; ?>">
+                    <span class="dashicons dashicons-calendar-alt"></span> <?php _e('التخطيط السنوي', 'control'); ?>
+                </a>
+            <?php endif; ?>
+
             <?php if ( Control_Auth::has_permission('settings_manage') ) : ?>
                 <a href="<?php echo add_query_arg('control_view', 'settings'); ?>" class="<?php echo (isset($_GET['control_view']) && $_GET['control_view'] == 'settings') ? 'active' : ''; ?>">
                     <span class="dashicons dashicons-admin-generic"></span> <?php _e('إعدادات النظام', 'control'); ?>
@@ -123,6 +129,14 @@
             <a href="<?php echo add_query_arg('control_view', 'dashboard'); ?>" class="mobile-nav-item <?php echo (!isset($_GET['control_view']) || $_GET['control_view'] == 'dashboard') ? 'active' : ''; ?>">
                 <span class="dashicons dashicons-performance"></span>
                 <small><?php _e('الرئيسية', 'control'); ?></small>
+            </a>
+            <div class="mobile-divider"></div>
+        <?php endif; ?>
+
+        <?php if ( Control_Auth::has_permission('annual_planning_manage') ) : ?>
+            <a href="<?php echo add_query_arg('control_view', 'annual_planning'); ?>" class="mobile-nav-item <?php echo (isset($_GET['control_view']) && $_GET['control_view'] == 'annual_planning') ? 'active' : ''; ?>">
+                <span class="dashicons dashicons-calendar-alt"></span>
+                <small><?php _e('التخطيط', 'control'); ?></small>
             </a>
             <div class="mobile-divider"></div>
         <?php endif; ?>
