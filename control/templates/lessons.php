@@ -109,14 +109,23 @@ $sports_icons = array(
 
 <!-- Suggestions for users -->
 <?php if(!empty($suggestions)): ?>
-<div class="control-card" style="background:var(--control-accent-soft); border:1px dashed var(--control-accent); padding:15px; margin-bottom:25px;">
-    <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
-        <span class="dashicons dashicons-info" style="color:var(--control-accent);"></span>
-        <strong style="font-size:0.85rem; color:var(--control-primary);"><?php _e('عناوين مقترحة من الإدارة:', 'control'); ?></strong>
+<div class="control-card dashboard-suggestions-box" style="background:var(--control-accent-soft); border:1px dashed var(--control-accent); padding:15px; margin-bottom:25px;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+        <div style="display:flex; align-items:center; gap:10px;">
+            <span class="dashicons dashicons-info" style="color:var(--control-accent);"></span>
+            <strong style="font-size:0.85rem; color:var(--control-primary);"><?php _e('عناوين مقترحة من الإدارة:', 'control'); ?></strong>
+        </div>
+        <div class="suggestion-lang-toggle" style="display:flex; gap:5px; background:#fff; padding:3px; border-radius:20px; border:1px solid var(--control-border);">
+            <button type="button" class="sug-lang-btn active" data-lang="ar" style="border:none; background:none; cursor:pointer; font-size:0.8rem; padding:2px 8px; border-radius:15px;">🇪🇬</button>
+            <button type="button" class="sug-lang-btn" data-lang="en" style="border:none; background:none; cursor:pointer; font-size:0.8rem; padding:2px 8px; border-radius:15px;">🇺🇸</button>
+        </div>
     </div>
-    <div style="display:flex; gap:10px; flex-wrap:wrap;">
+    <div class="suggestion-chips-container" style="display:flex; gap:10px; flex-wrap:wrap;">
         <?php foreach($suggestions as $s): ?>
-            <span class="suggestion-chip" style="background:#fff; padding:5px 12px; border-radius:30px; font-size:0.75rem; border:1px solid var(--control-border); cursor:pointer;" data-topic="<?php echo esc_attr($s->topic); ?>">
+            <span class="suggestion-chip"
+                  style="background:#fff; padding:5px 12px; border-radius:30px; font-size:0.75rem; border:1px solid var(--control-border); cursor:pointer; display: <?php echo ($s->lang ?? 'ar') === 'ar' ? 'inline-block' : 'none'; ?>;"
+                  data-topic="<?php echo esc_attr($s->topic); ?>"
+                  data-lang="<?php echo esc_attr($s->lang ?? 'ar'); ?>">
                 <?php echo esc_html($s->topic); ?>
             </span>
         <?php endforeach; ?>
@@ -147,7 +156,12 @@ $sports_icons = array(
                                 <span class="date-text"><?php echo date_i18n('Y/m/d', strtotime($l->created_at)); ?></span>
                             </span>
                         </div>
-                        <h4 style="margin:0 0 10px 0; font-size:1.05rem; font-weight:800; color:var(--control-text-dark);"><?php echo esc_html($l->title); ?></h4>
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                            <h4 style="margin:0; font-size:1.05rem; font-weight:800; color:var(--control-text-dark);"><?php echo esc_html($l->title); ?></h4>
+                            <span class="lang-badge" style="font-size:0.6rem; padding:2px 8px; border-radius:10px; background:var(--control-bg); color:var(--control-muted); border:1px solid var(--control-border);">
+                                <?php echo ($l->lang ?? 'ar') === 'ar' ? '🇪🇬 العربية' : '🇺🇸 English'; ?>
+                            </span>
+                        </div>
                         <div style="display:flex; align-items:center; gap:10px; color:var(--control-muted); font-size:0.75rem;">
                             <span><span class="dashicons dashicons-backup" style="font-size:14px; width:14px; height:14px;"></span> <?php echo esc_html($l->duration); ?></span>
                             <?php if($can_view_all && isset($l->first_name)): ?>
@@ -162,6 +176,9 @@ $sports_icons = array(
                         <button class="control-btn download-lesson-pdf" data-id="<?php echo $l->id; ?>" title="<?php _e('تحميل', 'control'); ?>" style="flex:1; padding:0; height:34px; font-size:0.75rem; background:var(--control-accent); color:var(--control-primary) !important; border:none;">
                             <span class="dashicons dashicons-download" style="margin-left:5px;"></span><?php _e('تحميل', 'control'); ?>
                         </button>
+                        <button class="control-btn share-whatsapp-direct" data-id="<?php echo $l->id; ?>" title="<?php _e('مشاركة واتساب', 'control'); ?>" style="padding:0; width:34px; height:34px; background:#25D366; color:#fff !important; border:none;">
+                            <span class="dashicons dashicons-whatsapp"></span>
+                        </button>
                         <button class="control-btn edit-lesson-btn" data-id="<?php echo $l->id; ?>" title="<?php _e('تعديل', 'control'); ?>" style="padding:0; width:34px; height:34px; background:#fff; color:var(--control-text-dark) !important; border:1px solid var(--control-border);"><span class="dashicons dashicons-edit"></span></button>
                         <button class="control-btn delete-lesson-btn" data-id="<?php echo $l->id; ?>" title="<?php _e('حذف', 'control'); ?>" style="padding:0; width:34px; height:34px; background:#fef2f2; color:#ef4444 !important; border:1px solid #fee2e2;"><span class="dashicons dashicons-trash"></span></button>
                     </div>
@@ -175,10 +192,17 @@ $sports_icons = array(
 <div id="lesson-wizard-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:10002; align-items:center; justify-content:center; backdrop-filter: blur(8px);">
     <div class="control-card" style="width:100%; max-width:900px; height:90vh; padding:0; border-radius:24px; overflow:hidden; display:flex; flex-direction:column; box-shadow: 0 40px 100px rgba(0,0,0,0.3);">
 
-        <div style="background:var(--control-primary); color:#fff; padding:25px 35px; display:flex; justify-content:space-between; align-items:center;">
-            <div>
-                <h3 style="color:#fff; margin:0; font-size:1.3rem;"><?php _e('معالج تحضير الدروس الذكي', 'control'); ?></h3>
-                <div id="wizard-step-indicator" style="opacity:0.7; font-size:0.8rem; margin-top:6px;"></div>
+        <div style="background:var(--control-primary); color:#fff; padding:20px 35px; display:flex; justify-content:space-between; align-items:center;">
+            <div style="display:flex; align-items:center; gap:20px;">
+                <div>
+                    <h3 id="wizard-main-title" style="color:#fff; margin:0; font-size:1.2rem;"><?php _e('معالج تحضير الدروس الذكي', 'control'); ?></h3>
+                    <div id="wizard-step-indicator" style="opacity:0.7; font-size:0.8rem; margin-top:4px;"></div>
+                </div>
+                <div class="lang-selector-wizard" style="display:flex; background:rgba(255,255,255,0.1); padding:4px; border-radius:30px; border:1px solid rgba(255,255,255,0.2);">
+                    <button type="button" class="wizard-lang-btn active" data-lang="ar" title="العربية">🇪🇬</button>
+                    <button type="button" class="wizard-lang-btn" data-lang="en" title="English">🇺🇸</button>
+                    <input type="hidden" name="lang" id="lesson-lang" value="ar">
+                </div>
             </div>
             <div style="display:flex; gap:8px;" id="lesson-wizard-dots">
                 <span class="dot active" data-step="1"></span>
@@ -430,7 +454,7 @@ $sports_icons = array(
         <div style="padding:30px;">
             <form id="add-suggestion-form">
                 <input type="hidden" id="edit-suggestion-id" value="0">
-                <div class="control-grid" style="grid-template-columns: 1fr 1fr; gap:15px; margin-bottom:15px;">
+                <div class="control-grid" style="grid-template-columns: 1fr 1fr 1fr; gap:15px; margin-bottom:15px;">
                     <div class="control-form-group">
                         <label><?php _e('الفئة', 'control'); ?></label>
                         <select id="suggestion-category" required>
@@ -442,6 +466,13 @@ $sports_icons = array(
                             <option value="cooldown"><?php _e('نشاط ختامي', 'control'); ?></option>
                             <option value="assessment"><?php _e('طريقة تقويم', 'control'); ?></option>
                             <option value="general"><?php _e('عام', 'control'); ?></option>
+                        </select>
+                    </div>
+                    <div class="control-form-group">
+                        <label><?php _e('اللغة', 'control'); ?></label>
+                        <select id="suggestion-lang" required>
+                            <option value="ar">العربية (🇪🇬)</option>
+                            <option value="en">English (🇺🇸)</option>
                         </select>
                     </div>
                     <div class="control-form-group">
@@ -651,8 +682,28 @@ jQuery(document).ready(function($) {
     });
 
     $('.suggestion-chip').on('click', function() {
-        $('#lesson-title').val($(this).data('topic'));
+        const topic = $(this).data('topic');
+        const lang = $(this).data('lang');
+
+        $('#create-lesson-btn').trigger('click');
+        $('#lesson-title').val(topic).trigger('change');
+        $(`.wizard-lang-btn[data-lang="${lang}"]`).trigger('click');
+
         $(this).css('background', 'var(--control-accent)').css('color', '#000');
+        setTimeout(() => {
+            $(this).css('background', '#fff').css('color', 'inherit');
+        }, 1000);
+    });
+
+    $(document).on('click', '.sug-lang-btn', function() {
+        const lang = $(this).data('lang');
+        $('.sug-lang-btn').removeClass('active').css('background', 'none');
+        $(this).addClass('active').css('background', 'var(--control-bg)');
+
+        $('.suggestion-chip').each(function() {
+            if ($(this).data('lang') === lang) $(this).show();
+            else $(this).hide();
+        });
     });
 
     // Templates Logic
@@ -973,10 +1024,11 @@ jQuery(document).ready(function($) {
         let html = '';
         allSuggestions.forEach(s => {
             if (!query || s.topic.toLowerCase().includes(query) || (s.tags && s.tags.toLowerCase().includes(query))) {
+                const langIcon = s.lang === 'en' ? '🇺🇸' : '🇪🇬';
                 html += `
                     <tr>
                         <td><span class="control-status-indicator indicator-accent">${s.category}</span></td>
-                        <td><strong>${s.topic}</strong></td>
+                        <td>${langIcon} <strong>${s.topic}</strong></td>
                         <td><small>${s.tags || '---'}</small></td>
                         <td>
                             <div style="display:flex; gap:5px;">
@@ -1006,6 +1058,7 @@ jQuery(document).ready(function($) {
             action: 'control_save_lesson_suggestion',
             topic: $('#suggestion-topic').val(),
             category: $('#suggestion-category').val(),
+            lang: $('#suggestion-lang').val(),
             content: $('#suggestion-content').val(),
             tags: $('#suggestion-tags').val(),
             nonce: control_ajax.nonce
@@ -1047,12 +1100,13 @@ jQuery(document).ready(function($) {
     $(document).on('click', '.browse-suggestions-btn', function() {
         const cat = $(this).data('category');
         const target = $(this).data('target');
+        const activeLang = $('#lesson-lang').val();
 
         currentTargetField = target ? $(target) : null;
         currentTargetContainer = !target ? $(this).closest('.activity-section').find('div[id$="-activities"]') : null;
 
         let html = '<div class="control-grid" style="grid-template-columns:1fr; gap:15px;">';
-        const filtered = allSuggestions.filter(s => s.category === cat);
+        const filtered = allSuggestions.filter(s => s.category === cat && (s.lang || 'ar') === activeLang);
 
         if (filtered.length === 0) {
             html += `<p style="text-align:center; color:var(--control-muted);"><?php _e('لا توجد مقترحات متوفرة لهذه الفئة حالياً.', 'control'); ?></p>`;
@@ -1102,7 +1156,8 @@ jQuery(document).ready(function($) {
         $('#browse-suggestions-modal').hide();
     });
 
-    $(document).on('click', '.download-lesson-pdf', function() {
+    $(document).on('click', '.download-lesson-pdf, .share-whatsapp-direct', function() {
+        const isShare = $(this).hasClass('share-whatsapp-direct');
         const id = $(this).data('id');
         const $btn = $(this);
         const originalHtml = $btn.html();
@@ -1112,9 +1167,24 @@ jQuery(document).ready(function($) {
             if (res.success) {
                 const data = res.data.lesson_data;
                 const creator = res.data;
-                generateDirectPDF(data, id, creator, function() {
+
+                if (isShare) {
+                    const isEn = data.lang === 'en';
+                    const dateStr = data.date_formatted || new Date(res.data.created_at).toLocaleDateString(isEn ? 'en-US' : 'ar-SA');
+                    const sender = creator.first_name + ' ' + creator.last_name;
+
+                    let msg = isEn ?
+                        `📋 *Lesson Plan Sharing*\n\n*Title:* ${data.title}\n*Date:* ${dateStr}\n*By:* ${sender}\n\nGenerated via Control System.` :
+                        `📋 *مشاركة تحضير درس*\n\n*العنوان:* ${data.title}\n*التاريخ:* ${dateStr}\n*بواسطة:* ${sender}\n\nتم التوليد عبر نظام كنترول.`;
+
+                    const waUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(msg)}`;
+                    window.open(waUrl, '_blank');
                     $btn.prop('disabled', false).html(originalHtml);
-                });
+                } else {
+                    generateDirectPDF(data, id, creator, function() {
+                        $btn.prop('disabled', false).html(originalHtml);
+                    });
+                }
             } else {
                 alert(res.data || 'Error loading lesson');
                 $btn.prop('disabled', false).html(originalHtml);

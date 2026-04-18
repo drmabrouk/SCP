@@ -30,6 +30,7 @@ class Control_Lessons {
 		$title = sanitize_text_field( $lesson_data['title'] ?? '' );
 		$target_group = sanitize_text_field( $lesson_data['target_group'] ?? '' );
 		$duration = sanitize_text_field( $lesson_data['duration'] ?? '' );
+		$lang = sanitize_text_field( $lesson_data['lang'] ?? 'ar' );
 
 		if ( empty($title) ) wp_send_json_error( 'Title is required' );
 
@@ -38,6 +39,7 @@ class Control_Lessons {
 			'title'        => $title,
 			'target_group' => $target_group,
 			'duration'     => $duration,
+			'lang'         => $lang,
 			'lesson_data'  => json_encode( $lesson_data )
 		);
 
@@ -122,6 +124,7 @@ class Control_Lessons {
 		$id = intval( $_POST['id'] ?? 0 );
 		$topic = sanitize_text_field( $_POST['topic'] );
 		$category = sanitize_text_field( $_POST['category'] ?? 'general' );
+		$lang = sanitize_text_field( $_POST['lang'] ?? 'ar' );
 		$content = wp_kses_post( $_POST['content'] ?? '' );
 		$tags = sanitize_text_field( $_POST['tags'] ?? '' );
 
@@ -130,6 +133,7 @@ class Control_Lessons {
 		$data = array(
 			'topic'    => $topic,
 			'category' => $category,
+			'lang'     => $lang,
 			'content'  => $content,
 			'tags'     => $tags
 		);
