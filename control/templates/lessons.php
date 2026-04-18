@@ -841,6 +841,26 @@ jQuery(document).ready(function($) {
         $('#lesson-wizard-modal').css('display', 'flex');
     });
 
+    // Handle Prefills from Annual Planning
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.has('prefill_title')) {
+        $('#create-lesson-btn').trigger('click');
+        $('#lesson-title').val(urlParams.get('prefill_title'));
+        const prefillLang = urlParams.get('prefill_lang') || 'ar';
+        $(`.wizard-lang-btn[data-lang="${prefillLang}"]`).trigger('click');
+
+        const prefillDate = urlParams.get('prefill_date');
+        if (prefillDate) {
+            const d = new Date(prefillDate);
+            const formatted = d.toLocaleDateString(prefillLang === 'ar' ? 'ar-SA' : 'en-US', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+            $('#lesson-date-formatted').val(formatted);
+        }
+
+        // Clear params from URL without reload
+        const cleanUrl = window.location.protocol + "//" + window.location.host + window.location.pathname + '?page=' + urlParams.get('page') + '&control_view=lessons';
+        window.history.replaceState({path: cleanUrl}, '', cleanUrl);
+    }
+
     $('.close-lesson-modal').on('click', function() { $('#lesson-wizard-modal').hide(); });
 
     $(document).on('click', '.wizard-lang-btn', function() {

@@ -5,6 +5,34 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 $current_user = Control_Auth::current_user();
 $is_admin = Control_Auth::is_admin();
+
+// Fetch full profile for the current user for PDF headers
+global $wpdb;
+$user_id = $current_user->id;
+if ( strpos($user_id, 'wp_') === 0 ) {
+    $wp_u = get_userdata(str_replace('wp_', '', $user_id));
+    $user = (object) array(
+        'id' => $user_id,
+        'name' => $current_user->name,
+        'first_name' => $wp_u->first_name ?: $wp_u->display_name,
+        'last_name' => $wp_u->last_name,
+        'job_title' => 'Administrator',
+        'home_country' => '',
+        'employer_name' => '',
+        'org_logo' => ''
+    );
+} else {
+    $user = $wpdb->get_row($wpdb->prepare("SELECT * FROM {$wpdb->prefix}control_staff WHERE id = %d", $user_id));
+    if ($user) {
+        $user->name = $user->first_name . ' ' . $user->last_name;
+    } else {
+        $user = $current_user;
+    }
+}
+
+$org_name = $wpdb->get_var("SELECT setting_value FROM {$wpdb->prefix}control_settings WHERE setting_key = 'company_name'") ?: 'Control System';
+$org_logo = $wpdb->get_var("SELECT setting_value FROM {$wpdb->prefix}control_settings WHERE setting_key = 'company_logo'");
+
 $plans = Control_Annual_Planning::get_user_plans( $current_user->id );
 ?>
 
@@ -128,7 +156,7 @@ $plans = Control_Annual_Planning::get_user_plans( $current_user->id );
                                 <option value="term_1"><?php _e('الفصل الأول', 'control'); ?></option>
                                 <option value="term_2"><?php _e('الفصل الثاني', 'control'); ?></option>
                                 <option value="term_3" class="three-only"><?php _e('الفصل الثالث', 'control'); ?></option>
-                                <option value="annual"><?php _e('خطة سنوية كاملة', 'control'); ?></option>
+                                <option value="annual_summary"><?php _e('ملخص الخطة السنوية', 'control'); ?></option>
                             </select>
                         </div>
                         <div class="control-form-group">
@@ -224,6 +252,9 @@ jQuery(document).ready(function($) {
             content_dist: '3. توزيع المحتوى الزمني',
             available_weeks: 'أسبوعاً دراسياً متاحاً',
             week: 'الأسبوع',
+            prepared_by: 'المعد:',
+            start_date_label: 'تاريخ البداية',
+            frequency_label: 'التكرار الأسبوعي',
             scheduled_lessons: 'حصص مقررة',
             lesson_topic: 'موضوع الدرس...',
             lesson_type: 'النوع',
@@ -273,12 +304,100 @@ jQuery(document).ready(function($) {
             confirm_title: 'Are you sure?',
             confirm_desc: 'This plan will be permanently deleted.',
             confirm_yes: 'Yes, Delete',
-            confirm_no: 'Cancel'
+            confirm_no: 'Cancel',
+            prepared_by: 'Prepared by:',
+            start_date_label: 'Start Date',
+            frequency_label: 'Weekly Frequency'
+        }
+    };
+
+    const annualPlanAssistant = {
+        getExistingPlans: function() {
+            // In a real scenario, we might want to fetch the latest via AJAX
+            // but for now we'll use the PHP-injected plans (refreshed on reload)
+            return <?php echo json_encode($plans); ?>;
+        },
+        compile: function() {
+            const system = $('#academic-system-input').val();
+            const terms = ['term_1', 'term_2'];
+            if (system === 'three_semesters') terms.push('term_3');
+
+            let allSlots = [];
+            let missingTerms = [];
+
+            const existingPlans = this.getExistingPlans();
+            terms.forEach(t => {
+                const plan = existingPlans.find(p => p.plan_type === t);
+                if (plan) {
+                    const data = typeof plan.plan_data === 'string' ? JSON.parse(plan.plan_data) : plan.plan_data;
+                    allSlots = allSlots.concat(data.map(s => ({...s, term: t})));
+                } else {
+                    missingTerms.push(t);
+                }
+            });
+
+            if (missingTerms.length > 0) {
+                const lang = $('#plan-lang').val();
+                const termLabels = { term_1: 'الفصل 1', term_2: 'الفصل 2', term_3: 'الفصل 3' };
+                const msg = lang === 'ar' ?
+                    `تنبيه: لم يتم العثور على خطط لـ (${missingTerms.map(t => termLabels[t]).join(', ')}). سيتم إنشاء ملخص جزئي فقط.` :
+                    `Notice: Missing plans for (${missingTerms.join(', ')}). Only partial summary will be created.`;
+                alert(msg);
+            }
+            return allSlots;
         }
     };
 
     let currentStep = 1;
     let planData = [];
+
+    function updatePlanAssistantUI() {
+        const lang = $('#plan-lang').val();
+        const system = $('#academic-system-input').val();
+        const type = $('#plan-type').val();
+        const terms = ['term_1', 'term_2'];
+        if (system === 'three_semesters') terms.push('term_3');
+
+        if (type === 'annual_summary') {
+            let html = `<div style="background:var(--control-bg); padding:20px; border-radius:15px; border:1px dashed var(--control-accent); margin-bottom:20px;">
+                <h5 style="margin:0 0 15px; color:var(--control-primary); font-weight:800;">${lang === 'ar' ? 'حالة الخطط الفصلية' : 'Semester Plans Status'}</h5>
+                <div style="display:flex; flex-direction:column; gap:10px;">`;
+
+            const existingPlans = annualPlanAssistant.getExistingPlans();
+            const termLabels = {
+                term_1: lang === 'ar' ? 'الفصل الدراسي الأول' : 'First Semester',
+                term_2: lang === 'ar' ? 'الفصل الدراسي الثاني' : 'Second Semester',
+                term_3: lang === 'ar' ? 'الفصل الدراسي الثالث' : 'Third Semester'
+            };
+
+            terms.forEach(t => {
+                const plan = existingPlans.find(p => p.plan_type === t);
+                const statusIcon = plan ? 'dashicons-yes-alt' : 'dashicons-warning';
+                const statusColor = plan ? '#10b981' : '#f59e0b';
+                const statusText = plan ? (lang === 'ar' ? 'جاهز' : 'Ready') : (lang === 'ar' ? 'مفقود' : 'Missing');
+
+                html += `
+                    <div style="display:flex; justify-content:space-between; align-items:center; background:#fff; padding:10px 15px; border-radius:8px; border:1px solid var(--control-border);">
+                        <div style="display:flex; align-items:center; gap:10px;">
+                            <span class="dashicons ${statusIcon}" style="color:${statusColor};"></span>
+                            <span style="font-weight:700; font-size:0.8rem;">${termLabels[t]}</span>
+                        </div>
+                        <div style="display:flex; align-items:center; gap:10px;">
+                            <span style="font-size:0.7rem; color:${statusColor}; font-weight:700;">${statusText}</span>
+                            ${!plan ? `<button type="button" class="create-missing-term control-btn" data-type="${t}" style="height:24px; padding:0 8px; font-size:0.6rem; background:var(--control-accent); color:var(--control-primary) !important; border:none; border-radius:4px;">${lang === 'ar' ? 'إنشاء الآن' : 'Create Now'}</button>` : ''}
+                        </div>
+                    </div>
+                `;
+            });
+
+            html += `</div></div>`;
+            $('#plan-grid-container').html(html);
+            $('#weeks-counter').hide();
+        } else {
+            $('#weeks-counter').show();
+            generatePlanGrid();
+        }
+    }
 
     function updatePlanWizardLabels() {
         const lang = $('#plan-lang').val();
@@ -330,7 +449,7 @@ jQuery(document).ready(function($) {
         $(this).addClass('active');
         $('#plan-lang').val($(this).data('lang'));
         updatePlanWizardLabels();
-        if (currentStep === 3) generatePlanGrid();
+        if (currentStep === 3) updatePlanAssistantUI();
     });
 
     function showStep(step) {
@@ -349,7 +468,7 @@ jQuery(document).ready(function($) {
         $('#plan-wizard-step-label').text(labels[step]);
         currentStep = step;
 
-        if (step === 3) generatePlanGrid();
+        if (step === 3) updatePlanAssistantUI();
     }
 
     $('.system-option').on('click', function() {
@@ -370,6 +489,13 @@ jQuery(document).ready(function($) {
 
     $('.close-plan-modal').on('click', function() { $('#plan-wizard-modal').hide(); });
 
+    $(document).on('click', '.create-missing-term', function() {
+        const type = $(this).data('type');
+        $('#plan-id').val('0');
+        $('#plan-type').val(type).trigger('change');
+        showStep(2);
+    });
+
     $('#plan-wizard-next').on('click', function() {
         if (currentStep === 2) {
             if (!$('#plan-name').val() || !$('#plan-start-date').val() || !$('#plan-end-date').val()) {
@@ -383,23 +509,43 @@ jQuery(document).ready(function($) {
     $('#plan-wizard-prev').on('click', function() { showStep(currentStep - 1); });
 
     function generatePlanGrid() {
-        const start = new Date($('#plan-start-date').val());
-        const end = new Date($('#plan-end-date').val());
+        const startInput = $('#plan-start-date').val();
+        const endInput = $('#plan-end-date').val();
+        const selectedDay = $('#lesson-day').val();
         const freq = parseInt($('#weekly-frequency').val());
-        const diffTime = Math.abs(end - start);
-        const diffWeeks = isNaN(diffTime) ? 0 : Math.ceil(diffTime / (1000 * 60 * 60 * 24 * 7));
 
+        if (!startInput || !endInput) return;
+
+        const start = new Date(startInput);
+        const end = new Date(endInput);
         const lang = $('#plan-lang').val();
         const trans = planTranslations[lang];
 
+        // Day mapping for calculation
+        const dayMap = { 'الأحد': 0, 'الإثنين': 1, 'الثلاثاء': 2, 'الأربعاء': 3, 'الخميس': 4, 'Sunday': 0, 'Monday': 1, 'Tuesday': 2, 'Wednesday': 3, 'Thursday': 4 };
+        const targetDay = dayMap[selectedDay] ?? 1;
+
+        const diffWeeks = Math.ceil(Math.abs(end - start) / (1000 * 60 * 60 * 24 * 7));
         $('#weeks-counter').text(`${diffWeeks} ${trans.available_weeks}`);
 
         let html = '';
+        let currentLessonDate = new Date(start);
+        // Adjust to first occurrence of the selected day
+        while (currentLessonDate.getDay() !== targetDay && currentLessonDate <= end) {
+            currentLessonDate.setDate(currentLessonDate.getDate() + 1);
+        }
+
         for (let i = 1; i <= diffWeeks; i++) {
+            const formattedDate = currentLessonDate > end ? '---' : currentLessonDate.toLocaleDateString(lang === 'ar' ? 'ar-SA' : 'en-US', { day: 'numeric', month: 'long', year: 'numeric' });
+            const rawDate = currentLessonDate > end ? '' : currentLessonDate.toISOString().split('T')[0];
+
             html += `
-                <div style="background:#f8fafc; border:1px solid var(--control-border); padding:15px; border-radius:12px;">
+                <div class="week-row" style="background:#f8fafc; border:1px solid var(--control-border); padding:15px; border-radius:12px;">
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-                        <strong style="color:var(--control-primary); font-size:0.85rem;">${trans.week} ${i}</strong>
+                        <div style="display:flex; align-items:center; gap:10px;">
+                            <strong style="color:var(--control-primary); font-size:0.85rem;">${trans.week} ${i}</strong>
+                            <span style="font-size:0.75rem; background:var(--control-accent-soft); color:var(--control-primary); padding:2px 10px; border-radius:20px; font-weight:700;">${formattedDate}</span>
+                        </div>
                         <span style="font-size:0.7rem; color:var(--control-muted);">${freq} ${trans.scheduled_lessons}</span>
                     </div>
                     <div style="display:grid; grid-template-columns: repeat(${freq}, 1fr); gap:10px;">
@@ -408,31 +554,48 @@ jQuery(document).ready(function($) {
                 const slotId = `week-${i}-lesson-${j}`;
                 const existing = planData.find(d => d.slotId === slotId);
                 html += `
-                    <div style="background:#fff; border:1px solid #e2e8f0; padding:10px; border-radius:8px;">
-                        <input type="text" class="lesson-slot-title" data-slot="${slotId}" placeholder="${trans.lesson_topic}" value="${existing ? existing.title : ''}" style="border:none; background:none; padding:0; font-size:0.8rem; font-weight:700; margin-bottom:5px; width:100%;">
+                    <div class="lesson-slot-box" data-date="${rawDate}" style="background:#fff; border:1px solid #e2e8f0; padding:12px; border-radius:10px; transition: 0.2s;">
+                        <input type="text" class="lesson-slot-title" data-slot="${slotId}" placeholder="${trans.lesson_topic}" value="${existing ? existing.title : ''}" style="border:none; background:none; padding:0; font-size:0.85rem; font-weight:800; margin-bottom:8px; width:100%; color:var(--control-text-dark);">
                         <div style="display:flex; gap:8px; align-items:center;">
-                            <input type="text" class="lesson-slot-type" data-slot="${slotId}" placeholder="${trans.lesson_type}" value="${existing ? existing.type : ''}" style="border:none; background:none; padding:0; font-size:0.65rem; color:var(--control-muted); flex:2;">
-                            <input type="text" class="lesson-slot-duration" data-slot="${slotId}" placeholder="${trans.lesson_duration}" value="${existing ? existing.duration : ''}" style="border:none; background:none; padding:0; font-size:0.65rem; color:var(--control-muted); flex:1; text-align:left;">
+                            <input type="text" class="lesson-slot-type" data-slot="${slotId}" placeholder="${trans.lesson_type}" value="${existing ? existing.type : ''}" style="border:none; background:none; padding:0; font-size:0.7rem; color:var(--control-muted); flex:2;">
+                            <input type="text" class="lesson-slot-duration" data-slot="${slotId}" placeholder="${trans.lesson_duration}" value="${existing ? (existing.duration || '45 min') : '45 min'}" style="border:none; background:none; padding:0; font-size:0.7rem; color:var(--control-muted); flex:1; text-align:${lang === 'ar' ? 'left' : 'right'};">
+                        </div>
+                        <div style="margin-top:10px; border-top:1px solid #f1f5f9; padding-top:10px; display:flex; justify-content:flex-end;">
+                            <button type="button" class="create-detailed-lesson" data-slot="${slotId}" title="${lang === 'ar' ? 'تحضير درس مفصل' : 'Create Detailed Plan'}" style="background:none; border:none; color:var(--control-accent); cursor:pointer; padding:0;">
+                                <span class="dashicons dashicons-welcome-add-page" style="font-size:18px; width:18px; height:18px;"></span>
+                            </button>
                         </div>
                     </div>
                 `;
             }
             html += `</div></div>`;
+            currentLessonDate.setDate(currentLessonDate.getDate() + 7);
         }
         $('#plan-grid-container').html(html);
     }
 
     $('#plan-wizard-save').on('click', function() {
-        const slots = [];
-        $('.lesson-slot-title').each(function() {
-            const slotId = $(this).data('slot');
-            slots.push({
-                slotId: slotId,
-                title: $(this).val(),
-                type: $(`.lesson-slot-type[data-slot="${slotId}"]`).val(),
-                duration: $(`.lesson-slot-duration[data-slot="${slotId}"]`).val()
+        const type = $('#plan-type').val();
+        let slots = [];
+
+        if (type === 'annual_summary') {
+            slots = annualPlanAssistant.compile();
+            if (slots.length === 0) {
+                alert('No term data found to compile.');
+                return;
+            }
+        } else {
+            $('.lesson-slot-title').each(function() {
+                const slotId = $(this).data('slot');
+                slots.push({
+                    slotId: slotId,
+                    title: $(this).val(),
+                    type: $(`.lesson-slot-type[data-slot="${slotId}"]`).val(),
+                    duration: $(`.lesson-slot-duration[data-slot="${slotId}"]`).val(),
+                    date: $(this).closest('.lesson-slot-box').data('date')
+                });
             });
-        });
+        }
 
         const $btn = $(this);
         $btn.prop('disabled', true).text('<?php _e('جاري الحفظ...', 'control'); ?>');
@@ -504,6 +667,26 @@ jQuery(document).ready(function($) {
         });
     });
 
+    $(document).on('click', '.create-detailed-lesson', function() {
+        const slotId = $(this).data('slot');
+        const box = $(this).closest('.lesson-slot-box');
+        const title = box.find('.lesson-slot-title').val();
+        const date = box.data('date');
+
+        if (!title) {
+            alert('<?php _e('يرجى إدخال عنوان للدرس أولاً', 'control'); ?>');
+            return;
+        }
+
+        // Redirect to Lessons view with pre-filled parameters
+        const url = new URL(window.location.href);
+        url.searchParams.set('control_view', 'lessons');
+        url.searchParams.set('prefill_title', title);
+        url.searchParams.set('prefill_date', date);
+        url.searchParams.set('prefill_lang', $('#plan-lang').val());
+        window.location.href = url.toString();
+    });
+
     $(document).on('click', '.download-plan-pdf', function() {
         const id = $(this).data('id');
         const $btn = $(this);
@@ -522,59 +705,99 @@ jQuery(document).ready(function($) {
     });
 
     function generatePlanPDF(plan) {
-        const $container = $('<div style="padding:20mm; background:#fff; font-family:\'Rubik\', sans-serif; direction:rtl; text-align:right;"></div>');
+        const lang = plan.lang || 'ar';
+        const isRtl = lang === 'ar';
+        const trans = planTranslations[lang];
+        const $container = $(`<div style="padding:15mm; background:#fff; font-family:'Rubik', sans-serif; direction:${isRtl ? 'rtl' : 'ltr'}; text-align:${isRtl ? 'right' : 'left'}; color:#000;"></div>`);
 
-        const types = { term_1: 'الفصل الأول', term_2: 'الفصل الثاني', term_3: 'الفصل الثالث', annual: 'خطة سنوية كاملة' };
-        const system = plan.academic_system === 'three_semesters' ? 'نظام 3 فصول' : 'نظام فصلين';
+        const types = { term_1: trans.term_1, term_2: trans.term_2, term_3: trans.term_3, annual: trans.annual_full };
+        const system = plan.academic_system === 'three_semesters' ? trans.three_semesters : trans.two_semesters;
+
+        const creator = {
+            name: '<?php echo esc_js($user->name); ?>',
+            job_title: '<?php echo esc_js($user->job_title); ?>',
+            org: '<?php echo esc_js($org_name); ?>',
+            logo: '<?php echo esc_js($org_logo); ?>'
+        };
 
         let html = `
-            <div style="border-bottom:2px solid #000; padding-bottom:15px; margin-bottom:25px; display:flex; justify-content:space-between; align-items:center;">
-                <div>
-                    <h1 style="margin:0; font-size:22px;">${plan.plan_name}</h1>
-                    <div style="font-size:12px; color:#666; margin-top:5px;">${types[plan.plan_type]} | ${system}</div>
+            <div style="border-bottom:2.5px solid #000; padding-bottom:20px; margin-bottom:30px; display:flex; justify-content:space-between; align-items:flex-start;">
+                <div style="flex:1;">
+                    ${creator.logo ? `<img src="${creator.logo}" style="height:60px; margin-bottom:10px; object-fit:contain;">` : ''}
+                    <h1 style="margin:0; font-size:24px; font-weight:800;">${plan.plan_name}</h1>
+                    <div style="font-size:13px; color:#444; margin-top:8px; font-weight:600;">${types[plan.plan_type]} | ${system}</div>
                 </div>
-                <div style="text-align:left; font-size:12px;">
-                    <div>${plan.start_date} - ${plan.end_date}</div>
-                    <div>${plan.weekly_frequency} حصة/أسبوع</div>
+                <div style="width:280px; font-size:11px; line-height:1.6; border-${isRtl ? 'right' : 'left'}:1px solid #ddd; padding-${isRtl ? 'right' : 'left'}:15px;">
+                    <table style="width:100%; border-collapse:collapse;">
+                        <tr><td style="font-weight:800; width:80px;">${trans.prepared_by}</td><td>${creator.name}</td></tr>
+                        <tr><td style="font-weight:800;">${lang === 'ar' ? 'المسمى:' : 'Title:'}</td><td>${creator.job_title}</td></tr>
+                        <tr><td style="font-weight:800;">${lang === 'ar' ? 'المؤسسة:' : 'Institution:'}</td><td>${creator.org}</td></tr>
+                        <tr><td style="font-weight:800;">${trans.start_date_label}:</td><td>${plan.start_date}</td></tr>
+                        <tr><td style="font-weight:800;">${trans.frequency_label}:</td><td>${plan.weekly_frequency}</td></tr>
+                    </table>
                 </div>
             </div>
-            <table style="width:100%; border-collapse:collapse; border:1.5px solid #000;">
+
+            <table style="width:100%; border-collapse:collapse; border:1.5px solid #000; table-layout: fixed;">
                 <thead>
                     <tr style="background:#f1f5f9;">
-                        <th style="border:1px solid #000; padding:10px; width:80px;">الأسبوع</th>
-                        <th style="border:1px solid #000; padding:10px;">توزيع الدروس والأنشطة</th>
+                        <th style="border:1.5px solid #000; padding:12px; width:120px; font-size:12px; font-weight:800;">${trans.week} / ${lang === 'ar' ? 'التاريخ' : 'Date'}</th>
+                        <th style="border:1.5px solid #000; padding:12px; font-size:12px; font-weight:800;">${trans.content_dist}</th>
                     </tr>
                 </thead>
                 <tbody>
         `;
 
-        // Group slots by week
-        const weeks = {};
+        // Group slots by term and week
+        const terms = {};
         plan.plan_data.forEach(slot => {
+            const term = slot.term || plan.plan_type;
+            if (!terms[term]) terms[term] = {};
             const weekNum = slot.slotId.split('-')[1];
-            if (!weeks[weekNum]) weeks[weekNum] = [];
-            weeks[weekNum].push(slot);
+            if (!terms[term][weekNum]) terms[term][weekNum] = [];
+            terms[term][weekNum].push(slot);
         });
 
-        Object.keys(weeks).forEach(weekNum => {
+        const termLabels = {
+            term_1: lang === 'ar' ? 'الفصل الدراسي الأول' : 'First Semester',
+            term_2: lang === 'ar' ? 'الفصل الدراسي الثاني' : 'Second Semester',
+            term_3: lang === 'ar' ? 'الفصل الدراسي الثالث' : 'Third Semester',
+            annual_summary: trans.annual_full
+        };
+
+        Object.keys(terms).forEach(termKey => {
+            if (plan.plan_type === 'annual_summary') {
+                html += `<tr><td colspan="2" style="background:var(--control-primary); color:#fff; padding:8px 15px; font-weight:800; font-size:14px; text-align:center;">${termLabels[termKey]}</td></tr>`;
+            }
+
+            const weeks = terms[termKey];
+            Object.keys(weeks).forEach(weekNum => {
+            const firstSlot = weeks[weekNum][0];
+            const dateStr = firstSlot.date ? new Date(firstSlot.date).toLocaleDateString(lang === 'ar' ? 'ar-SA' : 'en-US', {day:'numeric', month:'short'}) : '---';
+
             html += `
-                <tr>
-                    <td style="border:1px solid #000; padding:10px; text-align:center; font-weight:800; background:#f8fafc;">${weekNum}</td>
-                    <td style="border:1px solid #000; padding:10px;">
-                        <div style="display:grid; grid-template-columns: repeat(${plan.weekly_frequency}, 1fr); gap:10px;">
+                <tr style="page-break-inside: avoid;">
+                    <td style="border:1px solid #000; padding:12px; text-align:center; background:#f8fafc;">
+                        <div style="font-weight:800; font-size:14px; color:var(--control-primary);">${trans.week} ${weekNum}</div>
+                        <div style="font-size:11px; color:#666; margin-top:4px; font-weight:700;">${dateStr}</div>
+                        <div style="font-size:10px; color:#999; margin-top:2px;">${plan.lesson_day}</div>
+                    </td>
+                    <td style="border:1px solid #000; padding:12px;">
+                        <div style="display:grid; grid-template-columns: repeat(${plan.weekly_frequency}, 1fr); gap:12px;">
             `;
             weeks[weekNum].forEach(slot => {
                 html += `
-                    <div style="background:#fff; border:1px solid #eee; padding:8px; border-radius:4px;">
-                        <div style="font-weight:700; font-size:11px; margin-bottom:3px;">${slot.title || '---'}</div>
-                        <div style="display:flex; justify-content:space-between; font-size:9px; color:#888;">
+                    <div style="background:#fff; border:1px solid #e2e8f0; padding:10px; border-radius:6px; min-height:60px; display:flex; flex-direction:column; justify-content:center;">
+                        <div style="font-weight:800; font-size:12px; color:#000; line-height:1.4; margin-bottom:5px;">${slot.title || '---'}</div>
+                        <div style="display:flex; justify-content:space-between; font-size:10px; color:#64748b; font-weight:600;">
                             <span>${slot.type || '---'}</span>
-                            <span>${slot.duration || ''}</span>
+                            <span>${slot.duration || '45 min'}</span>
                         </div>
                     </div>
                 `;
             });
             html += `</div></td></tr>`;
+            });
         });
 
         html += `</tbody></table>
