@@ -65,6 +65,13 @@ class Control_Shortcode {
 					include CONTROL_PATH . 'templates/lessons.php';
 				}
 				break;
+			case 'annual_planning':
+				if ( ! Control_Auth::has_permission('annual_planning_manage') ) {
+					echo $no_access_html;
+				} else {
+					include CONTROL_PATH . 'templates/annual-planning.php';
+				}
+				break;
 			default:
 				if ( ! Control_Auth::has_permission('dashboard') ) {
 					echo $no_access_html;
