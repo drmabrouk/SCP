@@ -57,10 +57,29 @@ jQuery(document).ready(function($) {
     // --- Auth Toggling & Multi-step Registration ---
 
     function switchAuthView(hideSelector, showSelector) {
-        $(hideSelector).fadeOut(250, function() {
-            $(showSelector).fadeIn(250);
+        $(hideSelector).css({
+            'transform': 'translateY(10px)',
+            'opacity': '0'
         });
+        setTimeout(() => {
+            $(hideSelector).hide();
+            $(showSelector).show().css({
+                'transform': 'translateY(10px)',
+                'opacity': '0'
+            });
+            setTimeout(() => {
+                $(showSelector).css({
+                    'transform': 'translateY(0)',
+                    'opacity': '1'
+                });
+            }, 50);
+        }, 250);
     }
+
+    $(document).on('change', '.country-code-select', function() {
+        const flag = $(this).find(':selected').data('flag');
+        $(this).closest('.integrated-phone-field').find('.selected-flag').text(flag);
+    });
 
     $(document).on('click', '#switch-to-register', function() { switchAuthView('#control-login-container', '#control-register-container'); initRegDots(); setTimeout(updateFloatingLabels, 300); });
     $(document).on('click', '#switch-to-login-from-reg', function() { switchAuthView('#control-register-container', '#control-login-container'); setTimeout(updateFloatingLabels, 300); });
@@ -88,21 +107,18 @@ jQuery(document).ready(function($) {
                 return;
             }
 
-            $current.hide();
+            switchAuthView($current, $(`#reg-step-${regCurrentStep + 1}`));
             regCurrentStep++;
-            $(`#reg-step-${regCurrentStep}`).fadeIn(300);
             updateRegUI();
         }
     });
 
     $(document).on('click', '#reg-prev', function() {
         if ($('#reg-step-otp').is(':visible')) {
-            $('#reg-step-otp').hide();
-            $(`#reg-step-${regCurrentStep}`).fadeIn(300);
+            switchAuthView('#reg-step-otp', `#reg-step-${regCurrentStep}`);
         } else {
-            $(`#reg-step-${regCurrentStep}`).hide();
+            switchAuthView($(`#reg-step-${regCurrentStep}`), $(`#reg-step-${regCurrentStep - 1}`));
             regCurrentStep--;
-            $(`#reg-step-${regCurrentStep}`).fadeIn(300);
         }
         updateRegUI();
     });
@@ -230,11 +246,6 @@ jQuery(document).ready(function($) {
         }
     });
 
-    // Country Code Flag Switcher
-    $(document).on('change', '.country-code-select', function() {
-        const flag = $(this).find(':selected').data('flag');
-        $(this).siblings('.selected-flag').text(flag);
-    });
 
     function checkFullOTP() {
         let otp = '';
@@ -528,6 +539,7 @@ jQuery(document).ready(function($) {
             case 'auth_border_color': root.style.setProperty('--auth-border-color', val); break;
             case 'auth_border_radius': root.style.setProperty('--auth-border-radius', val + 'px'); break;
             case 'auth_input_border': root.style.setProperty('--auth-input-border', val); break;
+            case 'auth_input_radius': root.style.setProperty('--auth-input-radius', val + 'px'); break;
             case 'auth_input_bg': root.style.setProperty('--auth-input-bg', val); break;
             case 'auth_input_text': root.style.setProperty('--auth-input-text', val); break;
             case 'auth_label_color': root.style.setProperty('--auth-label-color', val); break;

@@ -27,7 +27,7 @@ $sub_text = $auth_settings['auth_subtitle_text']->setting_value ?? __('نظام 
                 $logo_url = $wpdb->get_var("SELECT setting_value FROM {$wpdb->prefix}control_settings WHERE setting_key = 'company_logo'");
                 $system_name = $wpdb->get_var("SELECT setting_value FROM {$wpdb->prefix}control_settings WHERE setting_key = 'system_name'") ?: 'Control';
 
-                if ( $logo_url && ($auth_settings['auth_logo_visible']->setting_value ?? '1') === '1' ) : ?>
+                if ( $logo_url && ($auth_settings['auth_logo_visible']->setting_value ?? '1') == '1' ) : ?>
                     <img src="<?php echo esc_url($logo_url); ?>" alt="<?php echo esc_attr($system_name); ?>" class="auth-logo">
                 <?php endif;
 

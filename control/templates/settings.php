@@ -150,10 +150,14 @@ $settings = $wpdb->get_results( "SELECT * FROM {$wpdb->prefix}control_settings",
                         <!-- Input Styles & Logic -->
                         <div style="background:var(--control-bg); padding:20px; border-radius:12px; border:1px solid var(--control-border);">
                             <h4 style="margin:0 0 15px 0; font-size:0.9rem;"><?php _e('حقول الإدخال والهوية', 'control'); ?></h4>
-                            <div class="control-grid" style="grid-template-columns: 1fr 1fr; gap:10px;">
+                            <div class="control-grid" style="grid-template-columns: 1fr 1fr 1fr; gap:10px;">
                                 <div class="control-form-group">
                                     <label><?php _e('لون حدود الحقول', 'control'); ?></label>
                                     <input type="text" name="auth_input_border" value="<?php echo esc_attr($settings['auth_input_border']->setting_value ?? 'rgba(255,255,255,0.2)'); ?>">
+                                </div>
+                                <div class="control-form-group">
+                                    <label><?php _e('نصف قطر الحقول', 'control'); ?></label>
+                                    <input type="number" name="auth_input_radius" value="<?php echo esc_attr($settings['auth_input_radius']->setting_value ?? '12'); ?>">
                                 </div>
                                 <div class="control-form-group">
                                     <label><?php _e('لون التركيز (Focus)', 'control'); ?></label>
