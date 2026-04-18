@@ -48,6 +48,55 @@ if ( Control_Auth::is_admin() ) {
 
     <div class="control-grid main-dashboard-grid" style="grid-template-columns: 1fr; gap: 25px;">
         <div class="control-dashboard-main-column">
+            <!-- Today's & Upcoming Lessons -->
+            <?php
+            $today = date('Y-m-d');
+            $plans = $wpdb->get_results($wpdb->prepare("SELECT plan_data, lang FROM {$wpdb->prefix}control_annual_plans WHERE creator_id = %s", $current_user->id));
+            $today_lessons = [];
+            $upcoming_lessons = [];
+
+            foreach($plans as $p) {
+                $data = json_decode($p->plan_data, true);
+                if($data) {
+                    foreach($data as $slot) {
+                        if(($slot['date'] ?? '') === $today) $today_lessons[] = array_merge($slot, ['lang' => $p->lang]);
+                        elseif(($slot['date'] ?? '') > $today) $upcoming_lessons[] = array_merge($slot, ['lang' => $p->lang]);
+                    }
+                }
+            }
+            usort($upcoming_lessons, function($a, $b) { return strcmp($a['date'], $b['date']); });
+            $upcoming_lessons = array_slice($upcoming_lessons, 0, 2);
+
+            if(!empty($today_lessons) || !empty($upcoming_lessons)): ?>
+                <div class="control-card" style="padding: 25px; border-right: 5px solid var(--control-accent); margin-bottom: 25px; background: #fff;">
+                    <h3 style="margin: 0 0 20px; font-size: 1.1rem; display: flex; align-items: center; gap: 10px;">
+                        <span class="dashicons dashicons-calendar-alt" style="color: var(--control-accent);"></span>
+                        <?php _e('جدول الحصص والأنشطة', 'control'); ?>
+                    </h3>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
+                        <?php foreach($today_lessons as $l): ?>
+                            <div style="background: rgba(212,175,55,0.05); border: 1px solid var(--control-accent); padding: 15px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center;">
+                                <div>
+                                    <span style="background: var(--control-accent); color: var(--control-primary); font-size: 0.65rem; font-weight: 800; padding: 2px 8px; border-radius: 4px;"><?php _e('درس اليوم', 'control'); ?></span>
+                                    <h4 style="margin: 8px 0 0; font-size: 0.95rem; font-weight: 800;"><?php echo $l['title']; ?></h4>
+                                    <div style="font-size: 0.75rem; color: var(--control-muted); margin-top: 4px;"><?php echo $l['type']; ?> | <?php echo $l['duration']; ?></div>
+                                </div>
+                                <a href="<?php echo add_query_arg(['control_view' => 'lessons', 'prefill_title' => $l['title'], 'prefill_date' => $l['date'], 'prefill_lang' => $l['lang']]); ?>" class="control-btn" style="height: 32px; font-size: 0.7rem; background: var(--control-primary); border: none;"><?php _e('تحضير الآن', 'control'); ?></a>
+                            </div>
+                        <?php endforeach; ?>
+                        <?php foreach($upcoming_lessons as $l): ?>
+                            <div style="background: #f8fafc; border: 1px solid var(--control-border); padding: 15px; border-radius: 12px;">
+                                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px;">
+                                    <span style="background: #e2e8f0; color: #475569; font-size: 0.65rem; font-weight: 800; padding: 2px 8px; border-radius: 4px;"><?php _e('قادماً في:', 'control'); ?> <?php echo $l['date']; ?></span>
+                                </div>
+                                <h4 style="margin: 0; font-size: 0.9rem; font-weight: 700; color: var(--control-text-dark);"><?php echo $l['title']; ?></h4>
+                                <div style="font-size: 0.7rem; color: var(--control-muted); margin-top: 4px;"><?php echo $l['type']; ?></div>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+                </div>
+            <?php endif; ?>
+
             <!-- System Overview Card -->
             <div class="control-card" style="padding: 30px; border-top: 5px solid var(--control-accent);">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:25px;">

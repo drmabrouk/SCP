@@ -59,21 +59,59 @@ class Control_Grades {
 		if ( empty($students) ) wp_send_json_error( 'No data to import' );
 
 		global $wpdb;
-		$count = 0;
-		foreach ( $students as $s ) {
-			$wpdb->insert( "{$wpdb->prefix}control_students", array(
-				'name'        => sanitize_text_field( $s['name'] ),
-				'grade'       => sanitize_text_field( $s['grade'] ),
-				'section'     => sanitize_text_field( $s['section'] ),
-				'nationality' => sanitize_text_field( $s['nationality'] ),
-				'email'       => sanitize_email( $s['email'] ),
-				'phone'       => sanitize_text_field( $s['phone'] ),
-				'national_id' => sanitize_text_field( $s['national_id'] ),
-			) );
-			$count++;
+		$imported = 0;
+		$updated = 0;
+		$skipped = 0;
+		$failed = array();
+
+		foreach ( $students as $index => $s ) {
+			$name = sanitize_text_field( $s['name'] ?? '' );
+			if ( empty($name) ) {
+				$failed[] = "Row " . ($index + 1) . ": Name is required.";
+				continue;
+			}
+
+			$national_id = sanitize_text_field( $s['national_id'] ?? '' );
+			$email = sanitize_email( $s['email'] ?? '' );
+			$phone = sanitize_text_field( $s['phone'] ?? '' );
+
+			// Check for existing student based on National ID, Email, or Phone
+			$existing_id = null;
+			if ( ! empty($national_id) ) {
+				$existing_id = $wpdb->get_var( $wpdb->prepare( "SELECT id FROM {$wpdb->prefix}control_students WHERE national_id = %s", $national_id ) );
+			}
+			if ( ! $existing_id && ! empty($email) ) {
+				$existing_id = $wpdb->get_var( $wpdb->prepare( "SELECT id FROM {$wpdb->prefix}control_students WHERE email = %s", $email ) );
+			}
+			if ( ! $existing_id && ! empty($phone) ) {
+				$existing_id = $wpdb->get_var( $wpdb->prepare( "SELECT id FROM {$wpdb->prefix}control_students WHERE phone = %s", $phone ) );
+			}
+
+			$data = array(
+				'name'        => $name,
+				'grade'       => sanitize_text_field( $s['grade'] ?? '' ),
+				'section'     => sanitize_text_field( $s['section'] ?? '' ),
+				'nationality' => sanitize_text_field( $s['nationality'] ?? '' ),
+				'email'       => $email,
+				'phone'       => $phone,
+				'national_id' => $national_id,
+			);
+
+			if ( $existing_id ) {
+				$wpdb->update( "{$wpdb->prefix}control_students", $data, array( 'id' => $existing_id ) );
+				$updated++;
+			} else {
+				$wpdb->insert( "{$wpdb->prefix}control_students", $data );
+				$imported++;
+			}
 		}
 
-		wp_send_json_success( array( 'imported' => $count ) );
+		wp_send_json_success( array(
+			'imported' => $imported,
+			'updated'  => $updated,
+			'skipped'  => $skipped,
+			'failed'   => $failed
+		) );
 	}
 
 	public static function save_grades() {

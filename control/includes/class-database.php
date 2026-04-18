@@ -317,6 +317,15 @@ class Control_Database {
 			'auth_title_visible'     => '1',
 			'auth_subtitle_visible'  => '1',
 			'policies_content'       => '<h2>الشروط والأحكام</h2><p>هنا تدرج سياسات النظام والشروط القانونية المنظمة للعمل.</p>',
+			'grading_config'         => json_encode(array(
+				array('id' => 'physical_fitness', 'label' => 'اللياقة البدنية', 'weight' => 20),
+				array('id' => 'discipline', 'label' => 'الانضباط والالتزام', 'weight' => 10),
+				array('id' => 'oral_questioning', 'label' => 'الأسئلة الشفهية', 'weight' => 10),
+				array('id' => 'practical_skills', 'label' => 'المهارات العملية', 'weight' => 30),
+				array('id' => 'behavior', 'label' => 'السلوك العام', 'weight' => 15),
+				array('id' => 'participation', 'label' => 'المشاركة الصفية', 'weight' => 15),
+			)),
+			'notifications_enabled'  => '1',
 		);
 
 		foreach ( $defaults as $key => $value ) {
