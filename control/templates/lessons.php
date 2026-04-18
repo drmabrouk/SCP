@@ -147,54 +147,56 @@ $sports_icons = array(
             ?>
                 <div class="control-card lesson-card" data-grade="<?php echo esc_attr($l->target_group); ?>" data-date="<?php echo strtotime($l->created_at); ?>" style="padding:0; overflow:hidden; display:flex; flex-direction:column; border-radius: 16px;">
                     <div style="padding:24px; flex:1;">
-                        <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:18px;">
-                            <span class="grade-badge" style="background:var(--control-bg); color:var(--control-primary); padding:6px 12px; border-radius:8px; font-size:0.7rem; font-weight:700; border: 1px solid var(--control-border);">
+                        <div class="lesson-metadata-row" style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:18px;">
+                            <span class="meta-capsule" title="<?php _e('التاريخ', 'control'); ?>" style="background:rgba(0,0,0,0.03); color:var(--control-muted); padding:4px 12px; border-radius:30px; font-size:0.65rem; font-weight:700; border:1px solid var(--control-border); display:flex; align-items:center; gap:5px;">
+                                <span class="dashicons dashicons-calendar-alt" style="font-size:14px; width:14px; height:14px;"></span>
+                                <?php echo date_i18n('Y/m/d', strtotime($l->created_at)); ?>
+                            </span>
+                            <span class="meta-capsule" title="<?php _e('اللغة', 'control'); ?>" style="background:rgba(0,0,0,0.03); color:var(--control-muted); padding:4px 12px; border-radius:30px; font-size:0.65rem; font-weight:700; border:1px solid var(--control-border); display:flex; align-items:center; gap:5px;">
+                                <span class="dashicons dashicons-translation" style="font-size:14px; width:14px; height:14px;"></span>
+                                <?php echo ($l->lang ?? 'ar') === 'ar' ? 'العربية' : 'English'; ?>
+                            </span>
+                            <span class="meta-capsule" title="<?php _e('الصف', 'control'); ?>" style="background:rgba(0,0,0,0.03); color:var(--control-muted); padding:4px 12px; border-radius:30px; font-size:0.65rem; font-weight:700; border:1px solid var(--control-border); display:flex; align-items:center; gap:5px;">
+                                <span class="dashicons dashicons-welcome-learn-more" style="font-size:14px; width:14px; height:14px;"></span>
                                 <?php echo esc_html($l->target_group); ?>
                             </span>
-                            <span style="color:var(--control-muted); font-size:0.75rem; background: rgba(0,0,0,0.03); padding: 4px 10px; border-radius: 20px;">
-                                <span class="dashicons dashicons-clock" style="font-size:14px; width:14px; height:14px; vertical-align:middle; margin-left:4px;"></span>
-                                <span class="date-text"><?php echo date_i18n('Y/m/d', strtotime($l->created_at)); ?></span>
+                            <span class="meta-capsule" title="<?php _e('مدة الدرس', 'control'); ?>" style="background:rgba(0,0,0,0.03); color:var(--control-muted); padding:4px 12px; border-radius:30px; font-size:0.65rem; font-weight:700; border:1px solid var(--control-border); display:flex; align-items:center; gap:5px;">
+                                <span class="dashicons dashicons-clock" style="font-size:14px; width:14px; height:14px;"></span>
+                                <?php echo esc_html($l->duration); ?> <?php _e('دقيقة', 'control'); ?>
                             </span>
                         </div>
-                        <div style="margin-bottom:12px;">
-                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-                                <h4 style="margin:0; font-size:1.25rem; font-weight:800; color:var(--control-text-dark); line-height: 1.3;"><?php echo esc_html($l->title); ?></h4>
-                                <span class="lang-badge" style="font-size:0.65rem; padding:3px 10px; border-radius:12px; background:#fff; color:var(--control-muted); border:1px solid var(--control-border); white-space: nowrap; margin-right: 10px;">
-                                    <?php echo ($l->lang ?? 'ar') === 'ar' ? '🇪🇬 العربية' : '🇺🇸 English'; ?>
-                                </span>
+
+                        <h4 style="margin:0; font-size:1.3rem; font-weight:800; color:var(--control-text-dark); line-height: 1.4;"><?php echo esc_html($l->title); ?></h4>
+
+                        <?php if($can_view_all && isset($l->first_name)): ?>
+                            <div style="margin-top:12px; color:var(--control-muted); font-size:0.8rem; display:flex; align-items:center; gap:6px;">
+                                <span class="dashicons dashicons-admin-users" style="font-size:16px; width:16px; height:16px; color: var(--control-primary);"></span>
+                                <strong><?php _e('المعد:', 'control'); ?></strong> <?php echo esc_html($l->first_name . ' ' . $l->last_name); ?>
                             </div>
-                        </div>
-                        <div style="display:flex; align-items:center; gap:15px; color:var(--control-muted); font-size:0.8rem; margin-top: 15px; border-top: 1px dashed var(--control-border); padding-top: 15px;">
-                            <span title="<?php _e('مدة الدرس', 'control'); ?>"><span class="dashicons dashicons-backup" style="font-size:16px; width:16px; height:16px; color: var(--control-accent);"></span> <?php echo esc_html($l->duration); ?> <?php _e('دقيقة', 'control'); ?></span>
-                            <?php if($can_view_all && isset($l->first_name)): ?>
-                                <span style="margin-right:auto;" title="<?php _e('المعد', 'control'); ?>"><span class="dashicons dashicons-admin-users" style="font-size:16px; width:16px; height:16px; color: var(--control-primary);"></span> <?php echo esc_html($l->first_name . ' ' . $l->last_name); ?></span>
-                            <?php endif; ?>
-                        </div>
+                        <?php endif; ?>
                     </div>
-                    <div style="background:var(--control-bg); padding:15px 24px; border-top:1px solid var(--control-border); display:flex; gap:10px; flex-wrap: wrap;">
-                        <button class="control-btn view-lesson-pdf" data-id="<?php echo $l->id; ?>" title="<?php _e('معاينة', 'control'); ?>" style="flex:1; min-width: 80px; padding:0; height:38px; font-size:0.8rem; background:var(--control-primary); border-radius: 8px;">
-                            <span class="dashicons dashicons-visibility" style="margin-left:5px;"></span><?php _e('معاينة', 'control'); ?>
+                    <div class="lesson-card-actions" style="background:var(--control-bg); padding:10px 15px; border-top:1px solid var(--control-border); display:flex; gap:5px; align-items:center; justify-content: center; flex-wrap: nowrap; overflow-x: auto;">
+                        <button class="control-btn view-lesson-pdf" data-id="<?php echo $l->id; ?>" title="<?php _e('معاينة', 'control'); ?>" style="width:34px; height:34px; padding:0; flex-shrink:0; background:var(--control-primary); border-radius: 6px; display:flex; align-items:center; justify-content:center; border:none;">
+                            <span class="dashicons dashicons-visibility"></span>
                         </button>
-                        <button class="control-btn download-lesson-pdf" data-id="<?php echo $l->id; ?>" title="<?php _e('تحميل', 'control'); ?>" style="flex:1; min-width: 80px; padding:0; height:38px; font-size:0.8rem; background:var(--control-accent); color:var(--control-primary) !important; border:none; border-radius: 8px;">
-                            <span class="dashicons dashicons-download" style="margin-left:5px;"></span><?php _e('تحميل', 'control'); ?>
+                        <button class="control-btn download-lesson-pdf" data-id="<?php echo $l->id; ?>" title="<?php _e('تحميل', 'control'); ?>" style="width:34px; height:34px; padding:0; flex-shrink:0; background:var(--control-accent); color:var(--control-primary) !important; border-radius: 6px; display:flex; align-items:center; justify-content:center; border:none;">
+                            <span class="dashicons dashicons-download"></span>
                         </button>
-                        <div style="display:flex; gap:8px;">
-                            <button class="control-btn print-lesson-btn" data-id="<?php echo $l->id; ?>" title="<?php _e('طباعة', 'control'); ?>" style="padding:0; width:38px; height:38px; background:#fff; color:var(--control-text-dark) !important; border:1px solid var(--control-border); border-radius: 8px;">
-                                <span class="dashicons dashicons-printer"></span>
-                            </button>
-                            <button class="control-btn share-whatsapp-direct" data-id="<?php echo $l->id; ?>" title="<?php _e('مشاركة واتساب', 'control'); ?>" style="padding:0; width:38px; height:38px; background:#25D366; color:#fff !important; border:none; border-radius: 8px;">
-                                <span class="dashicons dashicons-whatsapp"></span>
-                            </button>
-                            <button class="control-btn share-email-direct" data-id="<?php echo $l->id; ?>" title="<?php _e('مشاركة بريد إلكتروني', 'control'); ?>" style="padding:0; width:38px; height:38px; background:#ea4335; color:#fff !important; border:none; border-radius: 8px;">
-                                <span class="dashicons dashicons-email"></span>
-                            </button>
-                            <button class="control-btn edit-lesson-btn" data-id="<?php echo $l->id; ?>" title="<?php _e('تعديل', 'control'); ?>" style="padding:0; width:38px; height:38px; background:#fff; color:var(--control-text-dark) !important; border:1px solid var(--control-border); border-radius: 8px;">
-                                <span class="dashicons dashicons-edit"></span>
-                            </button>
-                            <button class="control-btn delete-lesson-btn" data-id="<?php echo $l->id; ?>" title="<?php _e('حذف', 'control'); ?>" style="padding:0; width:38px; height:38px; background:#fef2f2; color:#ef4444 !important; border:1px solid #fee2e2; border-radius: 8px;">
-                                <span class="dashicons dashicons-trash"></span>
-                            </button>
-                        </div>
+                        <button class="control-btn print-lesson-btn" data-id="<?php echo $l->id; ?>" title="<?php _e('طباعة', 'control'); ?>" style="width:34px; height:34px; padding:0; flex-shrink:0; background:#fff; color:var(--control-text-dark) !important; border:1px solid var(--control-border); border-radius: 6px; display:flex; align-items:center; justify-content:center;">
+                            <span class="dashicons dashicons-printer"></span>
+                        </button>
+                        <button class="control-btn share-whatsapp-direct" data-id="<?php echo $l->id; ?>" title="<?php _e('واتساب', 'control'); ?>" style="width:34px; height:34px; padding:0; flex-shrink:0; background:#25D366; color:#fff !important; border:none; border-radius: 6px; display:flex; align-items:center; justify-content:center;">
+                            <span class="dashicons dashicons-whatsapp"></span>
+                        </button>
+                        <button class="control-btn share-email-direct" data-id="<?php echo $l->id; ?>" title="<?php _e('بريد إلكتروني', 'control'); ?>" style="width:34px; height:34px; padding:0; flex-shrink:0; background:#ea4335; color:#fff !important; border:none; border-radius: 6px; display:flex; align-items:center; justify-content:center;">
+                            <span class="dashicons dashicons-email"></span>
+                        </button>
+                        <button class="control-btn edit-lesson-btn" data-id="<?php echo $l->id; ?>" title="<?php _e('تعديل', 'control'); ?>" style="width:34px; height:34px; padding:0; flex-shrink:0; background:#fff; color:var(--control-text-dark) !important; border:1px solid var(--control-border); border-radius: 6px; display:flex; align-items:center; justify-content:center;">
+                            <span class="dashicons dashicons-edit"></span>
+                        </button>
+                        <button class="control-btn delete-lesson-btn" data-id="<?php echo $l->id; ?>" title="<?php _e('حذف', 'control'); ?>" style="width:34px; height:34px; padding:0; flex-shrink:0; background:#fef2f2; color:#ef4444 !important; border:1px solid #fee2e2; border-radius: 6px; display:flex; align-items:center; justify-content:center;">
+                            <span class="dashicons dashicons-trash"></span>
+                        </button>
                     </div>
                 </div>
             <?php endforeach; ?>
@@ -212,9 +214,9 @@ $sports_icons = array(
                     <h3 id="wizard-main-title" style="color:#fff; margin:0; font-size:1.2rem;"><?php _e('معالج تحضير الدروس الذكي', 'control'); ?></h3>
                     <div id="wizard-step-indicator" style="opacity:0.7; font-size:0.8rem; margin-top:4px;"></div>
                 </div>
-                <div class="lang-selector-wizard" style="display:flex; background:rgba(255,255,255,0.1); padding:4px; border-radius:30px; border:1px solid rgba(255,255,255,0.2);">
-                    <button type="button" class="wizard-lang-btn active" data-lang="ar" title="العربية">🇪🇬</button>
-                    <button type="button" class="wizard-lang-btn" data-lang="en" title="English">🇺🇸</button>
+                <div class="lang-selector-wizard" style="display:flex; background:rgba(255,255,255,0.15); padding:4px; border-radius:12px; border:1px solid rgba(255,255,255,0.3); overflow:hidden;">
+                    <button type="button" class="wizard-lang-btn active" data-lang="ar" style="border:none; background:none; color:#fff; padding:6px 15px; cursor:pointer; font-size:0.8rem; font-weight:700; border-radius:8px; transition:0.3s;">العربية</button>
+                    <button type="button" class="wizard-lang-btn" data-lang="en" style="border:none; background:none; color:#fff; padding:6px 15px; cursor:pointer; font-size:0.8rem; font-weight:700; border-radius:8px; transition:0.3s;">English</button>
                     <input type="hidden" name="lang" id="lesson-lang" value="ar">
                 </div>
             </div>
@@ -649,7 +651,17 @@ jQuery(document).ready(function($) {
             assessment_pdf: 'التقويم',
             coordinator_notes: 'ملاحظات المنسق:',
             official_footer: 'مستند رسمي صادر عبر منصة كنترول الذكية للإدارة الرياضية المتكاملة - www.control.system',
-            min: 'دقيقة'
+            min: 'دقيقة',
+            select_grade: 'اختر الصف الدراسي...',
+            kindergarten: 'رياض الأطفال',
+            other_group: 'مجموعة أخرى',
+            use_template: 'استخدام قالب جاهز',
+            other_tools: 'أدوات أخرى...',
+            add_warmup: 'إضافة تمرين إحماء',
+            add_main: 'إضافة نشاط رئيسي',
+            add_cooldown: 'إضافة نشاط ختامي',
+            email_prompt: 'أدخل البريد الإلكتروني للمستلم:',
+            email_sent: 'تم الإرسال!'
         },
         en: {
             basic_info: 'Basic Information',
@@ -699,7 +711,17 @@ jQuery(document).ready(function($) {
             assessment_pdf: 'Assessment',
             coordinator_notes: 'Coordinator Notes:',
             official_footer: 'Official document issued via Control Smart Platform for Integrated Sports Management - www.control.system',
-            min: 'Min'
+            min: 'Min',
+            select_grade: 'Select Grade...',
+            kindergarten: 'Kindergarten',
+            other_group: 'Other Group',
+            use_template: 'Use Ready Template',
+            other_tools: 'Other tools...',
+            add_warmup: 'Add Warm-up Activity',
+            add_main: 'Add Main Activity',
+            add_cooldown: 'Add Cooldown Activity',
+            email_prompt: 'Enter recipient email:',
+            email_sent: 'Email sent!'
         }
     };
 
@@ -936,6 +958,7 @@ jQuery(document).ready(function($) {
         $btn.prop('disabled', true).text('<?php _e('جاري المعالجة...', 'control'); ?>');
 
         const lessonData = {
+            lang: $('#lesson-lang').val(),
             title: $('#lesson-title').val(),
             date_formatted: $('#lesson-date-formatted').val(),
             target_group: $('#lesson-target').val(),
@@ -1349,7 +1372,11 @@ jQuery(document).ready(function($) {
         currentTargetContainer = !target ? $(this).closest('.activity-section').find('div[id$="-activities"]') : null;
 
         let html = '<div class="control-grid" style="grid-template-columns:1fr; gap:15px;">';
-        const filtered = allSuggestions.filter(s => s.category === cat && (s.lang || 'ar') === activeLang);
+        // Strict language filtering for suggestions
+        const filtered = allSuggestions.filter(s => {
+            const suggestLang = s.lang || 'ar';
+            return s.category === cat && suggestLang === activeLang;
+        });
 
         if (filtered.length === 0) {
             html += `<p style="text-align:center; color:var(--control-muted);"><?php _e('لا توجد مقترحات متوفرة لهذه الفئة حالياً.', 'control'); ?></p>`;
@@ -1555,6 +1582,7 @@ jQuery(document).ready(function($) {
         const isRtl = lang === 'ar';
         const direction = isRtl ? 'rtl' : 'ltr';
         const textAlign = isRtl ? 'right' : 'left';
+        const secondaryTextAlign = isRtl ? 'left' : 'right';
         const orgLogoHtml = creator.org_logo ? `<img src="${creator.org_logo}" style="height:50px; object-fit:contain; margin-bottom:5px;">` : '';
 
         let activitiesHtml = '';
@@ -1566,19 +1594,20 @@ jQuery(document).ready(function($) {
 
         sections.forEach(s => {
             if (data.activities[s.key] && data.activities[s.key].length > 0) {
-                const time = data.times ? (data.times[s.key] ? ` (${data.times[s.key]} min)` : '') : '';
+                const timeValue = data.times ? (data.times[s.key] || '') : '';
+                const time = timeValue ? ` (${timeValue} ${trans.min})` : '';
                 activitiesHtml += `
-                    <div style="margin-top:10px;">
-                        <h3 style="background:${s.color}; color:#fff; padding:5px 12px; border-radius:4px; font-size:12px; margin-bottom:5px;">${s.label}${time}</h3>
-                        <table style="width:100%; border-collapse:collapse; border:1px solid #cbd5e1;">
+                    <div style="margin-top:15px; page-break-inside: avoid;">
+                        <h3 style="background:${s.color}; color:#fff; padding:6px 15px; border-radius:4px; font-size:13px; margin-bottom:8px; font-weight: 800;">${s.label}${time}</h3>
+                        <table style="width:100%; border-collapse:collapse; border:1.5px solid #000; direction: ${direction};">
                 `;
                 data.activities[s.key].forEach(act => {
                     activitiesHtml += `
-                        <tr style="border-bottom:1px solid #cbd5e1;">
-                            <td style="padding:8px; width:35px; text-align:center; font-size:20px; background:#f1f5f9; border-left:1px solid #cbd5e1;">${act.icon}</td>
-                            <td style="padding:8px;">
-                                <div style="font-weight:800; color:#0f172a; margin-bottom:2px; font-size:11px;">${act.title}</div>
-                                <div style="font-size:10px; color:#334155; line-height:1.3;">${act.desc}</div>
+                        <tr>
+                            <td style="padding:10px; width:45px; text-align:center; font-size:24px; background:#f8fafc; border:1px solid #000;">${act.icon}</td>
+                            <td style="padding:10px; border:1px solid #000;">
+                                <div style="font-weight:800; color:#000; margin-bottom:4px; font-size:12px;">${act.title}</div>
+                                <div style="font-size:11px; color:#000; line-height:1.4;">${act.desc}</div>
                             </td>
                         </tr>
                     `;
@@ -1588,7 +1617,7 @@ jQuery(document).ready(function($) {
         });
 
         return `
-            <div style="background:#fff; border:1px solid #94a3b8; padding:10px; border-radius:0; color:#1e293b; font-size:10px;">
+            <div style="background:#fff; border:1px solid #000; padding:15mm; border-radius:0; color:#000; font-size:11px; line-height: 1.5; font-family: 'Rubik', sans-serif;">
                 <!-- Official Header -->
                 <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1.5px solid #0f172a; padding-bottom:10px; margin-bottom:15px; flex-direction: ${isRtl ? 'row' : 'row-reverse'};">
                     <div style="flex:1; text-align: ${textAlign};">
@@ -1598,31 +1627,31 @@ jQuery(document).ready(function($) {
                     </div>
                     <div style="width:250px; text-align:${textAlign}; font-size:10px; color:#1e293b; line-height:1.4; border-${isRtl ? 'right' : 'left'}:1px solid #cbd5e1; padding-${isRtl ? 'right' : 'left'}:10px;">
                         <table style="width:100%; border-collapse:collapse; direction: ${direction};">
-                            <tr><td style="font-weight:700;">${trans.date_pdf}</td><td style="text-align:${isRtl ? 'left' : 'right'};">${data.date_formatted || new Date().toLocaleDateString(isRtl ? 'ar-SA' : 'en-US')}</td></tr>
-                            <tr><td style="font-weight:700;">${trans.grade_pdf}</td><td style="text-align:${isRtl ? 'left' : 'right'};">${data.target_group || '---'}</td></tr>
-                            <tr><td style="font-weight:700;">${trans.duration_pdf}</td><td style="text-align:${isRtl ? 'left' : 'right'};">${data.duration || '---'} ${trans.min}</td></tr>
-                            <tr><td style="font-weight:700;">${trans.teacher_pdf}</td><td style="text-align:${isRtl ? 'left' : 'right'};">${creator.first_name} ${creator.last_name}</td></tr>
+                            <tr><td style="font-weight:700; padding:2px 0;">${trans.date_pdf}</td><td style="text-align:${secondaryTextAlign}; padding:2px 0;">${data.date_formatted || new Date().toLocaleDateString(isRtl ? 'ar-SA' : 'en-US')}</td></tr>
+                            <tr><td style="font-weight:700; padding:2px 0;">${trans.grade_pdf}</td><td style="text-align:${secondaryTextAlign}; padding:2px 0;">${data.target_group || '---'}</td></tr>
+                            <tr><td style="font-weight:700; padding:2px 0;">${trans.duration_pdf}</td><td style="text-align:${secondaryTextAlign}; padding:2px 0;">${data.duration || '---'} ${trans.min}</td></tr>
+                            <tr><td style="font-weight:700; padding:2px 0;">${trans.teacher_pdf}</td><td style="text-align:${secondaryTextAlign}; padding:2px 0;">${creator.first_name} ${creator.last_name}</td></tr>
                         </table>
                     </div>
                 </div>
 
                 <!-- Framework Table -->
-                <table style="width:100%; border-collapse:collapse; margin-bottom:10px; border:1px solid #0f172a; direction: ${direction};">
-                    <tr style="background:#f1f5f9;">
-                        <th style="border:1px solid #0f172a; padding:5px; width:50%; text-align:${textAlign}; font-size:11px;">${trans.learning_outcomes}</th>
-                        <th style="border:1px solid #0f172a; padding:5px; width:50%; text-align:${textAlign}; font-size:11px;">${trans.objectives}</th>
+                <table style="width:100%; border-collapse:collapse; margin-bottom:15px; border:1.5px solid #000; direction: ${direction};">
+                    <tr style="background:#f8fafc;">
+                        <th style="border:1px solid #000; padding:8px; width:50%; text-align:${textAlign}; font-size:12px; font-weight: 800;">${trans.learning_outcomes}</th>
+                        <th style="border:1px solid #000; padding:8px; width:50%; text-align:${textAlign}; font-size:12px; font-weight: 800;">${trans.objectives}</th>
                     </tr>
                     <tr>
-                        <td style="border:1px solid #0f172a; padding:5px; vertical-align:top; height:50px;">${data.learning_outcomes || '---'}</td>
-                        <td style="border:1px solid #0f172a; padding:5px; vertical-align:top; height:50px;">${data.objectives || '---'}</td>
+                        <td style="border:1px solid #000; padding:10px; vertical-align:top; min-height:60px;">${data.learning_outcomes || '---'}</td>
+                        <td style="border:1px solid #000; padding:10px; vertical-align:top; min-height:60px;">${data.objectives || '---'}</td>
                     </tr>
-                    <tr style="background:#f1f5f9;">
-                        <th style="border:1px solid #0f172a; padding:5px; text-align:${textAlign}; font-size:11px;">${trans.national_agenda}</th>
-                        <th style="border:1px solid #0f172a; padding:5px; text-align:${textAlign}; font-size:11px;">${trans.skills_21st}</th>
+                    <tr style="background:#f8fafc;">
+                        <th style="border:1px solid #000; padding:8px; text-align:${textAlign}; font-size:12px; font-weight: 800;">${trans.national_agenda}</th>
+                        <th style="border:1px solid #000; padding:8px; text-align:${textAlign}; font-size:12px; font-weight: 800;">${trans.skills_21st}</th>
                     </tr>
                     <tr>
-                        <td style="border:1px solid #0f172a; padding:5px; vertical-align:top; height:40px;">${data.national_agenda || '---'}</td>
-                        <td style="border:1px solid #0f172a; padding:5px; vertical-align:top; height:40px;">${data.skills_21st || '---'}</td>
+                        <td style="border:1px solid #000; padding:10px; vertical-align:top; min-height:50px;">${data.national_agenda || '---'}</td>
+                        <td style="border:1px solid #000; padding:10px; vertical-align:top; min-height:50px;">${data.skills_21st || '---'}</td>
                     </tr>
                 </table>
 
@@ -1633,31 +1662,33 @@ jQuery(document).ready(function($) {
                 </div>
 
                 <!-- Activities -->
-                ${activitiesHtml}
+                <div style="margin-bottom: 20px;">
+                    ${activitiesHtml}
+                </div>
 
                 <!-- Pedagogical Strategy Table -->
-                <div style="margin-top:15px; text-align: ${textAlign};">
-                    <h3 style="background:#0f172a; color:#fff; padding:5px 12px; border-radius:4px; font-size:12px; margin-bottom:5px;">${trans.pedagogical_strategy}</h3>
-                    <table style="width:100%; border-collapse:collapse; border:1px solid #0f172a; direction: ${direction};">
-                        <tr style="background:#f1f5f9;">
-                            <th style="border:1px solid #0f172a; padding:4px; text-align:${textAlign}; width:33%;">${trans.teacher_role}</th>
-                            <th style="border:1px solid #0f172a; padding:4px; text-align:${textAlign}; width:33%;">${trans.student_role}</th>
-                            <th style="border:1px solid #0f172a; padding:4px; text-align:${textAlign}; width:33%;">${trans.real_life_pdf}</th>
+                <div style="margin-top:20px; text-align: ${textAlign}; page-break-inside: avoid;">
+                    <h3 style="background:#000; color:#fff; padding:6px 15px; border-radius:4px; font-size:14px; margin-bottom:10px; font-weight: 800;">${trans.pedagogical_strategy}</h3>
+                    <table style="width:100%; border-collapse:collapse; border:1.5px solid #000; direction: ${direction};">
+                        <tr style="background:#f8fafc;">
+                            <th style="border:1px solid #000; padding:6px; text-align:${textAlign}; width:33%; font-weight: 800;">${trans.teacher_role}</th>
+                            <th style="border:1px solid #000; padding:6px; text-align:${textAlign}; width:33%; font-weight: 800;">${trans.student_role}</th>
+                            <th style="border:1px solid #000; padding:6px; text-align:${textAlign}; width:33%; font-weight: 800;">${trans.real_life_pdf}</th>
                         </tr>
                         <tr>
-                            <td style="border:1px solid #0f172a; padding:5px; height:40px; vertical-align:top;">${data.teacher_role || '---'}</td>
-                            <td style="border:1px solid #0f172a; padding:5px; height:40px; vertical-align:top;">${data.student_role || '---'}</td>
-                            <td style="border:1px solid #0f172a; padding:5px; height:40px; vertical-align:top;">${data.real_life || '---'}</td>
+                            <td style="border:1px solid #000; padding:8px; height:50px; vertical-align:top;">${data.teacher_role || '---'}</td>
+                            <td style="border:1px solid #000; padding:8px; height:50px; vertical-align:top;">${data.student_role || '---'}</td>
+                            <td style="border:1px solid #000; padding:8px; height:50px; vertical-align:top;">${data.real_life || '---'}</td>
                         </tr>
-                        <tr style="background:#f1f5f9;">
-                            <th style="border:1px solid #0f172a; padding:4px; text-align:${textAlign};">${trans.cross_curricular_pdf}</th>
-                            <th style="border:1px solid #0f172a; padding:4px; text-align:${textAlign};">${trans.thinking_skills_pdf}</th>
-                            <th style="border:1px solid #0f172a; padding:4px; text-align:${textAlign};">${trans.assessment_pdf}</th>
+                        <tr style="background:#f8fafc;">
+                            <th style="border:1px solid #000; padding:6px; text-align:${textAlign}; font-weight: 800;">${trans.cross_curricular_pdf}</th>
+                            <th style="border:1px solid #000; padding:6px; text-align:${textAlign}; font-weight: 800;">${trans.thinking_skills_pdf}</th>
+                            <th style="border:1px solid #000; padding:6px; text-align:${textAlign}; font-weight: 800;">${trans.assessment_pdf}</th>
                         </tr>
                         <tr>
-                            <td style="border:1px solid #0f172a; padding:5px; height:40px; vertical-align:top;">${data.cross_curricular || '---'}</td>
-                            <td style="border:1px solid #0f172a; padding:5px; height:40px; vertical-align:top;">${data.hots || '---'}</td>
-                            <td style="border:1px solid #0f172a; padding:5px; height:40px; vertical-align:top;">${data.assessment || '---'}</td>
+                            <td style="border:1px solid #000; padding:8px; height:50px; vertical-align:top;">${data.cross_curricular || '---'}</td>
+                            <td style="border:1px solid #000; padding:8px; height:50px; vertical-align:top;">${data.hots || '---'}</td>
+                            <td style="border:1px solid #000; padding:8px; height:50px; vertical-align:top;">${data.assessment || '---'}</td>
                         </tr>
                     </table>
                 </div>
@@ -1686,4 +1717,7 @@ jQuery(document).ready(function($) {
 .suggestion-chip:hover { border-color: var(--control-accent); color: var(--control-accent); }
 .selectable-icon:hover { border-color: var(--control-accent); transform: scale(1.1); }
 .template-card:hover { border-color: var(--control-accent) !important; transform: translateY(-2px); }
+.wizard-lang-btn.active { background: #fff !important; color: var(--control-primary) !important; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+.meta-capsule { transition: 0.2s; }
+.lesson-card:hover .meta-capsule { background: #fff !important; border-color: var(--control-accent) !important; color: var(--control-text-dark) !important; }
 </style>
