@@ -145,42 +145,56 @@ $sports_icons = array(
             <?php foreach($lessons as $l):
                 $data = json_decode($l->lesson_data, true);
             ?>
-                <div class="control-card lesson-card" data-grade="<?php echo esc_attr($l->target_group); ?>" data-date="<?php echo strtotime($l->created_at); ?>" style="padding:0; overflow:hidden; display:flex; flex-direction:column;">
-                    <div style="padding:20px; flex:1;">
-                        <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:15px;">
-                            <span class="grade-badge" style="background:var(--control-bg); color:var(--control-primary); padding:4px 10px; border-radius:6px; font-size:0.65rem; font-weight:700;">
+                <div class="control-card lesson-card" data-grade="<?php echo esc_attr($l->target_group); ?>" data-date="<?php echo strtotime($l->created_at); ?>" style="padding:0; overflow:hidden; display:flex; flex-direction:column; border-radius: 16px;">
+                    <div style="padding:24px; flex:1;">
+                        <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:18px;">
+                            <span class="grade-badge" style="background:var(--control-bg); color:var(--control-primary); padding:6px 12px; border-radius:8px; font-size:0.7rem; font-weight:700; border: 1px solid var(--control-border);">
                                 <?php echo esc_html($l->target_group); ?>
                             </span>
-                            <span style="color:var(--control-muted); font-size:0.7rem;">
+                            <span style="color:var(--control-muted); font-size:0.75rem; background: rgba(0,0,0,0.03); padding: 4px 10px; border-radius: 20px;">
                                 <span class="dashicons dashicons-clock" style="font-size:14px; width:14px; height:14px; vertical-align:middle; margin-left:4px;"></span>
                                 <span class="date-text"><?php echo date_i18n('Y/m/d', strtotime($l->created_at)); ?></span>
                             </span>
                         </div>
-                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-                            <h4 style="margin:0; font-size:1.05rem; font-weight:800; color:var(--control-text-dark);"><?php echo esc_html($l->title); ?></h4>
-                            <span class="lang-badge" style="font-size:0.6rem; padding:2px 8px; border-radius:10px; background:var(--control-bg); color:var(--control-muted); border:1px solid var(--control-border);">
-                                <?php echo ($l->lang ?? 'ar') === 'ar' ? '🇪🇬 العربية' : '🇺🇸 English'; ?>
-                            </span>
+                        <div style="margin-bottom:12px;">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                                <h4 style="margin:0; font-size:1.25rem; font-weight:800; color:var(--control-text-dark); line-height: 1.3;"><?php echo esc_html($l->title); ?></h4>
+                                <span class="lang-badge" style="font-size:0.65rem; padding:3px 10px; border-radius:12px; background:#fff; color:var(--control-muted); border:1px solid var(--control-border); white-space: nowrap; margin-right: 10px;">
+                                    <?php echo ($l->lang ?? 'ar') === 'ar' ? '🇪🇬 العربية' : '🇺🇸 English'; ?>
+                                </span>
+                            </div>
                         </div>
-                        <div style="display:flex; align-items:center; gap:10px; color:var(--control-muted); font-size:0.75rem;">
-                            <span><span class="dashicons dashicons-backup" style="font-size:14px; width:14px; height:14px;"></span> <?php echo esc_html($l->duration); ?></span>
+                        <div style="display:flex; align-items:center; gap:15px; color:var(--control-muted); font-size:0.8rem; margin-top: 15px; border-top: 1px dashed var(--control-border); padding-top: 15px;">
+                            <span title="<?php _e('مدة الدرس', 'control'); ?>"><span class="dashicons dashicons-backup" style="font-size:16px; width:16px; height:16px; color: var(--control-accent);"></span> <?php echo esc_html($l->duration); ?> <?php _e('دقيقة', 'control'); ?></span>
                             <?php if($can_view_all && isset($l->first_name)): ?>
-                                <span style="margin-right:auto;"><span class="dashicons dashicons-admin-users" style="font-size:14px; width:14px; height:14px;"></span> <?php echo esc_html($l->first_name . ' ' . $l->last_name); ?></span>
+                                <span style="margin-right:auto;" title="<?php _e('المعد', 'control'); ?>"><span class="dashicons dashicons-admin-users" style="font-size:16px; width:16px; height:16px; color: var(--control-primary);"></span> <?php echo esc_html($l->first_name . ' ' . $l->last_name); ?></span>
                             <?php endif; ?>
                         </div>
                     </div>
-                    <div style="background:var(--control-bg); padding:12px 20px; border-top:1px solid var(--control-border); display:flex; gap:8px;">
-                        <button class="control-btn view-lesson-pdf" data-id="<?php echo $l->id; ?>" title="<?php _e('معاينة', 'control'); ?>" style="flex:1; padding:0; height:34px; font-size:0.75rem; background:var(--control-primary);">
+                    <div style="background:var(--control-bg); padding:15px 24px; border-top:1px solid var(--control-border); display:flex; gap:10px; flex-wrap: wrap;">
+                        <button class="control-btn view-lesson-pdf" data-id="<?php echo $l->id; ?>" title="<?php _e('معاينة', 'control'); ?>" style="flex:1; min-width: 80px; padding:0; height:38px; font-size:0.8rem; background:var(--control-primary); border-radius: 8px;">
                             <span class="dashicons dashicons-visibility" style="margin-left:5px;"></span><?php _e('معاينة', 'control'); ?>
                         </button>
-                        <button class="control-btn download-lesson-pdf" data-id="<?php echo $l->id; ?>" title="<?php _e('تحميل', 'control'); ?>" style="flex:1; padding:0; height:34px; font-size:0.75rem; background:var(--control-accent); color:var(--control-primary) !important; border:none;">
+                        <button class="control-btn download-lesson-pdf" data-id="<?php echo $l->id; ?>" title="<?php _e('تحميل', 'control'); ?>" style="flex:1; min-width: 80px; padding:0; height:38px; font-size:0.8rem; background:var(--control-accent); color:var(--control-primary) !important; border:none; border-radius: 8px;">
                             <span class="dashicons dashicons-download" style="margin-left:5px;"></span><?php _e('تحميل', 'control'); ?>
                         </button>
-                        <button class="control-btn share-whatsapp-direct" data-id="<?php echo $l->id; ?>" title="<?php _e('مشاركة واتساب', 'control'); ?>" style="padding:0; width:34px; height:34px; background:#25D366; color:#fff !important; border:none;">
-                            <span class="dashicons dashicons-whatsapp"></span>
-                        </button>
-                        <button class="control-btn edit-lesson-btn" data-id="<?php echo $l->id; ?>" title="<?php _e('تعديل', 'control'); ?>" style="padding:0; width:34px; height:34px; background:#fff; color:var(--control-text-dark) !important; border:1px solid var(--control-border);"><span class="dashicons dashicons-edit"></span></button>
-                        <button class="control-btn delete-lesson-btn" data-id="<?php echo $l->id; ?>" title="<?php _e('حذف', 'control'); ?>" style="padding:0; width:34px; height:34px; background:#fef2f2; color:#ef4444 !important; border:1px solid #fee2e2;"><span class="dashicons dashicons-trash"></span></button>
+                        <div style="display:flex; gap:8px;">
+                            <button class="control-btn print-lesson-btn" data-id="<?php echo $l->id; ?>" title="<?php _e('طباعة', 'control'); ?>" style="padding:0; width:38px; height:38px; background:#fff; color:var(--control-text-dark) !important; border:1px solid var(--control-border); border-radius: 8px;">
+                                <span class="dashicons dashicons-printer"></span>
+                            </button>
+                            <button class="control-btn share-whatsapp-direct" data-id="<?php echo $l->id; ?>" title="<?php _e('مشاركة واتساب', 'control'); ?>" style="padding:0; width:38px; height:38px; background:#25D366; color:#fff !important; border:none; border-radius: 8px;">
+                                <span class="dashicons dashicons-whatsapp"></span>
+                            </button>
+                            <button class="control-btn share-email-direct" data-id="<?php echo $l->id; ?>" title="<?php _e('مشاركة بريد إلكتروني', 'control'); ?>" style="padding:0; width:38px; height:38px; background:#ea4335; color:#fff !important; border:none; border-radius: 8px;">
+                                <span class="dashicons dashicons-email"></span>
+                            </button>
+                            <button class="control-btn edit-lesson-btn" data-id="<?php echo $l->id; ?>" title="<?php _e('تعديل', 'control'); ?>" style="padding:0; width:38px; height:38px; background:#fff; color:var(--control-text-dark) !important; border:1px solid var(--control-border); border-radius: 8px;">
+                                <span class="dashicons dashicons-edit"></span>
+                            </button>
+                            <button class="control-btn delete-lesson-btn" data-id="<?php echo $l->id; ?>" title="<?php _e('حذف', 'control'); ?>" style="padding:0; width:38px; height:38px; background:#fef2f2; color:#ef4444 !important; border:1px solid #fee2e2; border-radius: 8px;">
+                                <span class="dashicons dashicons-trash"></span>
+                            </button>
+                        </div>
                     </div>
                 </div>
             <?php endforeach; ?>
@@ -228,35 +242,35 @@ $sports_icons = array(
 
                     <div class="control-grid" style="grid-template-columns: 1fr 1fr; gap:20px;">
                         <div class="control-form-group">
-                            <label><?php _e('عنوان الدرس', 'control'); ?> *</label>
+                            <label data-i18n="lesson_title"><?php _e('عنوان الدرس', 'control'); ?> *</label>
                             <input type="text" id="lesson-title" name="title" required placeholder="<?php _e('Daily Lesson Planning', 'control'); ?>" value="Daily Lesson Planning">
                         </div>
                         <div class="control-form-group">
-                            <label><?php _e('التاريخ واليوم', 'control'); ?></label>
+                            <label data-i18n="date_day"><?php _e('التاريخ واليوم', 'control'); ?></label>
                             <input type="text" id="lesson-date-formatted" name="date_formatted" readonly value="<?php echo date_i18n('l، j F Y'); ?>">
                         </div>
                     </div>
 
                     <div class="control-grid" style="grid-template-columns: 1fr 1fr; gap:20px;">
                         <div class="control-form-group">
-                            <label><?php _e('المجموعة المستهدفة / الصف', 'control'); ?> *</label>
+                            <label data-i18n="target_group"><?php _e('المجموعة المستهدفة / الصف', 'control'); ?> *</label>
                             <select id="lesson-target" name="target_group" required>
-                                <option value=""><?php _e('اختر الصف الدراسي...', 'control'); ?></option>
+                                <option value="" data-i18n="select_grade"><?php _e('اختر الصف الدراسي...', 'control'); ?></option>
                                 <?php for($i=1; $i<=12; $i++): ?>
                                     <option value="<?php echo "الصف " . $i; ?>"><?php echo "الصف " . $i; ?></option>
                                 <?php endfor; ?>
-                                <option value="KINDERGARTEN"><?php _e('رياض الأطفال', 'control'); ?></option>
-                                <option value="OTHER"><?php _e('مجموعة أخرى', 'control'); ?></option>
+                                <option value="KINDERGARTEN" data-i18n="kindergarten"><?php _e('رياض الأطفال', 'control'); ?></option>
+                                <option value="OTHER" data-i18n="other_group"><?php _e('مجموعة أخرى', 'control'); ?></option>
                             </select>
                         </div>
                         <div class="control-form-group">
-                            <label><?php _e('مدة الحصة (دقيقة)', 'control'); ?></label>
+                            <label data-i18n="duration_min"><?php _e('مدة الحصة (دقيقة)', 'control'); ?></label>
                             <input type="number" id="lesson-duration" name="duration" placeholder="45" value="45">
                         </div>
                     </div>
 
                     <div class="control-form-group">
-                        <label><?php _e('المصادر والأدوات (اختر أو أضف)', 'control'); ?></label>
+                        <label data-i18n="resources_tools"><?php _e('المصادر والأدوات (اختر أو أضف)', 'control'); ?></label>
                         <div class="multi-select-pills" style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:10px;">
                             <?php
                             $default_tools = array('PowerPoint', 'Educational videos', 'Digital presentations', 'Football', 'Basketball', 'Cones', 'Whistle', 'Mats');
@@ -270,18 +284,18 @@ $sports_icons = array(
 
                 <!-- Step 2: Educational Framework -->
                 <div class="lesson-step" data-step="2" style="display:none;">
-                    <h4 style="margin-bottom:25px; color:var(--control-primary); border-right:4px solid var(--control-accent); padding-right:15px;"><?php _e('الإطار التعليمي والمخرجات', 'control'); ?></h4>
+                    <h4 data-i18n="objectives_tools" style="margin-bottom:25px; color:var(--control-primary); border-right:4px solid var(--control-accent); padding-right:15px;"><?php _e('الإطار التعليمي والمخرجات', 'control'); ?></h4>
                     <div class="control-grid" style="grid-template-columns: 1fr 1fr; gap:20px;">
                         <div class="control-form-group">
                             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
-                                <label style="margin:0;"><?php _e('نواتج التعلم (Learning Outcomes)', 'control'); ?></label>
+                                <label data-i18n="learning_outcomes" style="margin:0;"><?php _e('نواتج التعلم (Learning Outcomes)', 'control'); ?></label>
                                 <button type="button" class="browse-suggestions-btn" data-category="outcome" data-target="#lesson-outcomes" style="background:none; border:none; color:var(--control-accent); cursor:pointer;"><span class="dashicons dashicons-lightbulb"></span></button>
                             </div>
                             <textarea id="lesson-outcomes" name="learning_outcomes" rows="3"></textarea>
                         </div>
                         <div class="control-form-group">
                             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
-                                <label style="margin:0;"><?php _e('الأهداف التعليمية (Objectives)', 'control'); ?></label>
+                                <label data-i18n="objectives" style="margin:0;"><?php _e('الأهداف التعليمية (Objectives)', 'control'); ?></label>
                                 <button type="button" class="browse-suggestions-btn" data-category="objective" data-target="#lesson-objectives" style="background:none; border:none; color:var(--control-accent); cursor:pointer;"><span class="dashicons dashicons-lightbulb"></span></button>
                             </div>
                             <textarea id="lesson-objectives" name="objectives" rows="3"></textarea>
@@ -289,11 +303,11 @@ $sports_icons = array(
                     </div>
                     <div class="control-grid" style="grid-template-columns: 1fr 1fr; gap:20px;">
                         <div class="control-form-group">
-                            <label><?php _e('أجندة الدولة (National Agenda)', 'control'); ?></label>
+                            <label data-i18n="national_agenda"><?php _e('أجندة الدولة (National Agenda)', 'control'); ?></label>
                             <textarea id="lesson-agenda" name="national_agenda" rows="2"></textarea>
                         </div>
                         <div class="control-form-group">
-                            <label><?php _e('مهارات القرن 21 (21st Century Skills)', 'control'); ?></label>
+                            <label data-i18n="skills_21st"><?php _e('مهارات القرن 21 (21st Century Skills)', 'control'); ?></label>
                             <textarea id="lesson-21skills" name="skills_21st" rows="2"></textarea>
                         </div>
                     </div>
@@ -301,11 +315,11 @@ $sports_icons = array(
 
                 <!-- Step 3: Lesson Flow -->
                 <div class="lesson-step" data-step="3" style="display:none;">
-                    <h4 style="margin-bottom:25px; color:var(--control-primary); border-right:4px solid var(--control-accent); padding-right:15px;"><?php _e('سير الأنشطة والتمارين مع توزيع الوقت', 'control'); ?></h4>
+                    <h4 data-i18n="activities_exercises" style="margin-bottom:25px; color:var(--control-primary); border-right:4px solid var(--control-accent); padding-right:15px;"><?php _e('سير الأنشطة والتمارين مع توزيع الوقت', 'control'); ?></h4>
 
                     <div class="activity-section" style="margin-bottom:30px;">
                         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-                            <h5 style="background:var(--control-bg); padding:10px 15px; border-radius:8px; font-weight:800; color:var(--control-primary); margin:0; display:flex; align-items:center; gap:10px; flex:1;">
+                            <h5 data-i18n="warmup" style="background:var(--control-bg); padding:10px 15px; border-radius:8px; font-weight:800; color:var(--control-primary); margin:0; display:flex; align-items:center; gap:10px; flex:1;">
                                 <span style="width:10px; height:10px; background:#10b981; border-radius:50%;"></span><?php _e('1. الإحماء (Warm-up)', 'control'); ?>
                             </h5>
                             <div style="display:flex; align-items:center; gap:10px;">
@@ -321,7 +335,7 @@ $sports_icons = array(
 
                     <div class="activity-section" style="margin-bottom:30px;">
                         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-                            <h5 style="background:var(--control-bg); padding:10px 15px; border-radius:8px; font-weight:800; color:var(--control-primary); margin:0; display:flex; align-items:center; gap:10px; flex:1;">
+                            <h5 data-i18n="main_activities" style="background:var(--control-bg); padding:10px 15px; border-radius:8px; font-weight:800; color:var(--control-primary); margin:0; display:flex; align-items:center; gap:10px; flex:1;">
                                 <span style="width:10px; height:10px; background:#3b82f6; border-radius:50%;"></span><?php _e('2. الجزء الرئيسي (Main Activities)', 'control'); ?>
                             </h5>
                             <div style="display:flex; align-items:center; gap:10px;">
@@ -337,7 +351,7 @@ $sports_icons = array(
 
                     <div class="activity-section">
                         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-                            <h5 style="background:var(--control-bg); padding:10px 15px; border-radius:8px; font-weight:800; color:var(--control-primary); margin:0; display:flex; align-items:center; gap:10px; flex:1;">
+                            <h5 data-i18n="cooldown" style="background:var(--control-bg); padding:10px 15px; border-radius:8px; font-weight:800; color:var(--control-primary); margin:0; display:flex; align-items:center; gap:10px; flex:1;">
                                 <span style="width:10px; height:10px; background:#6366f1; border-radius:50%;"></span><?php _e('3. الختام والتهدئة (Cooldown)', 'control'); ?>
                             </h5>
                             <div style="display:flex; align-items:center; gap:10px;">
@@ -354,58 +368,58 @@ $sports_icons = array(
 
                 <!-- Step 4: Pedagogical Strategy -->
                 <div class="lesson-step" data-step="4" style="display:none;">
-                    <h4 style="margin-bottom:25px; color:var(--control-primary); border-right:4px solid var(--control-accent); padding-right:15px;"><?php _e('الاستراتيجية البيداغوجية والربط', 'control'); ?></h4>
+                    <h4 data-i18n="assessment_notes" style="margin-bottom:25px; color:var(--control-primary); border-right:4px solid var(--control-accent); padding-right:15px;"><?php _e('الاستراتيجية البيداغوجية والربط', 'control'); ?></h4>
                     <div class="control-grid" style="grid-template-columns: 1fr 1fr; gap:20px;">
                         <div class="control-form-group">
-                            <label><?php _e('دور المعلم', 'control'); ?></label>
+                            <label data-i18n="teacher_role"><?php _e('دور المعلم', 'control'); ?></label>
                             <textarea id="lesson-teacher-role" name="teacher_role" rows="2"></textarea>
                         </div>
                         <div class="control-form-group">
-                            <label><?php _e('دور الطالب', 'control'); ?></label>
+                            <label data-i18n="student_role"><?php _e('دور الطالب', 'control'); ?></label>
                             <textarea id="lesson-student-role" name="student_role" rows="2"></textarea>
                         </div>
                     </div>
                     <div class="control-grid" style="grid-template-columns: 1fr 1fr; gap:20px;">
                         <div class="control-form-group">
-                            <label><?php _e('الربط بالواقع (Real-life Connection)', 'control'); ?></label>
+                            <label data-i18n="real_life_connection"><?php _e('الربط بالواقع (Real-life Connection)', 'control'); ?></label>
                             <textarea id="lesson-real-life" name="real_life" rows="2"></textarea>
                         </div>
                         <div class="control-form-group">
-                            <label><?php _e('تكامل المواد (Cross-curricular)', 'control'); ?></label>
+                            <label data-i18n="cross_curricular"><?php _e('تكامل المواد (Cross-curricular)', 'control'); ?></label>
                             <textarea id="lesson-cross" name="cross_curricular" rows="2"></textarea>
                         </div>
                     </div>
                     <div class="control-grid" style="grid-template-columns: 1fr 1fr; gap:20px;">
                         <div class="control-form-group">
-                            <label><?php _e('مهارات التفكير العليا (HOTS)', 'control'); ?></label>
+                            <label data-i18n="hots"><?php _e('مهارات التفكير العليا (HOTS)', 'control'); ?></label>
                             <textarea id="lesson-hots" name="hots" rows="2"></textarea>
                         </div>
                         <div class="control-form-group">
                             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
-                                <label style="margin:0;"><?php _e('التقويم وأدوات القياس', 'control'); ?></label>
+                                <label data-i18n="assessment_tools" style="margin:0;"><?php _e('التقويم وأدوات القياس', 'control'); ?></label>
                                 <button type="button" class="browse-suggestions-btn" data-category="assessment" data-target="#lesson-assessment" style="background:none; border:none; color:var(--control-accent); cursor:pointer;"><span class="dashicons dashicons-lightbulb"></span></button>
                             </div>
                             <textarea id="lesson-assessment" name="assessment" rows="2"></textarea>
                         </div>
                     </div>
                     <div class="control-form-group">
-                        <label><?php _e('ملاحظات إضافية', 'control'); ?></label>
+                        <label data-i18n="additional_notes"><?php _e('ملاحظات إضافية', 'control'); ?></label>
                         <textarea id="lesson-notes" name="notes" rows="2"></textarea>
                     </div>
                 </div>
 
                 <!-- Step 5: Professional Review -->
                 <div class="lesson-step" data-step="5" style="display:none;">
-                    <h4 style="margin-bottom:25px; color:var(--control-primary); border-right:4px solid var(--control-accent); padding-right:15px;"><?php _e('مراجعة وتصدير الخطة', 'control'); ?></h4>
+                    <h4 data-i18n="confirm_review" style="margin-bottom:25px; color:var(--control-primary); border-right:4px solid var(--control-accent); padding-right:15px;"><?php _e('مراجعة وتصدير الخطة', 'control'); ?></h4>
                     <div style="background:var(--control-bg); padding:25px; border-radius:16px; border:1px solid var(--control-border); text-align:center;">
                         <span class="dashicons dashicons-media-document" style="font-size:60px; width:60px; height:60px; color:var(--control-primary); margin-bottom:20px;"></span>
-                        <h3 style="margin-bottom:10px;"><?php _e('جاهز للتصدير النهائي', 'control'); ?></h3>
-                        <p style="color:var(--control-muted);"><?php _e('لقد اكتملت كافة الخطوات. سيتم الآن إنشاء ملف PDF احترافي يتضمن كافة البيانات المخطط لها.', 'control'); ?></p>
+                        <h3 data-i18n="ready_to_export" style="margin-bottom:10px;"><?php _e('جاهز للتصدير النهائي', 'control'); ?></h3>
+                        <p data-i18n="wizard_desc" style="color:var(--control-muted);"><?php _e('لقد اكتملت كافة الخطوات. سيتم الآن إنشاء ملف PDF احترافي يتضمن كافة البيانات المخطط لها.', 'control'); ?></p>
 
                         <div style="margin-top:30px; display:flex; justify-content:center; gap:20px;">
                             <div style="text-align:right; font-size:0.8rem;">
-                                <div><strong><?php _e('المعد:', 'control'); ?></strong> <?php echo esc_html($user->name); ?></div>
-                                <div><strong><?php _e('المنظمة:', 'control'); ?></strong> <?php echo esc_html($org_name); ?></div>
+                                <div><strong data-i18n="prepared_by"><?php _e('المعد:', 'control'); ?></strong> <?php echo esc_html($user->name); ?></div>
+                                <div><strong data-i18n="organization"><?php _e('المنظمة:', 'control'); ?></strong> <?php echo esc_html($org_name); ?></div>
                             </div>
                             <?php if($org_logo): ?>
                                 <img src="<?php echo esc_url($org_logo); ?>" style="height:40px; border-radius:4px;">
@@ -564,6 +578,21 @@ $sports_icons = array(
     </div>
 </div>
 
+<!-- Delete Confirmation Modal -->
+<div id="delete-confirmation-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:11000; align-items:center; justify-content:center; backdrop-filter: blur(5px);">
+    <div class="control-card" style="width:100%; max-width:400px; padding:30px; border-radius:20px; text-align:center;">
+        <div style="width:70px; height:70px; background:#fef2f2; border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 20px; color:#ef4444;">
+            <span class="dashicons dashicons-trash" style="font-size:35px; width:35px; height:35px;"></span>
+        </div>
+        <h3 style="margin-bottom:10px; color:var(--control-text-dark);"><?php _e('هل أنت متأكد؟', 'control'); ?></h3>
+        <p style="color:var(--control-muted); font-size:0.9rem; margin-bottom:25px;"><?php _e('سيتم حذف هذا الدرس نهائياً من النظام ولا يمكن التراجع عن هذه الخطوة.', 'control'); ?></p>
+        <div style="display:flex; gap:10px;">
+            <button type="button" id="confirm-delete-btn" class="control-btn" style="flex:1; background:#ef4444; border:none;"><?php _e('نعم، احذف', 'control'); ?></button>
+            <button type="button" onclick="jQuery('#delete-confirmation-modal').hide()" class="control-btn" style="flex:1; background:var(--control-bg); color:var(--control-text-dark) !important; border:1px solid var(--control-border);"><?php _e('إلغاء', 'control'); ?></button>
+        </div>
+    </div>
+</div>
+
 <!-- Hidden PDF Export Container (Off-screen for rendering) -->
 <div id="pdf-export-content" style="position:fixed; left:-9999px; top:-9999px; width:210mm; min-height:297mm; background:#fff; direction:rtl; text-align:right; font-family:'Rubik', sans-serif; padding:15mm; color:#1e293b; z-index:-1;">
     <!-- Populated by JS -->
@@ -571,6 +600,109 @@ $sports_icons = array(
 
 <script>
 jQuery(document).ready(function($) {
+    const controlTranslations = {
+        ar: {
+            basic_info: 'البيانات الأساسية',
+            objectives_tools: 'الأهداف والأدوات',
+            activities_exercises: 'الأنشطة والتمارين',
+            assessment_notes: 'التقويم والملاحظات',
+            confirm_review: 'تأكيد ومراجعة',
+            lesson_title: 'عنوان الدرس',
+            date_day: 'التاريخ واليوم',
+            target_group: 'المجموعة المستهدفة / الصف',
+            duration_min: 'مدة الحصة (دقيقة)',
+            resources_tools: 'المصادر والأدوات (اختر أو أضف)',
+            learning_outcomes: 'نواتج التعلم (Learning Outcomes)',
+            objectives: 'الأهداف التعليمية (Objectives)',
+            national_agenda: 'أجندة الدولة (National Agenda)',
+            skills_21st: 'مهارات القرن 21 (21st Century Skills)',
+            warmup: '1. الإحماء (Warm-up)',
+            main_activities: '2. الجزء الرئيسي (Main Activities)',
+            cooldown: '3. الختام والتهدئة (Cooldown)',
+            teacher_role: 'دور المعلم',
+            student_role: 'دور الطالب',
+            real_life_connection: 'الربط بالواقع (Real-life Connection)',
+            cross_curricular: 'تكامل المواد (Cross-curricular)',
+            hots: 'مهارات التفكير العليا (HOTS)',
+            assessment_tools: 'التقويم وأدوات القياس',
+            additional_notes: 'ملاحظات إضافية',
+            ready_to_export: 'جاهز للتصدير النهائي',
+            wizard_desc: 'لقد اكتملت كافة الخطوات. سيتم الآن إنشاء ملف PDF احترافي يتضمن كافة البيانات المخطط لها.',
+            prepared_by: 'المعد:',
+            organization: 'المنظمة:',
+            next: 'التالي',
+            prev: 'السابق',
+            save_preview: 'حفظ ومعاينة PDF',
+            cancel: 'إلغاء',
+            processing: 'جاري المعالجة...',
+            warmup_pdf: 'الإحماء والتحضير البدني',
+            main_pdf: 'الجزء الرئيسي والمهاري',
+            cooldown_pdf: 'الختام والاسترخاء',
+            date_pdf: 'التاريخ:',
+            grade_pdf: 'الصف:',
+            duration_pdf: 'المدة:',
+            teacher_pdf: 'المعلم:',
+            pedagogical_strategy: 'الاستراتيجية البيداغوجية والربط',
+            real_life_pdf: 'الربط بالواقع',
+            cross_curricular_pdf: 'تكامل المواد',
+            thinking_skills_pdf: 'مهارات التفكير (HOTS)',
+            assessment_pdf: 'التقويم',
+            coordinator_notes: 'ملاحظات المنسق:',
+            official_footer: 'مستند رسمي صادر عبر منصة كنترول الذكية للإدارة الرياضية المتكاملة - www.control.system',
+            min: 'دقيقة'
+        },
+        en: {
+            basic_info: 'Basic Information',
+            objectives_tools: 'Objectives & Tools',
+            activities_exercises: 'Activities & Exercises',
+            assessment_notes: 'Assessment & Notes',
+            confirm_review: 'Confirm & Review',
+            lesson_title: 'Lesson Title',
+            date_day: 'Date & Day',
+            target_group: 'Target Group / Grade',
+            duration_min: 'Duration (Minutes)',
+            resources_tools: 'Resources & Tools (Select or Add)',
+            learning_outcomes: 'Learning Outcomes',
+            objectives: 'Educational Objectives',
+            national_agenda: 'National Agenda',
+            skills_21st: '21st Century Skills',
+            warmup: '1. Warm-up',
+            main_activities: '2. Main Activities',
+            cooldown: '3. Cooldown',
+            teacher_role: "Teacher's Role",
+            student_role: "Student's Role",
+            real_life_connection: 'Real-life Connection',
+            cross_curricular: 'Cross-curricular Integration',
+            hots: 'Higher Order Thinking Skills (HOTS)',
+            assessment_tools: 'Assessment & Measurement Tools',
+            additional_notes: 'Additional Notes',
+            ready_to_export: 'Ready for Final Export',
+            wizard_desc: 'All steps are completed. A professional PDF file will now be generated with all the planned data.',
+            prepared_by: 'Prepared by:',
+            organization: 'Organization:',
+            next: 'Next',
+            prev: 'Previous',
+            save_preview: 'Save & Preview PDF',
+            cancel: 'Cancel',
+            processing: 'Processing...',
+            warmup_pdf: 'Warm-up & Physical Preparation',
+            main_pdf: 'Main Activities & Skills',
+            cooldown_pdf: 'Conclusion & Relaxation',
+            date_pdf: 'Date:',
+            grade_pdf: 'Grade:',
+            duration_pdf: 'Duration:',
+            teacher_pdf: 'Teacher:',
+            pedagogical_strategy: 'Pedagogical Strategy & Connection',
+            real_life_pdf: 'Real-life Connection',
+            cross_curricular_pdf: 'Cross-curricular',
+            thinking_skills_pdf: 'Thinking Skills (HOTS)',
+            assessment_pdf: 'Assessment',
+            coordinator_notes: 'Coordinator Notes:',
+            official_footer: 'Official document issued via Control Smart Platform for Integrated Sports Management - www.control.system',
+            min: 'Min'
+        }
+    };
+
     let currentStep = 1;
     let activeIconTarget = null;
     let lastGeneratedPDF = null;
@@ -606,6 +738,45 @@ jQuery(document).ready(function($) {
         }
     ];
 
+    function updateWizardLabels() {
+        const lang = $('#lesson-lang').val();
+        const trans = controlTranslations[lang];
+        const isRtl = lang === 'ar';
+
+        // Update step titles in the indicators and modal
+        $('#wizard-main-title').text(isRtl ? 'معالج تحضير الدروس الذكي' : 'Smart Lesson Builder Wizard');
+
+        // Use data-i18n attributes for robust translation
+        $('[data-i18n]').each(function() {
+            const key = $(this).data('i18n');
+            if (trans[key]) {
+                const suffix = ($(this).prop('tagName') === 'LABEL' && $(this).text().includes('*')) ? ' *' : '';
+
+                if ($(this).find('span').length > 0 && (key === 'warmup' || key === 'main_activities' || key === 'cooldown')) {
+                    const span = $(this).find('span').detach();
+                    $(this).text(trans[key]).prepend(span);
+                } else {
+                    $(this).text(trans[key] + suffix);
+                }
+            }
+        });
+
+        // Update dynamic components
+        $('#select-lesson-template').html(`<span class="dashicons dashicons-layout" style="margin-left:5px;"></span>${isRtl ? 'استخدام قالب جاهز' : 'Use Ready Template'}`);
+        $('#lesson-equipment').attr('placeholder', isRtl ? 'أدوات أخرى...' : 'Other tools...');
+
+        $('.add-activity-btn:eq(0)').html(`<span class="dashicons dashicons-plus" style="margin-left:5px;"></span>${isRtl ? 'إضافة تمرين إحماء' : 'Add Warm-up Activity'}`);
+        $('.add-activity-btn:eq(1)').html(`<span class="dashicons dashicons-plus" style="margin-left:5px;"></span>${isRtl ? 'إضافة نشاط رئيسي' : 'Add Main Activity'}`);
+        $('.add-activity-btn:eq(2)').html(`<span class="dashicons dashicons-plus" style="margin-left:5px;"></span>${isRtl ? 'إضافة نشاط ختامي' : 'Add Cooldown Activity'}`);
+
+        $('#lesson-wizard-prev').text(trans.prev);
+        $('#lesson-wizard-next').text(trans.next);
+        $('#lesson-wizard-save').text(trans.save_preview);
+        $('.close-lesson-modal:last').text(trans.cancel);
+
+        showStep(currentStep); // Refresh current step label
+    }
+
     function showStep(step) {
         $('.lesson-step').hide();
         $(`.lesson-step[data-step="${step}"]`).fadeIn(300);
@@ -617,12 +788,14 @@ jQuery(document).ready(function($) {
         $('#lesson-wizard-next').toggle(step < 5);
         $('#lesson-wizard-save').toggle(step === 5);
 
+        const lang = $('#lesson-lang').val();
+        const trans = controlTranslations[lang];
         const stepLabels = {
-            1: '<?php _e('البيانات الأساسية', 'control'); ?>',
-            2: '<?php _e('الأهداف والأدوات', 'control'); ?>',
-            3: '<?php _e('الأنشطة والتمارين', 'control'); ?>',
-            4: '<?php _e('التقويم والملاحظات', 'control'); ?>',
-            5: '<?php _e('تأكيد ومراجعة', 'control'); ?>'
+            1: trans.basic_info,
+            2: trans.objectives_tools,
+            3: trans.activities_exercises,
+            4: trans.assessment_notes,
+            5: trans.confirm_review
         };
         $('#wizard-step-indicator').text(stepLabels[step]);
         currentStep = step;
@@ -647,6 +820,14 @@ jQuery(document).ready(function($) {
     });
 
     $('.close-lesson-modal').on('click', function() { $('#lesson-wizard-modal').hide(); });
+
+    $(document).on('click', '.wizard-lang-btn', function() {
+        const lang = $(this).data('lang');
+        $('.wizard-lang-btn').removeClass('active');
+        $(this).addClass('active');
+        $('#lesson-lang').val(lang);
+        updateWizardLabels();
+    });
 
     // Activity Management
     $(document).on('click', '.add-activity-btn', function() {
@@ -815,6 +996,11 @@ jQuery(document).ready(function($) {
     }
 
     function preparePDFPreview(data, id) {
+        if (!data || !data.title) {
+            alert('Error: Lesson data is incomplete.');
+            return;
+        }
+
         const $modal = $('#lesson-preview-modal');
         const $htmlContainer = $('#preview-html-content');
         const $exportContainer = $('#pdf-export-content');
@@ -866,6 +1052,54 @@ jQuery(document).ready(function($) {
             });
         });
     }
+
+    $(document).on('click', '.print-lesson-btn', function() {
+        const id = $(this).data('id');
+        const $btn = $(this);
+        const originalHtml = $btn.html();
+        $btn.prop('disabled', true).html('<span class="dashicons dashicons-update spin"></span>');
+
+        $.post(control_ajax.ajax_url, { action: 'control_get_lesson', id: id, nonce: control_ajax.nonce }, function(res) {
+            $btn.prop('disabled', false).html(originalHtml);
+            if (res.success) {
+                const data = res.data.lesson_data;
+                const creator = res.data;
+                const html = renderFormalPDFHtml(data, creator);
+
+                const printWindow = window.open('', '_blank', 'width=800,height=600');
+                printWindow.document.write(`
+                    <html>
+                    <head>
+                        <title>${data.title}</title>
+                        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;600;700;800&display=swap">
+                        <style>
+                            body { font-family: 'Rubik', sans-serif; margin: 0; padding: 20px; direction: ${data.lang === 'en' ? 'ltr' : 'rtl'}; }
+                            @media print {
+                                body { padding: 0; }
+                                .no-print { display: none; }
+                            }
+                        </style>
+                    </head>
+                    <body>
+                        ${html}
+                        <script>
+                            window.onload = function() {
+                                window.print();
+                                window.onafterprint = function() { window.close(); };
+                            };
+                        <\/script>
+                    </body>
+                    </html>
+                `);
+                printWindow.document.close();
+            } else {
+                alert(res.data || 'Error fetching lesson');
+            }
+        }).fail(function() {
+            $btn.prop('disabled', false).html(originalHtml);
+            alert('Error communicating with server');
+        });
+    });
 
     $(document).on('click', '.view-lesson-pdf', function() {
         const id = $(this).data('id');
@@ -997,20 +1231,29 @@ jQuery(document).ready(function($) {
 
     $('#lesson-search-input, #lesson-grade-filter, #lesson-date-filter').on('input change', filterLessons);
 
+    let lessonIdToDelete = null;
     $(document).on('click', '.delete-lesson-btn', function() {
-        if (!confirm('<?php _e('هل أنت متأكد من حذف هذا الدرس نهائياً؟', 'control'); ?>')) return;
-        const id = $(this).data('id');
-        const $btn = $(this);
-        $btn.prop('disabled', true).css('opacity', '0.5');
+        lessonIdToDelete = $(this).data('id');
+        $('#delete-confirmation-modal').css('display', 'flex');
+    });
 
-        $.post(control_ajax.ajax_url, { action: 'control_delete_lesson', id: id, nonce: control_ajax.nonce }, function(res) {
+    $('#confirm-delete-btn').on('click', function() {
+        if (!lessonIdToDelete) return;
+        const $btn = $(this);
+        $btn.prop('disabled', true).text('<?php _e('جاري الحذف...', 'control'); ?>');
+
+        $.post(control_ajax.ajax_url, {
+            action: 'control_delete_lesson',
+            id: lessonIdToDelete,
+            nonce: control_ajax.nonce
+        }, function(res) {
             if (res.success) location.reload();
             else {
                 alert(res.data || 'Error deleting lesson');
-                $btn.prop('disabled', false).css('opacity', '1');
+                $btn.prop('disabled', false).text('<?php _e('نعم، احذف', 'control'); ?>');
             }
         }).fail(function() {
-            $btn.prop('disabled', false).css('opacity', '1');
+            $btn.prop('disabled', false).text('<?php _e('نعم، احذف', 'control'); ?>');
             alert('Error communicating with server');
         });
     });
@@ -1156,8 +1399,9 @@ jQuery(document).ready(function($) {
         $('#browse-suggestions-modal').hide();
     });
 
-    $(document).on('click', '.download-lesson-pdf, .share-whatsapp-direct', function() {
+    $(document).on('click', '.download-lesson-pdf, .share-whatsapp-direct, .share-email-direct', function() {
         const isShare = $(this).hasClass('share-whatsapp-direct');
+        const isEmail = $(this).hasClass('share-email-direct');
         const id = $(this).data('id');
         const $btn = $(this);
         const originalHtml = $btn.html();
@@ -1169,17 +1413,76 @@ jQuery(document).ready(function($) {
                 const creator = res.data;
 
                 if (isShare) {
-                    const isEn = data.lang === 'en';
+                    const lang = data.lang || 'ar';
+                    const isEn = lang === 'en';
+                    const trans = controlTranslations[lang];
                     const dateStr = data.date_formatted || new Date(res.data.created_at).toLocaleDateString(isEn ? 'en-US' : 'ar-SA');
                     const sender = creator.first_name + ' ' + creator.last_name;
 
                     let msg = isEn ?
-                        `📋 *Lesson Plan Sharing*\n\n*Title:* ${data.title}\n*Date:* ${dateStr}\n*By:* ${sender}\n\nGenerated via Control System.` :
-                        `📋 *مشاركة تحضير درس*\n\n*العنوان:* ${data.title}\n*التاريخ:* ${dateStr}\n*بواسطة:* ${sender}\n\nتم التوليد عبر نظام كنترول.`;
+                        `📋 *Lesson Plan Sharing*\n\n*Title:* ${data.title}\n*Grade:* ${data.target_group}\n*Duration:* ${data.duration} min\n*Date:* ${dateStr}\n*Prepared by:* ${sender}\n\nGenerated via Control System.` :
+                        `📋 *مشاركة تحضير درس*\n\n*العنوان:* ${data.title}\n*الصف:* ${data.target_group}\n*المدة:* ${data.duration} دقيقة\n*التاريخ:* ${dateStr}\n*بواسطة:* ${sender}\n\nتم التوليد عبر نظام كنترول.`;
 
-                    const waUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(msg)}`;
-                    window.open(waUrl, '_blank');
-                    $btn.prop('disabled', false).html(originalHtml);
+                    // For real file sharing, we would need to upload the PDF to a server and share the link,
+                    // or use the Web Share API if supported and on mobile.
+                    if (isEmail) {
+                        const recipient = prompt(isEn ? 'Enter recipient email:' : 'أدخل البريد الإلكتروني للمستلم:');
+                        if (!recipient) {
+                            $btn.prop('disabled', false).html(originalHtml);
+                            return;
+                        }
+
+                        const handleEmailSend = (pdfBase64 = '') => {
+                            $.post(control_ajax.ajax_url, {
+                                action: 'control_share_lesson_email',
+                                id: id,
+                                email: recipient,
+                                pdf_base64: pdfBase64,
+                                nonce: control_ajax.nonce
+                            }, function(emailRes) {
+                                $btn.prop('disabled', false).html(originalHtml);
+                                alert(emailRes.success ? (isEn ? 'Email sent!' : 'تم الإرسال!') : emailRes.data);
+                            });
+                        };
+
+                        if (lastGeneratedPDF && lastGeneratedPDF.blob) {
+                            const reader = new FileReader();
+                            reader.onloadend = function() { handleEmailSend(reader.result); };
+                            reader.readAsDataURL(lastGeneratedPDF.blob);
+                        } else {
+                            // Generate first
+                            const $exportContainer = $('#pdf-export-content');
+                            $exportContainer.show();
+                            const html = renderFormalPDFHtml(data, creator);
+                            $exportContainer.html(html);
+                            const opt = { margin: [5, 5, 5, 5], filename: `lesson_${id}.pdf`, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2, useCORS: true }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' } };
+
+                            setTimeout(() => {
+                                html2pdf().set(opt).from($exportContainer[0]).outputPdf('blob').then(blob => {
+                                    const reader = new FileReader();
+                                    reader.onloadend = function() { handleEmailSend(reader.result); };
+                                    reader.readAsDataURL(blob);
+                                    $exportContainer.hide();
+                                });
+                            }, 500);
+                        }
+                    } else {
+                        if (navigator.share && lastGeneratedPDF && lastGeneratedPDF.blob) {
+                             const file = new File([lastGeneratedPDF.blob], `lesson_${id}.pdf`, { type: 'application/pdf' });
+                             navigator.share({
+                                 title: data.title,
+                                 text: msg,
+                                 files: [file]
+                             }).catch(err => {
+                                 const waUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(msg)}`;
+                                 window.open(waUrl, '_blank');
+                             });
+                        } else {
+                             const waUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(msg)}`;
+                             window.open(waUrl, '_blank');
+                        }
+                        $btn.prop('disabled', false).html(originalHtml);
+                    }
                 } else {
                     generateDirectPDF(data, id, creator, function() {
                         $btn.prop('disabled', false).html(originalHtml);
@@ -1196,34 +1499,69 @@ jQuery(document).ready(function($) {
     });
 
     function generateDirectPDF(data, id, creator, callback) {
+        if (!data || !data.title) {
+            alert('Error: Lesson data is incomplete.');
+            if(callback) callback();
+            return;
+        }
+
         const $exportContainer = $('#pdf-export-content');
-        $exportContainer.show(); // Briefly show to ensure layout is calculated
+        $exportContainer.css({
+            'display': 'block',
+            'visibility': 'visible',
+            'position': 'fixed',
+            'left': '-9999px',
+            'top': '0',
+            'width': '210mm'
+        });
 
         const html = renderFormalPDFHtml(data, creator);
         $exportContainer.html(html);
 
         const opt = {
-            margin:       [5, 5, 5, 5], // Reduced margins
+            margin:       [5, 5, 5, 5],
             filename:     `official_lesson_${id}.pdf`,
             image:        { type: 'jpeg', quality: 0.98 },
-            html2canvas:  { scale: 2, useCORS: true, logging: false },
+            html2canvas:  { scale: 2, useCORS: true, logging: false, letterRendering: true },
             jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
         };
 
-        html2pdf().set(opt).from($exportContainer[0]).save().then(function() {
-            $exportContainer.hide();
-            if(callback) callback();
-        });
+        // Add a short delay to ensure content is fully rendered in the off-screen DOM
+        setTimeout(function() {
+            html2pdf().set(opt).from($exportContainer[0]).outputPdf('blob').then(function(pdfBlob) {
+                const url = URL.createObjectURL(pdfBlob);
+                lastGeneratedPDF = { blob: pdfBlob, url: url, filename: opt.filename };
+
+                // Trigger download
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = opt.filename;
+                link.click();
+
+                $exportContainer.hide();
+                if(callback) callback();
+            }).catch(err => {
+                console.error('PDF Generation Error:', err);
+                alert('Failed to generate PDF. Please try again.');
+                $exportContainer.hide();
+                if(callback) callback();
+            });
+        }, 500);
     }
 
     function renderFormalPDFHtml(data, creator) {
+        const lang = data.lang || 'ar';
+        const trans = controlTranslations[lang];
+        const isRtl = lang === 'ar';
+        const direction = isRtl ? 'rtl' : 'ltr';
+        const textAlign = isRtl ? 'right' : 'left';
         const orgLogoHtml = creator.org_logo ? `<img src="${creator.org_logo}" style="height:50px; object-fit:contain; margin-bottom:5px;">` : '';
 
         let activitiesHtml = '';
         const sections = [
-            { key: 'warmup', label: '<?php _e('الإحماء والتحضير البدني', 'control'); ?>', color: '#10b981' },
-            { key: 'main', label: '<?php _e('الجزء الرئيسي والمهاري', 'control'); ?>', color: '#3b82f6' },
-            { key: 'cooldown', label: '<?php _e('الختام والاسترخاء', 'control'); ?>', color: '#6366f1' }
+            { key: 'warmup', label: trans.warmup_pdf, color: '#10b981' },
+            { key: 'main', label: trans.main_pdf, color: '#3b82f6' },
+            { key: 'cooldown', label: trans.cooldown_pdf, color: '#6366f1' }
         ];
 
         sections.forEach(s => {
@@ -1252,35 +1590,35 @@ jQuery(document).ready(function($) {
         return `
             <div style="background:#fff; border:1px solid #94a3b8; padding:10px; border-radius:0; color:#1e293b; font-size:10px;">
                 <!-- Official Header -->
-                <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1.5px solid #0f172a; padding-bottom:10px; margin-bottom:15px;">
-                    <div style="flex:1;">
+                <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1.5px solid #0f172a; padding-bottom:10px; margin-bottom:15px; flex-direction: ${isRtl ? 'row' : 'row-reverse'};">
+                    <div style="flex:1; text-align: ${textAlign};">
                         ${orgLogoHtml}
                         <div style="font-weight:800; font-size:18px; color:#0f172a;">${data.title}</div>
                         <div style="color:#475569; font-size:11px; font-weight:700;">${creator.employer_name || '<?php echo esc_html($org_name); ?>'}</div>
                     </div>
-                    <div style="width:250px; text-align:left; font-size:10px; color:#1e293b; line-height:1.4; border-right:1px solid #cbd5e1; padding-right:10px;">
-                        <table style="width:100%; border-collapse:collapse;">
-                            <tr><td style="font-weight:700;"><?php _e('التاريخ:', 'control'); ?></td><td style="text-align:left;">${data.date_formatted || new Date().toLocaleDateString('ar-SA')}</td></tr>
-                            <tr><td style="font-weight:700;"><?php _e('الصف:', 'control'); ?></td><td style="text-align:left;">${data.target_group || '---'}</td></tr>
-                            <tr><td style="font-weight:700;"><?php _e('المدة:', 'control'); ?></td><td style="text-align:left;">${data.duration || '---'} min</td></tr>
-                            <tr><td style="font-weight:700;"><?php _e('المعلم:', 'control'); ?></td><td style="text-align:left;">${creator.first_name} ${creator.last_name}</td></tr>
+                    <div style="width:250px; text-align:${textAlign}; font-size:10px; color:#1e293b; line-height:1.4; border-${isRtl ? 'right' : 'left'}:1px solid #cbd5e1; padding-${isRtl ? 'right' : 'left'}:10px;">
+                        <table style="width:100%; border-collapse:collapse; direction: ${direction};">
+                            <tr><td style="font-weight:700;">${trans.date_pdf}</td><td style="text-align:${isRtl ? 'left' : 'right'};">${data.date_formatted || new Date().toLocaleDateString(isRtl ? 'ar-SA' : 'en-US')}</td></tr>
+                            <tr><td style="font-weight:700;">${trans.grade_pdf}</td><td style="text-align:${isRtl ? 'left' : 'right'};">${data.target_group || '---'}</td></tr>
+                            <tr><td style="font-weight:700;">${trans.duration_pdf}</td><td style="text-align:${isRtl ? 'left' : 'right'};">${data.duration || '---'} ${trans.min}</td></tr>
+                            <tr><td style="font-weight:700;">${trans.teacher_pdf}</td><td style="text-align:${isRtl ? 'left' : 'right'};">${creator.first_name} ${creator.last_name}</td></tr>
                         </table>
                     </div>
                 </div>
 
                 <!-- Framework Table -->
-                <table style="width:100%; border-collapse:collapse; margin-bottom:10px; border:1px solid #0f172a;">
+                <table style="width:100%; border-collapse:collapse; margin-bottom:10px; border:1px solid #0f172a; direction: ${direction};">
                     <tr style="background:#f1f5f9;">
-                        <th style="border:1px solid #0f172a; padding:5px; width:50%; text-align:right; font-size:11px;"><?php _e('نواتج التعلم (Learning Outcomes)', 'control'); ?></th>
-                        <th style="border:1px solid #0f172a; padding:5px; width:50%; text-align:right; font-size:11px;"><?php _e('الأهداف التعليمية (Objectives)', 'control'); ?></th>
+                        <th style="border:1px solid #0f172a; padding:5px; width:50%; text-align:${textAlign}; font-size:11px;">${trans.learning_outcomes}</th>
+                        <th style="border:1px solid #0f172a; padding:5px; width:50%; text-align:${textAlign}; font-size:11px;">${trans.objectives}</th>
                     </tr>
                     <tr>
                         <td style="border:1px solid #0f172a; padding:5px; vertical-align:top; height:50px;">${data.learning_outcomes || '---'}</td>
                         <td style="border:1px solid #0f172a; padding:5px; vertical-align:top; height:50px;">${data.objectives || '---'}</td>
                     </tr>
                     <tr style="background:#f1f5f9;">
-                        <th style="border:1px solid #0f172a; padding:5px; text-align:right; font-size:11px;"><?php _e('أجندة الدولة (National Agenda)', 'control'); ?></th>
-                        <th style="border:1px solid #0f172a; padding:5px; text-align:right; font-size:11px;"><?php _e('مهارات القرن 21 (21st Century Skills)', 'control'); ?></th>
+                        <th style="border:1px solid #0f172a; padding:5px; text-align:${textAlign}; font-size:11px;">${trans.national_agenda}</th>
+                        <th style="border:1px solid #0f172a; padding:5px; text-align:${textAlign}; font-size:11px;">${trans.skills_21st}</th>
                     </tr>
                     <tr>
                         <td style="border:1px solid #0f172a; padding:5px; vertical-align:top; height:40px;">${data.national_agenda || '---'}</td>
@@ -1289,22 +1627,22 @@ jQuery(document).ready(function($) {
                 </table>
 
                 <!-- Tools -->
-                <div style="background:#f8fafc; border:1px solid #0f172a; padding:5px 10px; margin-bottom:10px;">
-                    <strong style="font-size:11px; color:#0f172a;"><?php _e('المصادر والأدوات:', 'control'); ?></strong>
-                    <span style="font-size:10px; margin-right:5px;">${data.equipment || '---'}</span>
+                <div style="background:#f8fafc; border:1px solid #0f172a; padding:5px 10px; margin-bottom:10px; text-align: ${textAlign};">
+                    <strong style="font-size:11px; color:#0f172a;">${trans.resources_tools}:</strong>
+                    <span style="font-size:10px; margin-${isRtl ? 'right' : 'left'}:5px;">${data.equipment || '---'}</span>
                 </div>
 
                 <!-- Activities -->
                 ${activitiesHtml}
 
                 <!-- Pedagogical Strategy Table -->
-                <div style="margin-top:15px;">
-                    <h3 style="background:#0f172a; color:#fff; padding:5px 12px; border-radius:4px; font-size:12px; margin-bottom:5px;"><?php _e('الاستراتيجية البيداغوجية والربط', 'control'); ?></h3>
-                    <table style="width:100%; border-collapse:collapse; border:1px solid #0f172a;">
+                <div style="margin-top:15px; text-align: ${textAlign};">
+                    <h3 style="background:#0f172a; color:#fff; padding:5px 12px; border-radius:4px; font-size:12px; margin-bottom:5px;">${trans.pedagogical_strategy}</h3>
+                    <table style="width:100%; border-collapse:collapse; border:1px solid #0f172a; direction: ${direction};">
                         <tr style="background:#f1f5f9;">
-                            <th style="border:1px solid #0f172a; padding:4px; text-align:right; width:33%;"><?php _e('دور المعلم', 'control'); ?></th>
-                            <th style="border:1px solid #0f172a; padding:4px; text-align:right; width:33%;"><?php _e('دور الطالب', 'control'); ?></th>
-                            <th style="border:1px solid #0f172a; padding:4px; text-align:right; width:33%;"><?php _e('الربط بالواقع', 'control'); ?></th>
+                            <th style="border:1px solid #0f172a; padding:4px; text-align:${textAlign}; width:33%;">${trans.teacher_role}</th>
+                            <th style="border:1px solid #0f172a; padding:4px; text-align:${textAlign}; width:33%;">${trans.student_role}</th>
+                            <th style="border:1px solid #0f172a; padding:4px; text-align:${textAlign}; width:33%;">${trans.real_life_pdf}</th>
                         </tr>
                         <tr>
                             <td style="border:1px solid #0f172a; padding:5px; height:40px; vertical-align:top;">${data.teacher_role || '---'}</td>
@@ -1312,9 +1650,9 @@ jQuery(document).ready(function($) {
                             <td style="border:1px solid #0f172a; padding:5px; height:40px; vertical-align:top;">${data.real_life || '---'}</td>
                         </tr>
                         <tr style="background:#f1f5f9;">
-                            <th style="border:1px solid #0f172a; padding:4px; text-align:right;"><?php _e('تكامل المواد', 'control'); ?></th>
-                            <th style="border:1px solid #0f172a; padding:4px; text-align:right;"><?php _e('مهارات التفكير (HOTS)', 'control'); ?></th>
-                            <th style="border:1px solid #0f172a; padding:4px; text-align:right;"><?php _e('التقويم', 'control'); ?></th>
+                            <th style="border:1px solid #0f172a; padding:4px; text-align:${textAlign};">${trans.cross_curricular_pdf}</th>
+                            <th style="border:1px solid #0f172a; padding:4px; text-align:${textAlign};">${trans.thinking_skills_pdf}</th>
+                            <th style="border:1px solid #0f172a; padding:4px; text-align:${textAlign};">${trans.assessment_pdf}</th>
                         </tr>
                         <tr>
                             <td style="border:1px solid #0f172a; padding:5px; height:40px; vertical-align:top;">${data.cross_curricular || '---'}</td>
@@ -1326,13 +1664,13 @@ jQuery(document).ready(function($) {
 
                 <!-- Footer Notes -->
                 ${data.notes ? `
-                <div style="margin-top:10px; border:1px solid #fde68a; background:#fffbeb; padding:8px;">
-                    <strong style="color:#92400e;"><?php _e('ملاحظات المنسق:', 'control'); ?></strong>
+                <div style="margin-top:10px; border:1px solid #fde68a; background:#fffbeb; padding:8px; text-align: ${textAlign};">
+                    <strong style="color:#92400e;">${trans.coordinator_notes}</strong>
                     <p style="margin:2px 0 0 0; color:#92400e; font-style:italic;">${data.notes}</p>
                 </div>` : ''}
 
                 <div style="margin-top:20px; text-align:center; font-size:8px; color:#94a3b8; border-top:1px solid #cbd5e1; padding-top:5px;">
-                    <?php _e('مستند رسمي صادر عبر منصة كنترول الذكية للإدارة الرياضية المتكاملة - www.control.system', 'control'); ?>
+                    ${trans.official_footer}
                 </div>
             </div>
         `;
@@ -1343,8 +1681,8 @@ jQuery(document).ready(function($) {
 <style>
 #lesson-wizard-dots .dot { width: 12px; height: 12px; border-radius: 50%; background: rgba(255,255,255,0.2); transition: 0.3s; }
 #lesson-wizard-dots .dot.active { background: var(--control-accent); transform: scale(1.4); box-shadow: 0 0 15px var(--control-accent); }
-.lesson-card { transition: 0.3s; cursor: default; }
-.lesson-card:hover { transform: translateY(-5px); box-shadow: 0 20px 40px rgba(0,0,0,0.1); border-color: var(--control-accent); }
+.lesson-card { transition: 0.3s; cursor: default; border-radius: 16px !important; box-shadow: 0 10px 30px rgba(0,0,0,0.08); border: 1px solid var(--control-border); background: #fff; }
+.lesson-card:hover { transform: translateY(-5px); box-shadow: 0 20px 40px rgba(0,0,0,0.12); border-color: var(--control-accent); }
 .suggestion-chip:hover { border-color: var(--control-accent); color: var(--control-accent); }
 .selectable-icon:hover { border-color: var(--control-accent); transform: scale(1.1); }
 .template-card:hover { border-color: var(--control-accent) !important; transform: translateY(-2px); }

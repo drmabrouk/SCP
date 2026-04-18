@@ -144,12 +144,3 @@
     </div>
 </div>
 
-<footer class="control-footer" style="display:flex; justify-content:space-between; align-items:center; padding:15px 25px; font-size:0.75rem; color:var(--control-muted); margin-top:20px; background:transparent; border:none;">
-    <?php
-        global $wpdb;
-        $sys_name = $wpdb->get_var("SELECT setting_value FROM {$wpdb->prefix}control_settings WHERE setting_key = 'system_name'") ?: 'Control';
-        $domain = $_SERVER['HTTP_HOST'];
-    ?>
-    <div>&copy; <?php echo date('Y'); ?> <?php echo esc_html($sys_name); ?> - <?php echo esc_html($domain); ?></div>
-    <div style="font-weight:700; opacity:0.4;"><?php _e('كافة الحقوق محفوظة', 'control'); ?></div>
-</footer>
