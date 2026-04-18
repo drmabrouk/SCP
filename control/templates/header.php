@@ -91,6 +91,12 @@
                 </a>
             <?php endif; ?>
 
+            <?php if ( Control_Auth::has_permission('grades_manage') ) : ?>
+                <a href="<?php echo add_query_arg('control_view', 'grades'); ?>" class="<?php echo (isset($_GET['control_view']) && $_GET['control_view'] == 'grades') ? 'active' : ''; ?>">
+                    <span class="dashicons dashicons-welcome-write-blog"></span> <?php _e('رصد الدرجات', 'control'); ?>
+                </a>
+            <?php endif; ?>
+
             <?php if ( Control_Auth::has_permission('settings_manage') ) : ?>
                 <a href="<?php echo add_query_arg('control_view', 'settings'); ?>" class="<?php echo (isset($_GET['control_view']) && $_GET['control_view'] == 'settings') ? 'active' : ''; ?>">
                     <span class="dashicons dashicons-admin-generic"></span> <?php _e('إعدادات النظام', 'control'); ?>
@@ -129,6 +135,14 @@
             <a href="<?php echo add_query_arg('control_view', 'dashboard'); ?>" class="mobile-nav-item <?php echo (!isset($_GET['control_view']) || $_GET['control_view'] == 'dashboard') ? 'active' : ''; ?>">
                 <span class="dashicons dashicons-performance"></span>
                 <small><?php _e('الرئيسية', 'control'); ?></small>
+            </a>
+            <div class="mobile-divider"></div>
+        <?php endif; ?>
+
+        <?php if ( Control_Auth::has_permission('grades_manage') ) : ?>
+            <a href="<?php echo add_query_arg('control_view', 'grades'); ?>" class="mobile-nav-item <?php echo (isset($_GET['control_view']) && $_GET['control_view'] == 'grades') ? 'active' : ''; ?>">
+                <span class="dashicons dashicons-welcome-write-blog"></span>
+                <small><?php _e('الدرجات', 'control'); ?></small>
             </a>
             <div class="mobile-divider"></div>
         <?php endif; ?>

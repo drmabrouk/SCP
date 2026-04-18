@@ -72,6 +72,13 @@ class Control_Shortcode {
 					include CONTROL_PATH . 'templates/annual-planning.php';
 				}
 				break;
+			case 'grades':
+				if ( ! Control_Auth::has_permission('grades_manage') ) {
+					echo $no_access_html;
+				} else {
+					include CONTROL_PATH . 'templates/grades.php';
+				}
+				break;
 			default:
 				if ( ! Control_Auth::has_permission('dashboard') ) {
 					echo $no_access_html;

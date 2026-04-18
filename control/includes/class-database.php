@@ -20,6 +20,8 @@ class Control_Database {
 		$table_reset_tokens = $wpdb->prefix . 'control_reset_tokens';
 		$table_lessons      = $wpdb->prefix . 'control_lessons';
 		$table_lesson_suggestions = $wpdb->prefix . 'control_lesson_suggestions';
+		$table_students     = $wpdb->prefix . 'control_students';
+		$table_grades       = $wpdb->prefix . 'control_grades';
 
 		$sql = "CREATE TABLE $table_staff (
 			id mediumint(9) NOT NULL AUTO_INCREMENT,
@@ -174,6 +176,35 @@ class Control_Database {
 			updated_at datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 			PRIMARY KEY  (id),
 			KEY creator_id (creator_id)
+		) $charset_collate;
+
+		CREATE TABLE $table_students (
+			id bigint(20) NOT NULL AUTO_INCREMENT,
+			name varchar(255) NOT NULL,
+			grade varchar(50),
+			section varchar(50),
+			nationality varchar(100),
+			email varchar(255),
+			phone varchar(50),
+			national_id varchar(100),
+			created_at datetime DEFAULT CURRENT_TIMESTAMP,
+			PRIMARY KEY  (id)
+		) $charset_collate;
+
+		CREATE TABLE $table_grades (
+			id bigint(20) NOT NULL AUTO_INCREMENT,
+			student_id bigint(20) NOT NULL,
+			physical_fitness float DEFAULT 0,
+			discipline float DEFAULT 0,
+			oral_questioning float DEFAULT 0,
+			practical_skills float DEFAULT 0,
+			behavior float DEFAULT 0,
+			participation float DEFAULT 0,
+			total_score float DEFAULT 0,
+			created_at datetime DEFAULT CURRENT_TIMESTAMP,
+			updated_at datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+			PRIMARY KEY  (id),
+			KEY student_id (student_id)
 		) $charset_collate;";
 
 		if ( file_exists( ABSPATH . 'wp-admin/includes/upgrade.php' ) ) {
@@ -205,31 +236,31 @@ class Control_Database {
 			array(
 				'role_key'  => 'coach',
 				'role_name' => 'Sports Coach',
-				'permissions' => json_encode(array('dashboard' => true, 'users_view' => true, 'lessons_manage' => true, 'annual_planning_manage' => true)),
+				'permissions' => json_encode(array('dashboard' => true, 'users_view' => true, 'lessons_manage' => true, 'annual_planning_manage' => true, 'grades_manage' => true)),
 				'is_system' => 1
 			),
 			array(
 				'role_key'  => 'therapist',
 				'role_name' => 'Sports Therapist',
-				'permissions' => json_encode(array('dashboard' => true, 'users_view' => true, 'lessons_manage' => true, 'annual_planning_manage' => true)),
+				'permissions' => json_encode(array('dashboard' => true, 'users_view' => true, 'lessons_manage' => true, 'annual_planning_manage' => true, 'grades_manage' => true)),
 				'is_system' => 1
 			),
 			array(
 				'role_key'  => 'nutritionist',
 				'role_name' => 'Sports Nutrition Specialist',
-				'permissions' => json_encode(array('dashboard' => true, 'users_view' => true, 'lessons_manage' => true, 'annual_planning_manage' => true)),
+				'permissions' => json_encode(array('dashboard' => true, 'users_view' => true, 'lessons_manage' => true, 'annual_planning_manage' => true, 'grades_manage' => true)),
 				'is_system' => 1
 			),
 			array(
 				'role_key'  => 'pe_teacher',
 				'role_name' => 'PE Teacher',
-				'permissions' => json_encode(array('dashboard' => true, 'users_view' => true, 'lessons_manage' => true, 'annual_planning_manage' => true)),
+				'permissions' => json_encode(array('dashboard' => true, 'users_view' => true, 'lessons_manage' => true, 'annual_planning_manage' => true, 'grades_manage' => true)),
 				'is_system' => 1
 			),
 			array(
 				'role_key'  => 'researcher',
 				'role_name' => 'Sports Researcher',
-				'permissions' => json_encode(array('dashboard' => true, 'users_view' => true, 'lessons_manage' => true, 'annual_planning_manage' => true)),
+				'permissions' => json_encode(array('dashboard' => true, 'users_view' => true, 'lessons_manage' => true, 'annual_planning_manage' => true, 'grades_manage' => true)),
 				'is_system' => 1
 			)
 		);

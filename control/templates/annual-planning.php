@@ -46,6 +46,39 @@ $plans = Control_Annual_Planning::get_user_plans( $current_user->id );
     </button>
 </div>
 
+<!-- Annual Planning Guidance & Progress -->
+<div id="annual-guidance-container" style="margin-bottom:25px;"></div>
+
+<!-- Advanced Search Engine -->
+<div class="control-card" style="padding:15px; margin-bottom:20px; border:none; background:rgba(0,0,0,0.02);">
+    <div style="display:flex; gap:12px; align-items: center; flex-wrap: wrap;">
+        <div style="flex:1; position:relative; min-width: 200px;">
+            <span class="dashicons dashicons-search" style="position:absolute; right:12px; top:50%; transform:translateY(-50%); color:var(--control-muted);"></span>
+            <input type="text" id="plan-search-input" placeholder="<?php _e('ابحث باسم الخطة...', 'control'); ?>" style="padding:10px 40px 10px 12px;">
+        </div>
+
+        <select id="plan-term-filter" style="width:150px; padding:10px;">
+            <option value=""><?php _e('جميع الفصول', 'control'); ?></option>
+            <option value="term_1"><?php _e('الفصل الأول', 'control'); ?></option>
+            <option value="term_2"><?php _e('الفصل الثاني', 'control'); ?></option>
+            <option value="term_3"><?php _e('الفصل الثالث', 'control'); ?></option>
+            <option value="annual"><?php _e('الخطة السنوية', 'control'); ?></option>
+        </select>
+
+        <select id="plan-system-filter" style="width:150px; padding:10px;">
+            <option value=""><?php _e('جميع الأنظمة', 'control'); ?></option>
+            <option value="two_semesters"><?php _e('نظام فصلين', 'control'); ?></option>
+            <option value="three_semesters"><?php _e('نظام 3 فصول', 'control'); ?></option>
+        </select>
+
+        <div style="display:flex; align-items:center; gap:8px;">
+            <input type="date" id="plan-date-start" style="padding:8px; font-size:0.8rem;" title="<?php _e('تاريخ البداية', 'control'); ?>">
+            <span style="color:var(--control-muted);">→</span>
+            <input type="date" id="plan-date-end" style="padding:8px; font-size:0.8rem;" title="<?php _e('تاريخ النهاية', 'control'); ?>">
+        </div>
+    </div>
+</div>
+
 <div id="annual-plans-grid" class="control-grid" style="grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap:20px;">
     <?php if(empty($plans)): ?>
         <div style="grid-column: 1/-1; text-align:center; padding:60px 20px; background:#fff; border-radius:20px; border:1px dashed var(--control-border);">
@@ -73,8 +106,8 @@ $plans = Control_Annual_Planning::get_user_plans( $current_user->id );
                             <?php echo $p->academic_system === 'three_semesters' ? __('نظام 3 فصول', 'control') : __('نظام فصلين', 'control'); ?>
                         </span>
                     </div>
-                    <h4 style="margin:0 0 12px; font-size:1.15rem; font-weight:800; color:var(--control-text-dark);"><?php echo esc_html($p->plan_name); ?></h4>
-                    <div style="font-size:0.8rem; color:var(--control-muted); display:flex; flex-direction:column; gap:6px;">
+                    <h4 class="plan-title" style="margin:0 0 12px; font-size:1.15rem; font-weight:800; color:var(--control-text-dark);"><?php echo esc_html($p->plan_name); ?></h4>
+                    <div class="plan-meta-details" data-type="<?php echo $p->plan_type; ?>" data-system="<?php echo $p->academic_system; ?>" data-start="<?php echo $p->start_date; ?>" data-end="<?php echo $p->end_date; ?>" style="font-size:0.8rem; color:var(--control-muted); display:flex; flex-direction:column; gap:6px;">
                         <div style="display:flex; align-items:center; gap:8px;">
                             <span class="dashicons dashicons-calendar-alt" style="font-size:16px; width:16px; height:16px;"></span>
                             <?php echo $p->start_date; ?> - <?php echo $p->end_date; ?>
@@ -313,9 +346,54 @@ jQuery(document).ready(function($) {
 
     const annualPlanAssistant = {
         getExistingPlans: function() {
-            // In a real scenario, we might want to fetch the latest via AJAX
-            // but for now we'll use the PHP-injected plans (refreshed on reload)
             return <?php echo json_encode($plans); ?>;
+        },
+        updateGuidance: function() {
+            const plans = this.getExistingPlans();
+            const lang = $('#plan-lang').val();
+            const isAr = lang === 'ar';
+
+            // Analyze 3-semester system progress
+            const threePlans = plans.filter(p => p.academic_system === 'three_semesters');
+            if (threePlans.length > 0) {
+                const terms = { term_1: false, term_2: false, term_3: false };
+                threePlans.forEach(p => { if(terms.hasOwnProperty(p.plan_type)) terms[p.plan_type] = true; });
+
+                const missing = Object.keys(terms).filter(t => !terms[t]);
+                if (missing.length > 0) {
+                    const termLabels = {
+                        term_1: isAr ? 'الفصل الدراسي الأول' : 'Term 1',
+                        term_2: isAr ? 'الفصل الدراسي الثاني' : 'Term 2',
+                        term_3: isAr ? 'الفصل الدراسي الثالث' : 'Term 3'
+                    };
+
+                    let guidanceHtml = `
+                        <div class="control-card guidance-alert" style="background:rgba(212,175,55,0.1); border:1px dashed var(--control-accent); padding:20px; border-radius:16px; display:flex; align-items:center; gap:20px;">
+                            <div style="background:var(--control-accent); color:var(--control-primary); width:50px; height:50px; border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                                <span class="dashicons dashicons-lightbulb" style="font-size:24px; width:24px; height:24px;"></span>
+                            </div>
+                            <div style="flex:1;">
+                                <h4 style="margin:0 0 5px; color:var(--control-primary); font-size:1rem; font-weight:800;">
+                                    ${isAr ? 'إرشاد النظام: استكمال الخطة الثلاثية' : 'System Guidance: Complete 3-Semester Plan'}
+                                </h4>
+                                <p style="margin:0; font-size:0.85rem; color:var(--control-muted);">
+                                    ${isAr ? 'للحصول على تقرير سنوي متكامل، يرجى استكمال الفصول المتبقية:' : 'To generate a full annual report, please complete the remaining terms:'}
+                                    <span style="font-weight:800; color:var(--control-primary);">${missing.map(m => termLabels[m]).join(' ← ')}</span>
+                                </p>
+                            </div>
+                            <div style="text-align:center;">
+                                <div style="font-size:0.7rem; font-weight:800; color:var(--control-primary); margin-bottom:5px;">${3 - missing.length}/3</div>
+                                <div style="width:100px; height:6px; background:rgba(0,0,0,0.1); border-radius:10px; overflow:hidden;">
+                                    <div style="width:${(3 - missing.length) / 3 * 100}%; height:100%; background:var(--control-accent);"></div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    $('#annual-guidance-container').html(guidanceHtml).fadeIn();
+                } else {
+                    $('#annual-guidance-container').empty().hide();
+                }
+            }
         },
         compile: function() {
             const system = $('#academic-system-input').val();
@@ -470,6 +548,43 @@ jQuery(document).ready(function($) {
 
         if (step === 3) updatePlanAssistantUI();
     }
+
+    annualPlanAssistant.updateGuidance();
+
+    // Advanced Search & Filter Logic
+    function filterPlans() {
+        const query = $('#plan-search-input').val().toLowerCase();
+        const term = $('#plan-term-filter').val();
+        const system = $('#plan-system-filter').val();
+        const dateStart = $('#plan-date-start').val();
+        const dateEnd = $('#plan-date-end').val();
+
+        $('.plan-card').each(function() {
+            const card = $(this);
+            const title = card.find('.plan-title').text().toLowerCase();
+            const meta = card.find('.plan-meta-details');
+            const cardType = meta.data('type');
+            const cardSystem = meta.data('system');
+            const cardStart = meta.data('start');
+            const cardEnd = meta.data('end');
+
+            const matchesQuery = !query || title.includes(query);
+            const matchesTerm = !term || cardType === term;
+            const matchesSystem = !system || cardSystem === system;
+
+            let matchesDate = true;
+            if (dateStart && cardStart < dateStart) matchesDate = false;
+            if (dateEnd && cardEnd > dateEnd) matchesDate = false;
+
+            if (matchesQuery && matchesTerm && matchesSystem && matchesDate) {
+                card.fadeIn(200);
+            } else {
+                card.fadeOut(200);
+            }
+        });
+    }
+
+    $('#plan-search-input, #plan-term-filter, #plan-system-filter, #plan-date-start, #plan-date-end').on('input change', filterPlans);
 
     $('.system-option').on('click', function() {
         $('.system-option').css('border-color', 'var(--control-border)').css('background', '#fff');
@@ -708,7 +823,7 @@ jQuery(document).ready(function($) {
         const lang = plan.lang || 'ar';
         const isRtl = lang === 'ar';
         const trans = planTranslations[lang];
-        const $container = $(`<div style="padding:15mm; background:#fff; font-family:'Rubik', sans-serif; direction:${isRtl ? 'rtl' : 'ltr'}; text-align:${isRtl ? 'right' : 'left'}; color:#000;"></div>`);
+        const $container = $(`<div style="width:210mm; padding:15mm; background:#fff; font-family:'Rubik', sans-serif; direction:${isRtl ? 'rtl' : 'ltr'}; text-align:${isRtl ? 'right' : 'left'}; color:#000; position:fixed; left:-9999px; top:0; z-index:-1;"></div>`);
 
         const types = { term_1: trans.term_1, term_2: trans.term_2, term_3: trans.term_3, annual: trans.annual_full };
         const system = plan.academic_system === 'three_semesters' ? trans.three_semesters : trans.two_semesters;
@@ -813,13 +928,15 @@ jQuery(document).ready(function($) {
             margin: 5,
             filename: `${plan.plan_name}.pdf`,
             image: { type: 'jpeg', quality: 0.98 },
-            html2canvas: { scale: 2 },
+            html2canvas: { scale: 2, useCORS: true },
             jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
         };
 
-        html2pdf().set(opt).from($container[0]).save().then(() => {
-            $container.remove();
-        });
+        setTimeout(() => {
+            html2pdf().set(opt).from($container[0]).save().then(() => {
+                $container.remove();
+            });
+        }, 500);
     }
 });
 </script>

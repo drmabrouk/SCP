@@ -65,6 +65,7 @@ class Control_System {
 		require_once CONTROL_PATH . 'includes/class-pwa.php';
 		require_once CONTROL_PATH . 'includes/class-lessons.php';
 		require_once CONTROL_PATH . 'includes/class-annual-planning.php';
+		require_once CONTROL_PATH . 'includes/class-grades.php';
 
 		// Infrastructure
 		require_once CONTROL_PATH . 'includes/class-shortcode.php';

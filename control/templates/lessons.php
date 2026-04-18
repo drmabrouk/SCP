@@ -223,9 +223,6 @@ $sports_icons = array(
                         <button class="control-btn share-whatsapp-direct" data-id="<?php echo $l->id; ?>" title="<?php _e('واتساب', 'control'); ?>" style="width:34px; height:34px; padding:0; flex-shrink:0; background:#25D366; color:#fff !important; border:none; border-radius: 6px; display:flex; align-items:center; justify-content:center;">
                             <span class="dashicons dashicons-whatsapp"></span>
                         </button>
-                        <button class="control-btn share-email-direct" data-id="<?php echo $l->id; ?>" title="<?php _e('بريد إلكتروني', 'control'); ?>" style="width:34px; height:34px; padding:0; flex-shrink:0; background:#ea4335; color:#fff !important; border:none; border-radius: 6px; display:flex; align-items:center; justify-content:center;">
-                            <span class="dashicons dashicons-email"></span>
-                        </button>
                         <button class="control-btn edit-lesson-btn" data-id="<?php echo $l->id; ?>" title="<?php _e('تعديل', 'control'); ?>" style="width:34px; height:34px; padding:0; flex-shrink:0; background:#fff; color:var(--control-text-dark) !important; border:1px solid var(--control-border); border-radius: 6px; display:flex; align-items:center; justify-content:center;">
                             <span class="dashicons dashicons-edit"></span>
                         </button>
@@ -1218,7 +1215,7 @@ jQuery(document).ready(function($) {
 
         $modal.css('display', 'flex');
         $htmlContainer.hide();
-        $loader.show();
+        $loader.show().find('p').text('<?php _e('جاري معالجة المعاينة...', 'control'); ?>');
 
         const creator = {
             first_name: '<?php echo esc_js($user->first_name); ?>',
@@ -1234,33 +1231,46 @@ jQuery(document).ready(function($) {
         // Update containers
         $htmlContainer.html(htmlBody);
         $exportContainer.html(htmlBody);
-        $exportContainer.show(); // Ensure visible for layout calculation
+
+        // Fix for "Processing..." bug: Ensure container is visible for rendering but off-screen
+        $exportContainer.css({
+            'display': 'block',
+            'visibility': 'visible',
+            'position': 'fixed',
+            'left': '-9999px'
+        });
 
         // Options for high quality rendering
         const opt = {
             margin:       [5, 5, 5, 5],
             filename:     `lesson_${id}.pdf`,
             image:        { type: 'jpeg', quality: 0.98 },
-            html2canvas:  { scale: 2, useCORS: true, logging: false },
+            html2canvas:  { scale: 2, useCORS: true, logging: false, letterRendering: true },
             jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
         };
 
-        // Generate Blob for preview
-        html2pdf().set(opt).from($exportContainer[0]).outputPdf('blob').then(function(pdfBlob) {
-            const url = URL.createObjectURL(pdfBlob);
-            lastGeneratedPDF = { blob: pdfBlob, url: url, filename: `lesson_${id}.pdf` };
+        // Delay to allow images and fonts to stabilize
+        setTimeout(() => {
+            html2pdf().set(opt).from($exportContainer[0]).outputPdf('blob').then(function(pdfBlob) {
+                const url = URL.createObjectURL(pdfBlob);
+                lastGeneratedPDF = { blob: pdfBlob, url: url, filename: `lesson_${id}.pdf` };
 
-            $loader.hide();
-            $htmlContainer.show();
-            $exportContainer.hide();
+                $loader.hide();
+                $htmlContainer.show();
+                $exportContainer.hide();
 
-            $('#download-preview-pdf').off('click').on('click', function() {
-                const link = document.createElement('a');
-                link.href = url;
-                link.download = lastGeneratedPDF.filename;
-                link.click();
+                $('#download-preview-pdf').off('click').on('click', function() {
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.download = lastGeneratedPDF.filename;
+                    link.click();
+                });
+            }).catch(err => {
+                console.error('Preview Generation Error:', err);
+                $loader.find('p').text('Error generating preview. Please try again.');
+                $loader.find('.dashicons').removeClass('dashicons-update spin').addClass('dashicons-warning');
             });
-        });
+        }, 800);
     }
 
     $(document).on('click', '.print-lesson-btn', function() {
@@ -1617,9 +1627,8 @@ jQuery(document).ready(function($) {
         $('#browse-suggestions-modal').hide();
     });
 
-    $(document).on('click', '.download-lesson-pdf, .share-whatsapp-direct, .share-email-direct', function() {
+    $(document).on('click', '.download-lesson-pdf, .share-whatsapp-direct', function() {
         const isShare = $(this).hasClass('share-whatsapp-direct');
-        const isEmail = $(this).hasClass('share-email-direct');
         const id = $(this).data('id');
         const $btn = $(this);
         const originalHtml = $btn.html();
@@ -1641,66 +1650,21 @@ jQuery(document).ready(function($) {
                         `📋 *Lesson Plan Sharing*\n\n*Title:* ${data.title}\n*Grade:* ${data.target_group}\n*Duration:* ${data.duration} min\n*Date:* ${dateStr}\n*Prepared by:* ${sender}\n\nGenerated via Control System.` :
                         `📋 *مشاركة تحضير درس*\n\n*العنوان:* ${data.title}\n*الصف:* ${data.target_group}\n*المدة:* ${data.duration} دقيقة\n*التاريخ:* ${dateStr}\n*بواسطة:* ${sender}\n\nتم التوليد عبر نظام كنترول.`;
 
-                    // For real file sharing, we would need to upload the PDF to a server and share the link,
-                    // or use the Web Share API if supported and on mobile.
-                    if (isEmail) {
-                        const recipient = prompt(isEn ? 'Enter recipient email:' : 'أدخل البريد الإلكتروني للمستلم:');
-                        if (!recipient) {
-                            $btn.prop('disabled', false).html(originalHtml);
-                            return;
-                        }
-
-                        const handleEmailSend = (pdfBase64 = '') => {
-                            $.post(control_ajax.ajax_url, {
-                                action: 'control_share_lesson_email',
-                                id: id,
-                                email: recipient,
-                                pdf_base64: pdfBase64,
-                                nonce: control_ajax.nonce
-                            }, function(emailRes) {
-                                $btn.prop('disabled', false).html(originalHtml);
-                                alert(emailRes.success ? (isEn ? 'Email sent!' : 'تم الإرسال!') : emailRes.data);
+                    if (navigator.share && lastGeneratedPDF && lastGeneratedPDF.blob) {
+                            const file = new File([lastGeneratedPDF.blob], `lesson_${id}.pdf`, { type: 'application/pdf' });
+                            navigator.share({
+                                title: data.title,
+                                text: msg,
+                                files: [file]
+                            }).catch(err => {
+                                const waUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(msg)}`;
+                                window.open(waUrl, '_blank');
                             });
-                        };
-
-                        if (lastGeneratedPDF && lastGeneratedPDF.blob) {
-                            const reader = new FileReader();
-                            reader.onloadend = function() { handleEmailSend(reader.result); };
-                            reader.readAsDataURL(lastGeneratedPDF.blob);
-                        } else {
-                            // Generate first
-                            const $exportContainer = $('#pdf-export-content');
-                            $exportContainer.show();
-                            const html = renderFormalPDFHtml(data, creator);
-                            $exportContainer.html(html);
-                            const opt = { margin: [5, 5, 5, 5], filename: `lesson_${id}.pdf`, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2, useCORS: true }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' } };
-
-                            setTimeout(() => {
-                                html2pdf().set(opt).from($exportContainer[0]).outputPdf('blob').then(blob => {
-                                    const reader = new FileReader();
-                                    reader.onloadend = function() { handleEmailSend(reader.result); };
-                                    reader.readAsDataURL(blob);
-                                    $exportContainer.hide();
-                                });
-                            }, 500);
-                        }
                     } else {
-                        if (navigator.share && lastGeneratedPDF && lastGeneratedPDF.blob) {
-                             const file = new File([lastGeneratedPDF.blob], `lesson_${id}.pdf`, { type: 'application/pdf' });
-                             navigator.share({
-                                 title: data.title,
-                                 text: msg,
-                                 files: [file]
-                             }).catch(err => {
-                                 const waUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(msg)}`;
-                                 window.open(waUrl, '_blank');
-                             });
-                        } else {
-                             const waUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(msg)}`;
-                             window.open(waUrl, '_blank');
-                        }
-                        $btn.prop('disabled', false).html(originalHtml);
+                            const waUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(msg)}`;
+                            window.open(waUrl, '_blank');
                     }
+                    $btn.prop('disabled', false).html(originalHtml);
                 } else {
                     generateDirectPDF(data, id, creator, function() {
                         $btn.prop('disabled', false).html(originalHtml);
