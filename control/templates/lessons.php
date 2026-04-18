@@ -32,6 +32,23 @@ if ( strpos($user_id, 'wp_') === 0 ) {
 }
 
 $lessons = Control_Lessons::get_all_lessons( $can_view_all );
+// Enhance lessons with avatar if possible
+foreach($lessons as &$lesson) {
+    if (isset($lesson->creator_id)) {
+        if (strpos($lesson->creator_id, 'wp_') === 0) {
+            $wp_uid = str_replace('wp_', '', $lesson->creator_id);
+            $lesson->avatar = get_avatar_url($wp_uid, ['size' => 40]);
+        } else {
+            $staff_data = $wpdb->get_row($wpdb->prepare("SELECT profile_image, gender FROM {$wpdb->prefix}control_staff WHERE id = %d", $lesson->creator_id));
+            if ($staff_data && !empty($staff_data->profile_image)) {
+                $lesson->avatar = $staff_data->profile_image;
+            } else {
+                $lesson->avatar = null; // Will use gender-based default in UI
+                $lesson->gender = $staff_data->gender ?? 'male';
+            }
+        }
+    }
+}
 $suggestions = Control_Lessons::get_suggestions();
 
 // Organization Data
@@ -92,7 +109,7 @@ $sports_icons = array(
             <input type="text" id="lesson-search-input" placeholder="<?php _e('ابحث باسم الدرس...', 'control'); ?>" style="padding:10px 40px 10px 12px;">
         </div>
 
-        <select id="lesson-grade-filter" style="width:180px; padding:10px;">
+        <select id="lesson-grade-filter" style="width:150px; padding:10px;">
             <option value=""><?php _e('جميع الصفوف', 'control'); ?></option>
             <?php for($i=1; $i<=12; $i++): ?>
                 <option value="<?php echo "الصف " . $i; ?>"><?php echo "الصف " . $i; ?></option>
@@ -100,7 +117,13 @@ $sports_icons = array(
             <option value="KINDERGARTEN"><?php _e('رياض الأطفال', 'control'); ?></option>
         </select>
 
-        <select id="lesson-date-filter" style="width:160px; padding:10px;">
+        <select id="lesson-lang-filter" style="width:130px; padding:10px;">
+            <option value=""><?php _e('جميع اللغات', 'control'); ?></option>
+            <option value="ar"><?php _e('العربية', 'control'); ?></option>
+            <option value="en"><?php _e('English', 'control'); ?></option>
+        </select>
+
+        <select id="lesson-date-filter" style="width:150px; padding:10px;">
             <option value="newest"><?php _e('الأحدث أولاً', 'control'); ?></option>
             <option value="oldest"><?php _e('الأقدم أولاً', 'control'); ?></option>
         </select>
@@ -144,38 +167,50 @@ $sports_icons = array(
         <?php else: ?>
             <?php foreach($lessons as $l):
                 $data = json_decode($l->lesson_data, true);
+                $is_rtl = ($l->lang ?? 'ar') === 'ar';
             ?>
-                <div class="control-card lesson-card" data-grade="<?php echo esc_attr($l->target_group); ?>" data-date="<?php echo strtotime($l->created_at); ?>" style="padding:0; overflow:hidden; display:flex; flex-direction:column; border-radius: 16px;">
+                <div class="control-card lesson-card" data-creator="<?php echo esc_attr($l->first_name . ' ' . $l->last_name); ?>" data-lang="<?php echo esc_attr($l->lang ?? 'ar'); ?>" data-grade="<?php echo esc_attr($l->target_group); ?>" data-date="<?php echo strtotime($l->created_at); ?>" style="padding:0; overflow:hidden; display:flex; flex-direction:column; border-radius: 16px;">
                     <div style="padding:24px; flex:1;">
-                        <div class="lesson-metadata-row" style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:18px;">
-                            <span class="meta-capsule" title="<?php _e('التاريخ', 'control'); ?>" style="background:rgba(0,0,0,0.03); color:var(--control-muted); padding:4px 12px; border-radius:30px; font-size:0.65rem; font-weight:700; border:1px solid var(--control-border); display:flex; align-items:center; gap:5px;">
-                                <span class="dashicons dashicons-calendar-alt" style="font-size:14px; width:14px; height:14px;"></span>
-                                <?php echo date_i18n('Y/m/d', strtotime($l->created_at)); ?>
+                        <div class="lesson-metadata-row" style="display:flex; gap:6px; flex-wrap:wrap; margin-bottom:18px;">
+                            <span class="meta-capsule" title="<?php _e('التاريخ', 'control'); ?>" style="background:rgba(0,0,0,0.03); color:var(--control-muted); padding:3px 10px; border-radius:30px; font-size:0.6rem; font-weight:700; border:1px solid var(--control-border); display:flex; align-items:center; gap:4px;">
+                                <span class="dashicons dashicons-calendar-alt" style="font-size:12px; width:12px; height:12px;"></span>
+                                <?php echo date_i18n($is_rtl ? 'Y/m/d' : 'm/d/Y', strtotime($l->created_at)); ?>
                             </span>
-                            <span class="meta-capsule" title="<?php _e('اللغة', 'control'); ?>" style="background:rgba(0,0,0,0.03); color:var(--control-muted); padding:4px 12px; border-radius:30px; font-size:0.65rem; font-weight:700; border:1px solid var(--control-border); display:flex; align-items:center; gap:5px;">
-                                <span class="dashicons dashicons-translation" style="font-size:14px; width:14px; height:14px;"></span>
-                                <?php echo ($l->lang ?? 'ar') === 'ar' ? 'العربية' : 'English'; ?>
+                            <span class="meta-capsule" title="<?php _e('مدة الدرس', 'control'); ?>" style="background:rgba(0,0,0,0.03); color:var(--control-muted); padding:3px 10px; border-radius:30px; font-size:0.6rem; font-weight:700; border:1px solid var(--control-border); display:flex; align-items:center; gap:4px;">
+                                <span class="dashicons dashicons-clock" style="font-size:12px; width:12px; height:12px;"></span>
+                                <?php echo esc_html($l->duration); ?> <?php echo $is_rtl ? 'دقيقة' : 'Min'; ?>
                             </span>
-                            <span class="meta-capsule" title="<?php _e('الصف', 'control'); ?>" style="background:rgba(0,0,0,0.03); color:var(--control-muted); padding:4px 12px; border-radius:30px; font-size:0.65rem; font-weight:700; border:1px solid var(--control-border); display:flex; align-items:center; gap:5px;">
-                                <span class="dashicons dashicons-welcome-learn-more" style="font-size:14px; width:14px; height:14px;"></span>
+                            <span class="meta-capsule" title="<?php _e('اللغة', 'control'); ?>" style="background:rgba(0,0,0,0.03); color:var(--control-muted); padding:3px 10px; border-radius:30px; font-size:0.6rem; font-weight:700; border:1px solid var(--control-border); display:flex; align-items:center; gap:4px;">
+                                <span class="dashicons dashicons-translation" style="font-size:12px; width:12px; height:12px;"></span>
+                                <?php echo $is_rtl ? 'العربية' : 'English'; ?>
+                            </span>
+                            <span class="meta-capsule" title="<?php _e('الصف', 'control'); ?>" style="background:rgba(0,0,0,0.03); color:var(--control-muted); padding:3px 10px; border-radius:30px; font-size:0.6rem; font-weight:700; border:1px solid var(--control-border); display:flex; align-items:center; gap:4px;">
+                                <span class="dashicons dashicons-welcome-learn-more" style="font-size:12px; width:12px; height:12px;"></span>
                                 <?php echo esc_html($l->target_group); ?>
-                            </span>
-                            <span class="meta-capsule" title="<?php _e('مدة الدرس', 'control'); ?>" style="background:rgba(0,0,0,0.03); color:var(--control-muted); padding:4px 12px; border-radius:30px; font-size:0.65rem; font-weight:700; border:1px solid var(--control-border); display:flex; align-items:center; gap:5px;">
-                                <span class="dashicons dashicons-clock" style="font-size:14px; width:14px; height:14px;"></span>
-                                <?php echo esc_html($l->duration); ?> <?php _e('دقيقة', 'control'); ?>
                             </span>
                         </div>
 
-                        <h4 style="margin:0; font-size:1.3rem; font-weight:800; color:var(--control-text-dark); line-height: 1.4;"><?php echo esc_html($l->title); ?></h4>
+                        <h4 style="margin:0; font-size:1.2rem; font-weight:800; color:var(--control-text-dark); line-height: 1.4;"><?php echo esc_html($l->title); ?></h4>
 
                         <?php if($can_view_all && isset($l->first_name)): ?>
-                            <div style="margin-top:12px; color:var(--control-muted); font-size:0.8rem; display:flex; align-items:center; gap:6px;">
-                                <span class="dashicons dashicons-admin-users" style="font-size:16px; width:16px; height:16px; color: var(--control-primary);"></span>
-                                <strong><?php _e('المعد:', 'control'); ?></strong> <?php echo esc_html($l->first_name . ' ' . $l->last_name); ?>
+                            <div style="margin-top:15px; display:flex; align-items:center; gap:10px; padding-top:15px; border-top:1px solid rgba(0,0,0,0.05);">
+                                <div style="width:32px; height:32px; border-radius:50%; overflow:hidden; background:var(--control-bg); flex-shrink:0; border:1px solid var(--control-border);">
+                                    <?php if(isset($l->avatar) && !empty($l->avatar)): ?>
+                                        <img src="<?php echo esc_url($l->avatar); ?>" style="width:100%; height:100%; object-fit:cover;">
+                                    <?php else: ?>
+                                        <div class="avatar-placeholder <?php echo ($l->gender ?? 'male') === 'female' ? 'avatar-female' : 'avatar-male'; ?>" style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:800;">
+                                            <?php echo strtoupper(substr($l->first_name, 0, 1)); ?>
+                                        </div>
+                                    <?php endif; ?>
+                                </div>
+                                <div>
+                                    <div style="font-size:0.75rem; font-weight:800; color:var(--control-text-dark);"><?php echo esc_html($l->first_name . ' ' . $l->last_name); ?></div>
+                                    <div style="font-size:0.6rem; color:var(--control-muted);"><?php _e('معد الدرس', 'control'); ?></div>
+                                </div>
                             </div>
                         <?php endif; ?>
                     </div>
-                    <div class="lesson-card-actions" style="background:var(--control-bg); padding:10px 15px; border-top:1px solid var(--control-border); display:flex; gap:5px; align-items:center; justify-content: center; flex-wrap: nowrap; overflow-x: auto;">
+                    <div class="lesson-card-actions" style="background:var(--control-bg); padding:10px 20px; border-top:1px solid var(--control-border); display:flex; gap:6px; align-items:center; justify-content: flex-start; flex-wrap: nowrap; overflow-x: auto;">
                         <button class="control-btn view-lesson-pdf" data-id="<?php echo $l->id; ?>" title="<?php _e('معاينة', 'control'); ?>" style="width:34px; height:34px; padding:0; flex-shrink:0; background:var(--control-primary); border-radius: 6px; display:flex; align-items:center; justify-content:center; border:none;">
                             <span class="dashicons dashicons-visibility"></span>
                         </button>
@@ -661,7 +696,10 @@ jQuery(document).ready(function($) {
             add_main: 'إضافة نشاط رئيسي',
             add_cooldown: 'إضافة نشاط ختامي',
             email_prompt: 'أدخل البريد الإلكتروني للمستلم:',
-            email_sent: 'تم الإرسال!'
+            email_sent: 'تم الإرسال!',
+            grade_1: 'الصف الأول', grade_2: 'الصف الثاني', grade_3: 'الصف الثالث', grade_4: 'الصف الرابع',
+            grade_5: 'الصف الخامس', grade_6: 'الصف السادس', grade_7: 'الصف السابع', grade_8: 'الصف الثامن',
+            grade_9: 'الصف التاسع', grade_10: 'الصف العاشر', grade_11: 'الصف الحادي عشر', grade_12: 'الصف الثاني عشر'
         },
         en: {
             basic_info: 'Basic Information',
@@ -721,7 +759,10 @@ jQuery(document).ready(function($) {
             add_main: 'Add Main Activity',
             add_cooldown: 'Add Cooldown Activity',
             email_prompt: 'Enter recipient email:',
-            email_sent: 'Email sent!'
+            email_sent: 'Email sent!',
+            grade_1: 'Grade 1', grade_2: 'Grade 2', grade_3: 'Grade 3', grade_4: 'Grade 4',
+            grade_5: 'Grade 5', grade_6: 'Grade 6', grade_7: 'Grade 7', grade_8: 'Grade 8',
+            grade_9: 'Grade 9', grade_10: 'Grade 10', grade_11: 'Grade 11', grade_12: 'Grade 12'
         }
     };
 
@@ -729,41 +770,162 @@ jQuery(document).ready(function($) {
     let activeIconTarget = null;
     let lastGeneratedPDF = null;
 
-    const lessonTemplates = [
-        {
-            title: "أساسيات كرة القدم",
-            grade: "الصف 6",
-            objectives: "1. إتقان مهارة التمرير بوجه القدم الداخلي.\n2. التعرف على القوانين الأساسية للملعب.\n3. تنمية الروح الرياضية والعمل الجماعي.",
-            equipment: "كرات قدم، أقماع، صافرة، شواخص",
-            activities: {
-                warmup: [{icon: "🏃", title: "جري خفيف حول الملعب", desc: "جري لمدة 5 دقائق مع تحريك المفاصل."}],
-                main: [
-                    {icon: "⚽", title: "تمرير الكرة في أزواج", desc: "كل طالبين يمرران الكرة لبعضهما من مسافة 5 أمتار."},
-                    {icon: "🧱", title: "مراوغة الأقماع", desc: "الجري بالكرة بين الأقماع بسرعة متوسطة."}
-                ],
-                cooldown: [{icon: "🧘", title: "تمارين إطالة", desc: "إطالة لعضلات الرجلين والظهر."}]
+    const lessonTemplates = {
+        ar: [
+            {
+                title: "أساسيات كرة القدم",
+                grade: "الصف 6",
+                objectives: "1. إتقان مهارة التمرير بوجه القدم الداخلي.\n2. التعرف على القوانين الأساسية للملعب.\n3. تنمية الروح الرياضية والعمل الجماعي.",
+                equipment: "كرات قدم، أقماع، صافرة، شواخص",
+                activities: {
+                    warmup: [{icon: "🏃", title: "جري خفيف حول الملعب", desc: "جري لمدة 5 دقائق مع تحريك المفاصل."}],
+                    main: [
+                        {icon: "⚽", title: "تمرير الكرة في أزواج", desc: "كل طالبين يمرران الكرة لبعضهما من مسافة 5 أمتار."},
+                        {icon: "🧱", title: "مراوغة الأقماع", desc: "الجري بالكرة بين الأقماع بسرعة متوسطة."}
+                    ],
+                    cooldown: [{icon: "🧘", title: "تمارين إطالة", desc: "إطالة لعضلات الرجلين والظهر."}]
+                }
+            },
+            {
+                title: "مهارات كرة السلة",
+                grade: "الصف 8",
+                objectives: "1. تحسين مهارة التنطيط باليدين.\n2. إتقان الرمية الحرة.\n3. زيادة اللياقة القلبية التنفسية.",
+                equipment: "كرات سلة، صافرة، لوحة أهداف",
+                activities: {
+                    warmup: [{icon: "🤸", title: "إحماء سويدي", desc: "تمارين مرونة لجميع أعضاء الجسم."}],
+                    main: [
+                        {icon: "🏀", title: "التنطيط بالتبادل", desc: "التنطيط باليد اليمنى ثم اليسرى في خط مستقيم."},
+                        {icon: "🏆", title: "مسابقة التصويب", desc: "تقسيم الطلاب لفريقين والتصويب من خط الرمية الحرة."}
+                    ],
+                    cooldown: [{icon: "🧘", title: "استرخاء وتحدث", desc: "تحدث عن أهمية النشاط البدني مع تمارين تنفس."}]
+                }
+            },
+            {
+                title: "الجمباز الفني الأساسي",
+                grade: "الصف 4",
+                objectives: "1. أداء الدحرجة الأمامية بشكل صحيح.\n2. تحسين توازن الجسم على قدم واحدة.\n3. زيادة مرونة العمود الفقري.",
+                equipment: "مراتب جمباز، مقاعد خشبية",
+                activities: {
+                    warmup: [{icon: "🏃", title: "حركات تليين", desc: "دوران الرأس والكتفين والخصر."}],
+                    main: [
+                        {icon: "🤸", title: "الدحرجة الأمامية", desc: "التدريب على الدحرجة من وضع القرفصاء."},
+                        {icon: "⚖️", title: "توازن الميزان", desc: "الوقوف على قدم واحدة ورفع الأخرى للخلف."}
+                    ],
+                    cooldown: [{icon: "🧘", title: "تنفس عميق", desc: "الجلوس وشهيق/زفير ببطء."}]
+                }
+            },
+            {
+                title: "مهارات السباحة (الزحف)",
+                grade: "الصف 5",
+                objectives: "1. إتقان حركة ضربات الرجلين.\n2. التوافق بين حركة الذراعين والتنفس.\n3. كسر حاجز الخوف من الماء العميق.",
+                equipment: "نظارات سباحة، ألواح طفو، زعانف",
+                activities: {
+                    warmup: [{icon: "🏊", title: "طفو وانزلاق", desc: "الانزلاق على البطن مع مسك حافة الحوض."}],
+                    main: [
+                        {icon: "🏊", title: "ضربات الرجلين باللوح", desc: "قطع مسافة 25 متر باستخدام لوح الطفو فقط."},
+                        {icon: "📢", title: "تبادل الذراعين", desc: "التدريب على سحب الماء بالذراعين مع لف الرأس للتنفس."}
+                    ],
+                    cooldown: [{icon: "🧘", title: "استرخاء في الماء", desc: "الطفو على الظهر مع تنفس هادئ."}]
+                }
+            },
+            {
+                title: "ألعاب القوى (الجري السريع)",
+                grade: "الصف 7",
+                objectives: "1. تعلم الانطلاق الصحيح من المكعبات.\n2. زيادة السرعة القصوى في المسافات القصيرة.\n3. تحسين تكنيك حركة الذراعين أثناء الجري.",
+                equipment: "مكعبات بداية، ساعات توقيت، صافرة",
+                activities: {
+                    warmup: [{icon: "🏃", title: "إحماء حركي", desc: "رفع الركبتين عالياً ولمس المقعدة بالقدمين أثناء الجري."}],
+                    main: [
+                        {icon: "⏱️", title: "انطلاقات 30 متر", desc: "التدريب على رد الفعل السريع عند سماع الصافرة."},
+                        {icon: "🏃", title: "سباق تتابع مصغر", desc: "تقسيم الطلاب لمجموعات وتدريبهم على تسليم العصا."}
+                    ],
+                    cooldown: [{icon: "🧘", title: "إطالة ثابتة", desc: "تمارين إطالة لعضلات الفخذ الخلفية والسمانة."}]
+                }
             }
-        },
-        {
-            title: "مهارات كرة السلة",
-            grade: "الصف 8",
-            objectives: "1. تحسين مهارة التنطيط باليدين.\n2. إتقان الرمية الحرة.\n3. زيادة اللياقة القلبية التنفسية.",
-            equipment: "كرات سلة، صافرة، لوحة أهداف",
-            activities: {
-                warmup: [{icon: "🤸", title: "إحماء سويدي", desc: "تمارين مرونة لجميع أعضاء الجسم."}],
-                main: [
-                    {icon: "🏀", title: "التنطيط بالتبادل", desc: "التنطيط باليد اليمنى ثم اليسرى في خط مستقيم."},
-                    {icon: "🏆", title: "مسابقة التصويب", desc: "تقسيم الطلاب لفريقين والتصويب من خط الرمية الحرة."}
-                ],
-                cooldown: [{icon: "🧘", title: "استرخاء وتحدث", desc: "تحدث عن أهمية النشاط البدني مع تمارين تنفس."}]
+        ],
+        en: [
+            {
+                title: "Football Fundamentals",
+                grade: "Grade 6",
+                objectives: "1. Master internal foot passing technique.\n2. Understand basic field rules.\n3. Promote sportsmanship and teamwork.",
+                equipment: "Footballs, cones, whistle, markers",
+                activities: {
+                    warmup: [{icon: "🏃", title: "Light Jogging", desc: "5-minute jog around the field with joint rotations."}],
+                    main: [
+                        {icon: "⚽", title: "Partner Passing", desc: "Students pass the ball in pairs from 5 meters apart."},
+                        {icon: "🧱", title: "Cone Dribbling", desc: "Dribbling through cones at medium speed."}
+                    ],
+                    cooldown: [{icon: "🧘", title: "Stretching Exercises", desc: "Leg and back stretches."}]
+                }
+            },
+            {
+                title: "Basketball Skills",
+                grade: "Grade 8",
+                objectives: "1. Improve two-handed dribbling skills.\n2. Master free-throw shooting.\n3. Increase cardiovascular fitness.",
+                equipment: "Basketballs, whistle, hoops",
+                activities: {
+                    warmup: [{icon: "🤸", title: "Swedish Warm-up", desc: "Full-body flexibility exercises."}],
+                    main: [
+                        {icon: "🏀", title: "Alternate Dribbling", desc: "Dribbling with right then left hand in a straight line."},
+                        {icon: "🏆", title: "Shooting Competition", desc: "Split students into teams for a free-throw contest."}
+                    ],
+                    cooldown: [{icon: "🧘", title: "Relaxation and Talk", desc: "Discuss physical activity benefits with breathing exercises."}]
+                }
+            },
+            {
+                title: "Basic Artistic Gymnastics",
+                grade: "Grade 4",
+                objectives: "1. Perform a forward roll correctly.\n2. Improve one-leg body balance.\n3. Increase spine flexibility.",
+                equipment: "Gymnastics mats, benches",
+                activities: {
+                    warmup: [{icon: "🏃", title: "Loosening Up", desc: "Head, shoulder, and waist rotations."}],
+                    main: [
+                        {icon: "🤸", title: "Forward Roll", desc: "Practicing the roll from a squat position."},
+                        {icon: "⚖️", title: "Scale Balance", desc: "Standing on one leg with the other raised backward."}
+                    ],
+                    cooldown: [{icon: "🧘", title: "Deep Breathing", desc: "Sitting and slow inhale/exhale."}]
+                }
+            },
+            {
+                title: "Swimming Skills (Crawl)",
+                grade: "Grade 5",
+                objectives: "1. Master leg kick movement.\n2. Coordinate arm strokes with breathing.\n3. Build confidence in deep water.",
+                equipment: "Goggles, kickboards, fins",
+                activities: {
+                    warmup: [{icon: "🏊", title: "Floating and Gliding", desc: "Gliding on front while holding the pool edge."}],
+                    main: [
+                        {icon: "🏊", title: "Leg Kicks with Board", desc: "Swim 25 meters using only kickboard for support."},
+                        {icon: "📢", title: "Alternating Arm Strokes", desc: "Practicing the pull phase with head rotation for breathing."}
+                    ],
+                    cooldown: [{icon: "🧘", title: "Water Relaxation", desc: "Floating on back with calm breathing."}]
+                }
+            },
+            {
+                title: "Athletics (Sprinting)",
+                grade: "Grade 7",
+                objectives: "1. Learn correct starting block position.\n2. Increase maximum speed over short distances.\n3. Improve arm drive technique.",
+                equipment: "Starting blocks, stopwatches, whistle",
+                activities: {
+                    warmup: [{icon: "🏃", title: "Dynamic Warm-up", desc: "High knees and butt kicks while jogging."}],
+                    main: [
+                        {icon: "⏱️", title: "30m Explosive Starts", desc: "Training quick reaction to the whistle."},
+                        {icon: "🏃", title: "Mini Relay Race", desc: "Group students to practice baton exchange and teamwork."}
+                    ],
+                    cooldown: [{icon: "🧘", title: "Static Stretching", desc: "Stretching hamstrings and calf muscles."}]
+                }
             }
-        }
-    ];
+        ]
+    };
 
     function updateWizardLabels() {
         const lang = $('#lesson-lang').val();
         const trans = controlTranslations[lang];
         const isRtl = lang === 'ar';
+
+        // Update Date Localization
+        const now = new Date();
+        const formattedDate = now.toLocaleDateString(isRtl ? 'ar-SA' : 'en-US', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+        $('#lesson-date-formatted').val(formattedDate);
 
         // Update step titles in the indicators and modal
         $('#wizard-main-title').text(isRtl ? 'معالج تحضير الدروس الذكي' : 'Smart Lesson Builder Wizard');
@@ -932,7 +1094,10 @@ jQuery(document).ready(function($) {
     // Templates Logic
     $('#select-lesson-template').on('click', function() {
         let html = '';
-        lessonTemplates.forEach((tpl, i) => {
+        const activeLang = $('#lesson-lang').val();
+        const currentTemplates = lessonTemplates[activeLang] || lessonTemplates.ar;
+
+        currentTemplates.forEach((tpl, i) => {
             html += `
                 <div class="template-card" data-index="${i}" style="background:var(--control-bg); border:1px solid var(--control-border); padding:20px; border-radius:15px; cursor:pointer; transition:0.2s;">
                     <div style="font-weight:800; color:var(--control-primary); margin-bottom:5px;">${tpl.title}</div>
@@ -945,7 +1110,9 @@ jQuery(document).ready(function($) {
     });
 
     $(document).on('click', '.template-card', function() {
-        const tpl = lessonTemplates[$(this).data('index')];
+        const activeLang = $('#lesson-lang').val();
+        const currentTemplates = lessonTemplates[activeLang] || lessonTemplates.ar;
+        const tpl = currentTemplates[$(this).data('index')];
         $('#lesson-title').val(tpl.title);
         $('#lesson-target').val(tpl.grade);
         $('#lesson-objectives').val(tpl.objectives);
@@ -1246,17 +1413,21 @@ jQuery(document).ready(function($) {
     function filterLessons() {
         const query = $('#lesson-search-input').val().toLowerCase();
         const grade = $('#lesson-grade-filter').val();
+        const langFilter = $('#lesson-lang-filter').val();
         const sort = $('#lesson-date-filter').val();
 
         let visibleCards = $('.lesson-card').filter(function() {
             const card = $(this);
             const title = card.find('h4').text().toLowerCase();
-            const cardGrade = card.find('.grade-badge').text().trim();
+            const creator = card.data('creator').toLowerCase();
+            const cardGrade = (card.data('grade') || '').toString().toLowerCase();
+            const lang = (card.data('lang') || 'ar').toLowerCase();
 
-            const matchesQuery = !query || title.includes(query);
-            const matchesGrade = !grade || cardGrade === grade;
+            const matchesQuery = !query || title.includes(query) || creator.includes(query);
+            const matchesGrade = !grade || cardGrade === grade.toLowerCase();
+            const matchesLang = !langFilter || lang === langFilter.toLowerCase();
 
-            return matchesQuery && matchesGrade;
+            return matchesQuery && matchesGrade && matchesLang;
         });
 
         $('.lesson-card').hide();
@@ -1272,7 +1443,7 @@ jQuery(document).ready(function($) {
         $(sortedArray).fadeIn(200);
     }
 
-    $('#lesson-search-input, #lesson-grade-filter, #lesson-date-filter').on('input change', filterLessons);
+    $('#lesson-search-input, #lesson-grade-filter, #lesson-lang-filter, #lesson-date-filter').on('input change', filterLessons);
 
     let lessonIdToDelete = null;
     $(document).on('click', '.delete-lesson-btn', function() {
@@ -1637,13 +1808,13 @@ jQuery(document).ready(function($) {
         });
 
         return `
-            <div style="background:#fff; border:1px solid #000; padding:15mm; border-radius:0; color:#000; font-size:11px; line-height: 1.5; font-family: 'Rubik', sans-serif;">
+            <div style="background:#fff; border:1px solid #000; padding:10mm; border-radius:0; color:#000; font-size:11px; line-height: 1.4; font-family: 'Rubik', sans-serif;">
                 <!-- Official Header -->
-                <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1.5px solid #0f172a; padding-bottom:10px; margin-bottom:15px; flex-direction: ${isRtl ? 'row' : 'row-reverse'};">
+                <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid #000; padding-bottom:12px; margin-bottom:15px; flex-direction: ${isRtl ? 'row' : 'row-reverse'};">
                     <div style="flex:1; text-align: ${textAlign};">
                         ${orgLogoHtml}
-                        <div style="font-weight:800; font-size:18px; color:#0f172a;">${data.title}</div>
-                        <div style="color:#475569; font-size:11px; font-weight:700;">${creator.employer_name || '<?php echo esc_html($org_name); ?>'}</div>
+                        <div style="font-weight:800; font-size:20px; color:#000; margin-bottom:4px;">${data.title}</div>
+                        <div style="color:#444; font-size:12px; font-weight:700;">${creator.employer_name || '<?php echo esc_html($org_name); ?>'}</div>
                     </div>
                     <div style="width:250px; text-align:${textAlign}; font-size:10px; color:#1e293b; line-height:1.4; border-${isRtl ? 'right' : 'left'}:1px solid #cbd5e1; padding-${isRtl ? 'right' : 'left'}:10px;">
                         <table style="width:100%; border-collapse:collapse; direction: ${direction};">
@@ -1738,6 +1909,9 @@ jQuery(document).ready(function($) {
 .selectable-icon:hover { border-color: var(--control-accent); transform: scale(1.1); }
 .template-card:hover { border-color: var(--control-accent) !important; transform: translateY(-2px); }
 .wizard-lang-btn.active { background: #fff !important; color: var(--control-primary) !important; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-.meta-capsule { transition: 0.2s; }
+.meta-capsule { transition: 0.2s; font-size: 0.6rem !important; padding: 2px 8px !important; }
 .lesson-card:hover .meta-capsule { background: #fff !important; border-color: var(--control-accent) !important; color: var(--control-text-dark) !important; }
+.avatar-placeholder { border-radius: 50%; color: #fff; }
+.avatar-male { background: linear-gradient(135deg, #3b82f6, #1d4ed8); }
+.avatar-female { background: linear-gradient(135deg, #ec4899, #be185d); }
 </style>
