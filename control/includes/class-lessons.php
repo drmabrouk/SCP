@@ -16,6 +16,7 @@ class Control_Lessons {
 		add_action( 'wp_ajax_control_get_lesson', array( __CLASS__, 'get_lesson' ) );
 		add_action( 'wp_ajax_control_save_lesson_suggestion', array( __CLASS__, 'save_lesson_suggestion' ) );
 		add_action( 'wp_ajax_control_delete_lesson_suggestion', array( __CLASS__, 'delete_lesson_suggestion' ) );
+		add_action( 'wp_ajax_control_share_lesson_email', array( __CLASS__, 'share_lesson_email' ) );
 	}
 
 	public static function save_lesson() {
@@ -33,6 +34,7 @@ class Control_Lessons {
 		$lang = sanitize_text_field( $lesson_data['lang'] ?? 'ar' );
 
 		if ( empty($title) ) wp_send_json_error( 'Title is required' );
+		if ( empty($lesson_data) ) wp_send_json_error( 'Lesson data is missing' );
 
 		$data = array(
 			'creator_id'   => $user->id,
@@ -169,6 +171,53 @@ class Control_Lessons {
 	public static function get_suggestions() {
 		global $wpdb;
 		return $wpdb->get_results( "SELECT * FROM {$wpdb->prefix}control_lesson_suggestions ORDER BY created_at DESC" );
+	}
+
+	public static function share_lesson_email() {
+		check_ajax_referer( 'control_nonce', 'nonce' );
+		if ( ! Control_Auth::is_logged_in() ) wp_send_json_error( 'Unauthorized' );
+
+		$id = intval( $_POST['id'] );
+		$recipient = sanitize_email( $_POST['email'] );
+		$pdf_base64 = $_POST['pdf_base64'] ?? '';
+
+		if ( ! is_email($recipient) ) wp_send_json_error( 'Invalid email' );
+
+		global $wpdb;
+		$lesson = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$wpdb->prefix}control_lessons WHERE id = %d", $id ) );
+		if ( ! $lesson ) wp_send_json_error( 'Lesson not found' );
+
+		$lang = $lesson->lang ?? 'ar';
+		$is_en = $lang === 'en';
+
+		$subject = $is_en ? "Lesson Plan: {$lesson->title}" : "تحضير درس: {$lesson->title}";
+
+		$message = $is_en ?
+			"Hello,<br><br>Please find attached the lesson plan for '<b>{$lesson->title}</b>'.<br><br>Generated via Control System." :
+			"مرحباً،<br><br>تجدون طيه تحضير الدرس بعنوان '<b>{$lesson->title}</b>'.<br><br>تم التوليد عبر نظام كنترول.";
+
+		$attachments = array();
+		if ( ! empty($pdf_base64) ) {
+			$pdf_data = base64_decode( str_replace('data:application/pdf;base64,', '', $pdf_base64) );
+			$filename = "lesson_{$id}.pdf";
+			$upload = wp_upload_bits( $filename, null, $pdf_data );
+			if ( ! $upload['error'] ) {
+				$attachments[] = $upload['file'];
+			}
+		}
+
+		$sent = Control_Notifications::send_custom($recipient, $subject, $message, array(), $attachments);
+
+		// Clean up attachment
+		if ( ! empty($attachments) ) {
+			@unlink($attachments[0]);
+		}
+
+		if ( $sent ) {
+			wp_send_json_success( 'Email sent successfully' );
+		} else {
+			wp_send_json_error( 'Failed to send email' );
+		}
 	}
 
 	public static function prune_old_lessons() {
