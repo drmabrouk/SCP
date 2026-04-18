@@ -329,6 +329,7 @@ class Control_Auth {
 			'lessons_manage' => array( 'label' => __( 'إدارة وتحضير الدروس', 'control' ), 'category' => __( 'الدروس', 'control' ) ),
 			'lessons_view_all' => array( 'label' => __( 'عرض كافة دروس النظام', 'control' ), 'category' => __( 'الدروس', 'control' ) ),
 			'annual_planning_manage' => array( 'label' => __( 'إدارة الخطط السنوية والفصلية', 'control' ), 'category' => __( 'التخطيط السنوي', 'control' ) ),
+			'grades_manage' => array( 'label' => __( 'إدارة ورصد درجات الطلاب', 'control' ), 'category' => __( 'الدرجات', 'control' ) ),
 		);
 	}
 }
