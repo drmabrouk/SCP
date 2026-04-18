@@ -1738,7 +1738,7 @@ jQuery(document).ready(function($) {
         const direction = isRtl ? 'rtl' : 'ltr';
         const textAlign = isRtl ? 'right' : 'left';
         const secondaryTextAlign = isRtl ? 'left' : 'right';
-        const orgLogoHtml = creator.org_logo ? `<img src="${creator.org_logo}" style="height:50px; object-fit:contain; margin-bottom:5px;">` : '';
+        const orgLogoHtml = creator.org_logo ? `<img src="${creator.org_logo}" style="height:45px; object-fit:contain; margin-bottom:5px;">` : '';
 
         let activitiesHtml = '';
         const sections = [
@@ -1752,17 +1752,17 @@ jQuery(document).ready(function($) {
                 const timeValue = data.times ? (data.times[s.key] || '') : '';
                 const time = timeValue ? ` (${timeValue} ${trans.min})` : '';
                 activitiesHtml += `
-                    <div style="margin-top:15px; page-break-inside: avoid;">
-                        <h3 style="background:${s.color}; color:#fff; padding:6px 15px; border-radius:4px; font-size:13px; margin-bottom:8px; font-weight: 800;">${s.label}${time}</h3>
-                        <table style="width:100%; border-collapse:collapse; border:1.5px solid #000; direction: ${direction};">
+                    <div style="margin-top:10px; page-break-inside: avoid;">
+                        <h3 style="background:${s.color}; color:#fff; padding:4px 12px; border-radius:4px; font-size:12px; margin-bottom:5px; font-weight: 800; border:1px solid #000;">${s.label}${time}</h3>
+                        <table style="width:100%; border-collapse:collapse; border:1px solid #000; direction: ${direction}; table-layout: fixed;">
                 `;
                 data.activities[s.key].forEach(act => {
                     activitiesHtml += `
                         <tr>
-                            <td style="padding:10px; width:45px; text-align:center; font-size:24px; background:#f8fafc; border:1px solid #000;">${act.icon}</td>
-                            <td style="padding:10px; border:1px solid #000;">
-                                <div style="font-weight:800; color:#000; margin-bottom:4px; font-size:12px;">${act.title}</div>
-                                <div style="font-size:11px; color:#000; line-height:1.4;">${act.desc}</div>
+                            <td style="padding:6px; width:40px; text-align:center; font-size:20px; background:#f8fafc; border:1px solid #000;">${act.icon}</td>
+                            <td style="padding:8px; border:1px solid #000; overflow: hidden; word-wrap: break-word;">
+                                <div style="font-weight:800; color:#000; margin-bottom:2px; font-size:11px;">${act.title}</div>
+                                <div style="font-size:10.5px; color:#000; line-height:1.3;">${act.desc}</div>
                             </td>
                         </tr>
                     `;
@@ -1772,20 +1772,20 @@ jQuery(document).ready(function($) {
         });
 
         return `
-            <div style="background:#fff; border:1px solid #000; padding:10mm; border-radius:0; color:#000; font-size:11px; line-height: 1.4; font-family: 'Rubik', sans-serif;">
+            <div style="background:#fff; border:1.5px solid #000; padding:6mm; border-radius:0; color:#000; font-size:10.5px; line-height: 1.3; font-family: 'Rubik', sans-serif;">
                 <!-- Official Header -->
-                <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid #000; padding-bottom:12px; margin-bottom:15px; flex-direction: ${isRtl ? 'row' : 'row-reverse'};">
+                <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1.5px solid #000; padding-bottom:8px; margin-bottom:10px; flex-direction: ${isRtl ? 'row' : 'row-reverse'};">
                     <div style="flex:1; text-align: ${textAlign};">
                         ${orgLogoHtml}
-                        <div style="font-weight:800; font-size:20px; color:#000; margin-bottom:4px;">${data.title}</div>
-                        <div style="color:#444; font-size:12px; font-weight:700;">${creator.employer_name || '<?php echo esc_html($org_name); ?>'}</div>
+                        <div style="font-weight:800; font-size:18px; color:#000; margin-bottom:2px;">${data.title}</div>
+                        <div style="color:#000; font-size:11px; font-weight:700;">${creator.employer_name || '<?php echo esc_html($org_name); ?>'}</div>
                     </div>
-                    <div style="width:250px; text-align:${textAlign}; font-size:10px; color:#1e293b; line-height:1.4; border-${isRtl ? 'right' : 'left'}:1px solid #cbd5e1; padding-${isRtl ? 'right' : 'left'}:10px;">
+                    <div style="width:230px; text-align:${textAlign}; font-size:9.5px; color:#000; line-height:1.3; border-${isRtl ? 'right' : 'left'}:1.5px solid #000; padding-${isRtl ? 'right' : 'left'}:10px;">
                         <table style="width:100%; border-collapse:collapse; direction: ${direction};">
-                            <tr><td style="font-weight:700; padding:2px 0;">${trans.date_pdf}</td><td style="text-align:${secondaryTextAlign}; padding:2px 0;">${data.date_formatted || new Date().toLocaleDateString(isRtl ? 'ar-SA' : 'en-US')}</td></tr>
-                            <tr><td style="font-weight:700; padding:2px 0;">${trans.grade_pdf}</td><td style="text-align:${secondaryTextAlign}; padding:2px 0;">${data.target_group || '---'}</td></tr>
-                            <tr><td style="font-weight:700; padding:2px 0;">${trans.duration_pdf}</td><td style="text-align:${secondaryTextAlign}; padding:2px 0;">${data.duration || '---'} ${trans.min}</td></tr>
-                            <tr><td style="font-weight:700; padding:2px 0;">${trans.teacher_pdf}</td><td style="text-align:${secondaryTextAlign}; padding:2px 0;">${creator.first_name} ${creator.last_name}</td></tr>
+                            <tr><td style="font-weight:700; padding:1px 0;">${trans.date_pdf}</td><td style="text-align:${secondaryTextAlign}; padding:1px 0;">${data.date_formatted || new Date().toLocaleDateString(isRtl ? 'ar-SA' : 'en-US')}</td></tr>
+                            <tr><td style="font-weight:700; padding:1px 0;">${trans.grade_pdf}</td><td style="text-align:${secondaryTextAlign}; padding:1px 0;">${data.target_group || '---'}</td></tr>
+                            <tr><td style="font-weight:700; padding:1px 0;">${trans.duration_pdf}</td><td style="text-align:${secondaryTextAlign}; padding:1px 0;">${data.duration || '---'} ${trans.min}</td></tr>
+                            <tr><td style="font-weight:700; padding:1px 0;">${trans.teacher_pdf}</td><td style="text-align:${secondaryTextAlign}; padding:1px 0;">${creator.first_name} ${creator.last_name}</td></tr>
                         </table>
                     </div>
                 </div>
